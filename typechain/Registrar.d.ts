@@ -384,12 +384,29 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    validateString(_s: string, overrides?: CallOverrides): Promise<[boolean]>;
+    validateString(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, string, string] & {
+        valid: boolean;
+        parent: string;
+        domain: string;
+        debug: string;
+      }
+    >;
 
     "validateString(string)"(
       _s: string,
       overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    ): Promise<
+      [boolean, string, string, string] & {
+        valid: boolean;
+        parent: string;
+        domain: string;
+        debug: string;
+      }
+    >;
   };
 
   approve(
@@ -578,12 +595,29 @@ export class Registrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  validateString(_s: string, overrides?: CallOverrides): Promise<boolean>;
+  validateString(
+    _s: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, string, string, string] & {
+      valid: boolean;
+      parent: string;
+      domain: string;
+      debug: string;
+    }
+  >;
 
   "validateString(string)"(
     _s: string,
     overrides?: CallOverrides
-  ): Promise<boolean>;
+  ): Promise<
+    [boolean, string, string, string] & {
+      valid: boolean;
+      parent: string;
+      domain: string;
+      debug: string;
+    }
+  >;
 
   callStatic: {
     approve(
@@ -772,12 +806,29 @@ export class Registrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    validateString(_s: string, overrides?: CallOverrides): Promise<boolean>;
+    validateString(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, string, string] & {
+        valid: boolean;
+        parent: string;
+        domain: string;
+        debug: string;
+      }
+    >;
 
     "validateString(string)"(
       _s: string,
       overrides?: CallOverrides
-    ): Promise<boolean>;
+    ): Promise<
+      [boolean, string, string, string] & {
+        valid: boolean;
+        parent: string;
+        domain: string;
+        debug: string;
+      }
+    >;
   };
 
   filters: {

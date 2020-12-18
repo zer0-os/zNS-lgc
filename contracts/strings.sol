@@ -513,10 +513,28 @@ library strings {
         return self;
     }
 
+    // if (bytes1(ptrdata) == '\\' && ptr + 1 < selfptr) {
+    //     // handle escaped characters: skip over it
+    //     ptr++;
+    //     bytes1 next = bytes1(ptrdata << 1);
+    //     if (
+    //         next == '"' ||
+    //         next == "/" ||
+    //         next == "\\" ||
+    //         next == "f" ||
+    //         next == "r" ||
+    //         next == "n" ||
+    //         next == "b" ||
+    //         next == "t"
+    //     ) {
+    //         // continue;
+    //     } else {
+    //         return (false, ptrdata, "escape fail case");
+    //     }
+    // }
+
     function validateDomain(
         string memory path
-        // uint256 needlelen,
-        // uint256 needleptr
     )
         internal
         pure
@@ -527,73 +545,48 @@ library strings {
         )
     {
         uint256 selfptr;
-        uint256 ptr = selfptr;
         assembly {
             selfptr := add(path, 0x20)
         }
+        uint256 ptr = selfptr;
         uint selflen = bytes(path).length;
-        // uint256 laststart;
         string memory bytesref;
         uint256 bytesrefptr;
-        uint256 end = selfptr + selflen - dotlen;
+        uint256 end = selfptr + selflen;
         bytes32 ptrdata;
+        uint _len;
         assembly {
             ptrdata := mload(ptr)
         }
-
-        for (; ptr <= selflen; ptr++) {
-            if (ptrdata == '"') {
-                return (false, bytes32(0), "");
-            }
-            if (uint8(bytes1(ptrdata)) == 92 && ptr + 1 < selfptr) {
-                // handle escaped characters: skip over it
-                ptr++;
-                bytes1 next = bytes1(ptrdata << 1);
-                if (
-                    next == '"' ||
-                    next == "/" ||
-                    next == "\\" ||
-                    next == "f" ||
-                    next == "r" ||
-                    next == "n" ||
-                    next == "b" ||
-                    next == "t"
-                ) {
-                    continue;
-                } else {
-                    return (false, bytes32(0), "");
-                }
+        for (; ptr <= end; ptr++) {
+            if (bytes1(ptrdata) == bytes1(uint8(92))) {
+                return (false, ptrdata, "quotecase");
             }
             if(uint8(bytes1(ptrdata)) == dotdata) {
-                bytesref = new string(selflen - ptr - 1);
+                _len = ptr - selfptr - 1;
+                bytesref = new string(_len);
                 assembly {
                     bytesrefptr := add(bytesref, 32)
                 }
-                memcpy(bytesrefptr, selfptr, selfptr);
+                memcpy(bytesrefptr, selfptr, _len);
                 parent = keccak256(abi.encode(parent, bytesref));
+                selfptr = ptr;
             }
-            if (ptr >= end) {
-                bytesref = new string(selflen);
-
-                assembly {
-                    bytesref := add(bytesref, 32)
-                }
-
-                memcpy(bytesrefptr, selfptr, selfptr + selflen);
-                return (true, bytes32(0), bytesref);
+            else if(uint8(bytes1(ptrdata)) < 97 || uint8(bytes1(ptrdata)) > 122) {
+                return (false, ptrdata, "fail not lowercase");
             }
-            // ptr++;
             assembly {
                 ptrdata := mload(ptr)
             }
         }
-        bytesref = new string(ptr - selfptr);
+        _len = ptr - selfptr - 1;
+        bytesref = new string(_len);
         assembly {
             bytesrefptr := add(bytesref, 32)
         }
 
-        memcpy(bytesrefptr, selfptr, ptr);
-        return (true, bytes32(0), bytesref);
+        memcpy(bytesrefptr, selfptr, _len);
+        return (true, hex"02", bytesref);
     }
 
     // Returns the memory address of the first byte of the first occurrence of

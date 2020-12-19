@@ -43,6 +43,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "validateString(string)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -108,6 +109,10 @@ interface RegistrarInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "validateString",
+    values: [string]
+  ): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -163,15 +168,21 @@ interface RegistrarInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "validateString",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "RegistryCreated(uint256,string,address,address,string)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RegistryCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -387,7 +398,6 @@ export class Registrar extends Contract {
       tokenId: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
-<<<<<<< HEAD
 
     validateString(
       _s: string,
@@ -412,16 +422,6 @@ export class Registrar extends Contract {
         debug: string;
       }
     >;
-||||||| constructed merge base
-
-    validateString(_s: string, overrides?: CallOverrides): Promise<[boolean]>;
-
-    "validateString(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-=======
->>>>>>> graph
   };
 
   approve(
@@ -614,7 +614,6 @@ export class Registrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-<<<<<<< HEAD
   validateString(
     _s: string,
     overrides?: CallOverrides
@@ -639,16 +638,6 @@ export class Registrar extends Contract {
     }
   >;
 
-||||||| constructed merge base
-  validateString(_s: string, overrides?: CallOverrides): Promise<boolean>;
-
-  "validateString(string)"(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-=======
->>>>>>> graph
   callStatic: {
     approve(
       to: string,
@@ -842,7 +831,6 @@ export class Registrar extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-<<<<<<< HEAD
 
     validateString(
       _s: string,
@@ -867,16 +855,6 @@ export class Registrar extends Contract {
         debug: string;
       }
     >;
-||||||| constructed merge base
-
-    validateString(_s: string, overrides?: CallOverrides): Promise<boolean>;
-
-    "validateString(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-=======
->>>>>>> graph
   };
 
   filters: {
@@ -890,6 +868,14 @@ export class Registrar extends Contract {
       owner: string | null,
       operator: string | null,
       approved: null
+    ): EventFilter;
+
+    RegistryCreated(
+      parentId: null,
+      domain: null,
+      _owner: null,
+      _controller: null,
+      _ref: null
     ): EventFilter;
 
     Transfer(
@@ -1094,6 +1080,13 @@ export class Registrar extends Contract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    validateString(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "validateString(string)"(
+      _s: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -1307,6 +1300,16 @@ export class Registrar extends Contract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    validateString(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "validateString(string)"(
+      _s: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

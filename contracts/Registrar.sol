@@ -18,7 +18,6 @@ import "./strings.sol";
 // import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
 
 contract Registrar is ERC721Upgradeable {
-
     struct Entry {
         string ref;
         address controller;
@@ -31,6 +30,14 @@ contract Registrar is ERC721Upgradeable {
     }
 
     mapping(uint256 => Entry) public entries;
+
+    event RegistryCreated(
+        uint256 parentId,
+        string domain,
+        address _owner,
+        address _controller,
+        string _ref
+    );
 
     constructor(address _owner) public {
         // registryMap[""] = _owner;
@@ -70,6 +77,7 @@ contract Registrar is ERC721Upgradeable {
         Entry storage entry = entries[id];
         entry.ref = _ref;
         entry.controller = _controller;
+        RegistryCreated(parentId, domain, _owner, _controller, _ref);
     }
 
     function createRegistry(
@@ -111,59 +119,4 @@ contract Registrar is ERC721Upgradeable {
         // (bool valid, , ) = validateString(_s);
         return verifyIPFS.generateHash(_s);
     }
-
-    // function validateDomainGetParentHash(string calldata _s)
-    //     public
-    //     pure
-    //     returns (bool, )
-    // {
-
-    //     bytes32 _hash = "";
-    //     return uint256(_hash);
-    //     bytes memory s = bytes(_s);
-    //     uint256 start = 0;
-    //     for (uint256 i = 0; i < s.length; i++) {
-    //         bytes1 c = s[i];
-    //         if (uint8(c) == 46) {
-    //             continue;
-    //         }
-    //         if (uint8(c) > 96 && uint8(c) < 123) {
-    //             continue;
-    //         } else {
-    //             return false;
-    //         }
-    //     }
-    // }
-
-    function validateString(string memory _s) public pure returns (bool) {
-        (bool success, , ) = strings.validateDomain(_s);
-        return success;
-        // bytes memory s = bytes(_s);
-        // for (uint256 i = 0; i < s.length; i++) {
-        //     bytes1 c = s[i];
-        //     if (c == '"') {
-        //         return false;
-        //     }
-        //     if (uint8(c) == 92 && i + 1 < s.length) {
-        //         // handle escaped characters: skip over it
-        //         i++;
-        //         if (
-        //             s[i] == '"' ||
-        //             s[i] == "/" ||
-        //             s[i] == "\\" ||
-        //             s[i] == "f" ||
-        //             s[i] == "r" ||
-        //             s[i] == "n" ||
-        //             s[i] == "b" ||
-        //             s[i] == "t"
-        //         ) {
-        //             continue;
-        //         } else {
-        //             return false;
-        //         }
-        //     }
-        // }
-        // return true;
-    }
-
 }

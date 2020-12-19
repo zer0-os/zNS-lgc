@@ -37,4 +37,36 @@ describe("registry", function () {
     await registrar.transferFrom(accs[0], accs[1], 0);
     expect((await registrar.entries(0)).controller).to.eq(accs[1]);
   });
+  it("registrar owner can spawn multiple domains and subdomains", async function () {
+    await registrar.createRegistry(0, "foo", accs[0], accs[0], "someref0");
+    const id0 = await registrar.getId(["foo"]);
+    await registrar.createRegistry(id0, "bar", accs[0], accs[0], "someref1");
+    const id1 = await registrar.getId(["foo", "bar"]);
+    await registrar.createRegistry(id0, "baz", accs[0], accs[0], "someref2");
+    const id2 = await registrar.getId(["foo", "baz"]);
+    expect((await registrar.entries(id0)).controller).to.eq(accs[0]);
+    expect((await registrar.entries(id1)).controller).to.eq(accs[0]);
+    expect((await registrar.entries(id2)).controller).to.eq(accs[0]);
+    await registrar.createRegistry(
+      0,
+      "community",
+      accs[0],
+      accs[0],
+      "someref3"
+    );
+    const id3 = await registrar.getId(["community"]);
+    await registrar.createRegistry(id3, "dao", accs[0], accs[0], "someref4");
+    const id4 = await registrar.getId(["community", "dao"]);
+    await registrar.createRegistry(id3, "token", accs[0], accs[0], "someref4");
+    const id5 = await registrar.getId(["community", "token"]);
+    expect((await registrar.entries(id3)).controller).to.eq(accs[0]);
+    expect((await registrar.entries(id4)).controller).to.eq(accs[0]);
+    expect((await registrar.entries(id5)).controller).to.eq(accs[0]);
+  });
+  it("registrar owner has root point", async function () {
+    expect(await registrar.ownerOf(0)).to.eq(accs[0]);
+    expect((await registrar.entries(0)).controller).to.eq(accs[0]);
+    await registrar.transferFrom(accs[0], accs[1], 0);
+    expect((await registrar.entries(0)).controller).to.eq(accs[1]);
+  });
 });

@@ -10,6 +10,7 @@
     "@openzeppelin/contracts": "^3.3.0",
     "@openzeppelin/contracts-upgradeable": "^3.3.0",
     "@openzeppelin/upgrades": "^2.8.0",
+    "dotenv": "^8.2.0",
     "hardhat-typechain": "^0.3.3",
     "ts-generator": "^0.1.1"
   },

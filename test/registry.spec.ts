@@ -22,6 +22,9 @@ describe('registry', function () {
     console.log(await registrar.validateString('foo.bar.baz"'))
     console.log(await registrar.validateString('foo'))
     console.log(await registrar.validateString('foo.bar.baz'))
+    const ih = await registrar.getIpfsHash('foo.bar.baz')
+    console.log(ih)
+    console.log(Number(ih.toString()).toString(58))
 
     // expect(await registrar.validateString('foo\\"')).to.eq(true)
     // expect(await registrar.validateString('foo"')).to.eq(false)

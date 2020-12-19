@@ -1,4 +1,4 @@
-pragma solidity 0.6.12;
+pragma solidity ^0.7.6;
 pragma experimental ABIEncoderV2;
 // ABIEncoderV2 only used for view functions
 
@@ -9,6 +9,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "./strings.sol";
+import "./IPFSHash.sol";
 
 // import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 // import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
@@ -104,5 +105,9 @@ contract Registrar is ERC721Upgradeable {
     {
         debug = bytes(_s);
         (valid, parent, domain) = strings.validateDomain(_s);
+    }
+    function getIpfsHash(string memory _s) public view returns (bytes memory) {
+        // (bool valid, , ) = validateString(_s);
+        return verifyIPFS.generateHash(_s);
     }
 }

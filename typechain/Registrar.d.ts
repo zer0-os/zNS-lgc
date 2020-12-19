@@ -29,6 +29,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     "entries(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
+    "getIpfsHash(string)": FunctionFragment;
     "getOwner(string[])": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "name()": FunctionFragment;
@@ -64,6 +65,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "getId", values: [string[]]): string;
+  encodeFunctionData(functionFragment: "getIpfsHash", values: [string]): string;
   encodeFunctionData(functionFragment: "getOwner", values: [string[]]): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -125,6 +127,10 @@ interface RegistrarInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getIpfsHash",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -259,6 +265,13 @@ export class Registrar extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getIpfsHash(_s: string, overrides?: CallOverrides): Promise<[string]>;
+
+    "getIpfsHash(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     getOwner(path: string[], overrides?: CallOverrides): Promise<[string]>;
 
@@ -477,6 +490,10 @@ export class Registrar extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getIpfsHash(_s: string, overrides?: CallOverrides): Promise<string>;
+
+  "getIpfsHash(string)"(_s: string, overrides?: CallOverrides): Promise<string>;
+
   getOwner(path: string[], overrides?: CallOverrides): Promise<string>;
 
   "getOwner(string[])"(
@@ -687,6 +704,13 @@ export class Registrar extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getIpfsHash(_s: string, overrides?: CallOverrides): Promise<string>;
+
+    "getIpfsHash(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     getOwner(path: string[], overrides?: CallOverrides): Promise<string>;
 
@@ -917,6 +941,13 @@ export class Registrar extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIpfsHash(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "getIpfsHash(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getOwner(path: string[], overrides?: CallOverrides): Promise<BigNumber>;
 
     "getOwner(string[])"(
@@ -1121,6 +1152,16 @@ export class Registrar extends Contract {
 
     "getId(string[])"(
       path: string[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getIpfsHash(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getIpfsHash(string)"(
+      _s: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

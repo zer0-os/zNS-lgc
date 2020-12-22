@@ -1,8 +1,10 @@
 import { expect, use } from "chai";
 import { ethers } from "hardhat";
 import { solidity } from "ethereum-waffle";
+import multihashing from "multihashing-async";
 import { Registrar__factory, Registrar } from "../typechain";
 import { Signer } from "ethers";
+import cid from "cids";
 import { getAccounts } from "../src/utils";
 use(solidity);
 
@@ -19,24 +21,20 @@ describe("registry", function () {
     registrar = await factory.deploy(accs[0]);
     await registrar.deployed();
   });
-  it("validate string", async function () {
-    console.log(await registrar.validateString('foo\\"'));
-    console.log(await registrar.validateString('foo.bar.baz"'));
-    console.log(await registrar.validateString("foo"));
-    console.log(await registrar.validateString("foo.bar.baz"));
-    const ih = await registrar.getIpfsHash("foo.bar.baz");
-    console.log(ih);
-    console.log(Number(ih.toString()).toString(58));
+  it("validate domain", async function () {
+    expect((await registrar.validateDomain('foo\\"')).valid).to.eq(false);
+    expect((await registrar.validateDomain('foo.bar.baz"')).valid).to.eq(false);
+    expect((await registrar.validateDomain("foo")).valid).to.eq(true);
+    expect((await registrar.validateDomain("foo.bar.baz")).valid).to.eq(true);
+  });
+  it("create ipfs hash", async function () {
+    const ih = await registrar.getIpfsHash("foo");
+    const cidsol = Buffer.from(ih.slice(2), "hex").toString("utf8");
+    const hash = await multihashing(Buffer.from("foo", "utf8"), "sha2-256");
+    const c = new cid(1, "raw", hash);
+    expect(cidsol).to.eq(c.toV1().toString());
+  });
 
-    // expect(await registrar.validateString('foo\\"')).to.eq(true)
-    // expect(await registrar.validateString('foo"')).to.eq(false)
-  });
-  it("registrar owner has root point", async function () {
-    expect(await registrar.ownerOf(0)).to.eq(accs[0]);
-    expect((await registrar.entries(0)).controller).to.eq(accs[0]);
-    await registrar.transferFrom(accs[0], accs[1], 0);
-    expect((await registrar.entries(0)).controller).to.eq(accs[1]);
-  });
   it("registrar owner can spawn multiple domains and subdomains", async function () {
     await registrar.createRegistry(0, "foo", accs[0], accs[0], "someref0");
     const id0 = await registrar.getId(["foo"]);

@@ -43,7 +43,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "validateString(string)": FunctionFragment;
+    "validateDomain(string)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -110,7 +110,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "validateString",
+    functionFragment: "validateDomain",
     values: [string]
   ): string;
 
@@ -169,7 +169,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "validateString",
+    functionFragment: "validateDomain",
     data: BytesLike
   ): Result;
 
@@ -399,7 +399,7 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    validateString(
+    validateDomain(
       _s: string,
       overrides?: CallOverrides
     ): Promise<
@@ -411,7 +411,7 @@ export class Registrar extends Contract {
       }
     >;
 
-    "validateString(string)"(
+    "validateDomain(string)"(
       _s: string,
       overrides?: CallOverrides
     ): Promise<
@@ -614,7 +614,7 @@ export class Registrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  validateString(
+  validateDomain(
     _s: string,
     overrides?: CallOverrides
   ): Promise<
@@ -626,7 +626,7 @@ export class Registrar extends Contract {
     }
   >;
 
-  "validateString(string)"(
+  "validateDomain(string)"(
     _s: string,
     overrides?: CallOverrides
   ): Promise<
@@ -832,7 +832,7 @@ export class Registrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    validateString(
+    validateDomain(
       _s: string,
       overrides?: CallOverrides
     ): Promise<
@@ -844,7 +844,7 @@ export class Registrar extends Contract {
       }
     >;
 
-    "validateString(string)"(
+    "validateDomain(string)"(
       _s: string,
       overrides?: CallOverrides
     ): Promise<
@@ -1082,9 +1082,9 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    validateString(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
+    validateDomain(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "validateString(string)"(
+    "validateDomain(string)"(
       _s: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1302,12 +1302,12 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    validateString(
+    validateDomain(
       _s: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "validateString(string)"(
+    "validateDomain(string)"(
       _s: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

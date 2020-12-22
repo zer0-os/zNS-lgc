@@ -102,7 +102,7 @@ contract Registrar is ERC721Upgradeable {
         return ownerOf(getId(path));
     }
 
-    function validateString(string memory _s)
+    function validateDomain(string memory _s)
         public
         pure
         returns (
@@ -119,4 +119,5 @@ contract Registrar is ERC721Upgradeable {
         // (bool valid, , ) = validateString(_s);
         return verifyIPFS.generateHash(_s);
     }
+
 }

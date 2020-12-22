@@ -10,8 +10,16 @@
     "@openzeppelin/contracts": "^3.3.0",
     "@openzeppelin/contracts-upgradeable": "^3.3.0",
     "@openzeppelin/upgrades": "^2.8.0",
+    "@types/crypto-js": "^4.0.1",
+    "cids": "^1.1.4",
+    "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",
     "hardhat-typechain": "^0.3.3",
+    "ipfs": "^0.52.3",
+    "ipfs-unixfs-importer": "^5.0.0",
+    "ipld": "^0.28.0",
+    "ipld-in-memory": "^7.0.0",
+    "multihashing-async": "^2.0.1",
     "ts-generator": "^0.1.1"
   },
   "devDependencies": {

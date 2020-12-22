@@ -1,84 +1,67 @@
 pragma solidity ^0.7.6;
+
 /// @title verifyIPFS
 /// @author Martin Lundfall (martin.lundfall@consensys.net)
+/// updated by xiphiness (xiphiness@protonmail.com)
 library verifyIPFS {
+    //  <cidv1> ::= <multibase-prefix><multicodec-cidv1><multicodec-content-type><multihash-content-address>
+    // 01 - cidv1
+    // 55 - raw
+    // 1220 - sha2-256
+    bytes constant prefix = hex"01551220";
+    bytes constant ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
 
-    bytes constant prefix1 = hex"0a";
-    bytes constant prefix2 = hex"080212";
-    bytes constant postfix = hex"18";
-    bytes constant sha256MultiHash = hex"1220";
-    bytes constant ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-    /// @dev generates the corresponding IPFS hash (in base 58) to the given string
+    /// @dev generates the corresponding IPFS hash (in base 32) to the given string using sha2-256 and cidv1
     /// @param contentString The content of the IPFS object
-    /// @return The IPFS hash in base 58
-    function generateHash(string memory contentString) internal pure returns (bytes memory) {
+    /// @return The IPFS hash in base 32
+    function generateHash(string memory contentString)
+        internal
+        view
+        returns (bytes memory)
+    {
         bytes memory content = bytes(contentString);
-        bytes memory len = lengthEncode(content.length);
-        bytes memory len2 = lengthEncode(content.length + 4 + 2 * len.length);
-        return
-            toBase58(
-                concat(
-                    sha256MultiHash,
-                    toBytes(
-                        sha256(
-                            abi.encode(
-                                prefix1,
-                                len2,
-                                prefix2,
-                                len,
-                                content,
-                                postfix,
-                                len
-                            )
-                        )
-                    )
-                )
-            );
+        return rfc4648_encode(concat(prefix, toBytes(sha256(content))), 5, ALPHABET, 'b');
     }
 
     /// @dev Compares an IPFS hash with content
     function verifyHash(string memory contentString, string memory hash)
-        internal pure
+        internal
+        view
         returns (bool)
     {
         return equal(generateHash(contentString), bytes(hash));
     }
 
-    /// @dev Converts hex string to base 58
-    function toBase58(bytes memory source) internal pure returns (bytes memory) {
-        if (source.length == 0) return new bytes(0);
-        uint8[] memory digits = new uint8[](100); //TODO: figure out exactly how much is needed
-        digits[0] = 0;
-        uint8 digitlength = 1;
-        for (uint i = 0; i < source.length; ++i) {
-            uint256 carry = uint8(source[i]);
-            for (uint j = 0; j < digitlength; ++j) {
-                carry += uint256(digits[j]) * 256;
-                digits[j] = uint8(carry % 58);
-                carry = carry / 58;
-            }
 
-            while (carry > 0) {
-                digits[digitlength] = uint8(carry % 58);
-                digitlength++;
-                carry = carry / 58;
+    function rfc4648_encode(bytes memory data, uint bitsPerChar, bytes memory alpha, bytes1 _prefix) internal view returns (bytes memory) {
+        uint totalbits = data.length * 8;
+        uint totalchars = totalbits / bitsPerChar + ((totalbits % bitsPerChar) == 0 ? 1 : 2);
+        bytes memory out = new bytes(totalchars); //TODO: figure out exactly how much is needed
+        // bool pad = alpha[alpha.length - 1] == '=';
+        uint mask = (1 << bitsPerChar) - 1;
+        uint bits = 0;
+        uint carry = 0;
+        out[0] = _prefix;
+        uint outIndex = 1;
+        for(uint i = 0; i < data.length; i++) {
+            carry = (carry << 8) | uint8(data[i]);
+            bits += 8;
+            while (bits > bitsPerChar) {
+                bits -= bitsPerChar;
+                out[outIndex] = alpha[mask & (carry >> bits)];
+                outIndex++;
             }
         }
-        //return digits;
-        return toAlphabet(reverse(truncate(digits, digitlength)));
-    }
-
-    function lengthEncode(uint256 length) internal pure returns (bytes memory) {
-        if (length < 128) {
-            return to_binary(length);
-        } else {
-            return
-                concat(
-                    to_binary((length % 128) + 128),
-                    to_binary(length / 128)
-                );
+        if(bits > 0) {
+          out[outIndex] = alpha[mask & (carry << (bitsPerChar - bits))];
+          outIndex++;
         }
+        //   if (pad) {
+        //     while ((out.length * bitsPerChar) & 7) {
+        //       out += '='
+        //     }
+        //   }
+        return out;
     }
 
     function toBytes(bytes32 input) internal pure returns (bytes memory) {
@@ -89,11 +72,15 @@ library verifyIPFS {
         return output;
     }
 
-    function equal(bytes memory one, bytes memory two) internal pure returns (bool) {
+    function equal(bytes memory one, bytes memory two)
+        internal
+        pure
+        returns (bool)
+    {
         if (!(one.length == two.length)) {
             return false;
         }
-        for (uint i = 0; i < one.length; i++) {
+        for (uint256 i = 0; i < one.length; i++) {
             if (!(one[i] == two[i])) {
                 return false;
             }
@@ -101,31 +88,11 @@ library verifyIPFS {
         return true;
     }
 
-    function truncate(uint8[] memory array, uint8 length) internal pure returns (uint8[] memory) {
-        uint8[] memory output = new uint8[](length);
-        for (uint i = 0; i < length; i++) {
-            output[i] = array[i];
-        }
-        return output;
-    }
-
-    function reverse(uint8[] memory input) internal pure returns (uint8[] memory) {
-        uint8[] memory output = new uint8[](input.length);
-        for (uint i = 0; i < input.length; i++) {
-            output[i] = input[input.length - 1 - i];
-        }
-        return output;
-    }
-
-    function toAlphabet(uint8[] memory indices) internal pure returns (bytes memory) {
-        bytes memory output = new bytes(indices.length);
-        for (uint i = 0; i < indices.length; i++) {
-            output[i] = ALPHABET[indices[i]];
-        }
-        return output;
-    }
-
-    function concat(bytes memory byteArray, bytes memory byteArray2) internal pure returns (bytes memory) {
+    function concat(bytes memory byteArray, bytes memory byteArray2)
+        internal
+        pure
+        returns (bytes memory)
+    {
         bytes memory returnArray = new bytes(
             byteArray.length + byteArray2.length
         );
@@ -137,16 +104,5 @@ library verifyIPFS {
             returnArray[i] = byteArray2[i - byteArray.length];
         }
         return returnArray;
-    }
-
-    function to_binary(uint256 x) internal pure returns (bytes memory) {
-        if (x == 0) {
-            return new bytes(0);
-        } else {
-            bytes1 s = bytes1(uint8(x % 256));
-            bytes memory r = new bytes(1);
-            r[0] = s;
-            return concat(to_binary(x / 256), r);
-        }
     }
 }

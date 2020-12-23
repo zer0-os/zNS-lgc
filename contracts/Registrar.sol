@@ -15,21 +15,28 @@ import "./IPFSHash.sol";
 // import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
 import "./strings.sol";
 // import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-// import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
+import "@openzeppelin/contracts-upgradeable/utils/EnumerableSetUpgradeable.sol";
 
 contract Registrar is ERC721Upgradeable {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     struct Entry {
+        uint256 parent;
+        string domain;
         string ref;
         address controller;
+        EnumerableSetUpgradeable.UintSet children;
     }
 
     struct EntryView {
+        uint parent;
         string ref;
+        string domain;
         address controller;
         address owner;
+        uint256[] children;
     }
 
-    mapping(uint256 => Entry) public entries;
+    mapping(uint256 => Entry) internal _entries;
 
     event RegistryCreated(
         uint256 parentId,
@@ -43,14 +50,31 @@ contract Registrar is ERC721Upgradeable {
         // registryMap[""] = _owner;
         __ERC721_init("Zer0 Name Service", "ZNS");
         _mint(_owner, 0);
-        Entry storage entry = entries[0];
+        Entry storage entry = _entries[0];
         entry.ref = "ZNS";
         entry.controller = _owner;
     }
 
+    function _onlyDomainOwner(uint256 id) internal {
+        require(ownerOf(id) == msg.sender);
+    }
+    
     modifier onlyDomainOwner(uint256 id) {
         require(ownerOf(id) == msg.sender);
         _;
+    }
+    //  paginate children
+    function entries(uint256 id) external view returns (EntryView memory out) {
+        Entry storage entry = _entries[id];
+        out.owner = ownerOf(id);
+        out.parent = entry.parent;
+        out.controller = entry.controller;
+        out.ref = entry.ref;
+        out.domain = entry.domain;
+        out.children = new uint256[](entry.children.length());
+        for(uint i = 0; i < out.children.length; i++) {
+            out.children[i] = entry.children.at(i);
+        }
     }
 
     function _transfer(
@@ -58,36 +82,46 @@ contract Registrar is ERC721Upgradeable {
         address to,
         uint256 tokenId
     ) internal override {
-        if (entries[tokenId].controller == ownerOf(tokenId)) {
-            entries[tokenId].controller = to;
+        if (_entries[tokenId].controller == ownerOf(tokenId)) {
+            _entries[tokenId].controller = to;
         }
         ERC721Upgradeable._transfer(from, to, tokenId);
     }
 
+    function tokenUri(uint256 token) external view returns (string memory out) {
+        out = verifyIPFS.generateHash(string(abi.encodePacked('{"name":"', _entries[token].domain,'"}')));
+        // return _entries[token].domain;
+    }
+
     function _createRegistry(
-        uint256 parentId,
+        // uint256 parentId,
         string calldata domain,
         address _owner,
         address _controller,
         string calldata _ref
     ) internal {
-        //  _mint makes sure doesn't exist
-        uint256 id = uint256(keccak256(abi.encode(parentId, domain)));
-        _mint(_owner, id);
-        Entry storage entry = entries[id];
+        // string memory domain;
+        (bool succ, uint256 parentId, string memory child) = strings.validateDomain(domain);
+        _onlyDomainOwner(parentId);
+        uint256 id = uint256(keccak256(abi.encode(parentId, child)));
+        _mint(_owner, id); //  _mint makes sure doesn't exist
+        require(_entries[parentId].children.add(id)); // extra check
+        Entry storage entry = _entries[id];
+        entry.parent = parentId;
         entry.ref = _ref;
+        entry.domain = domain;
         entry.controller = _controller;
         RegistryCreated(parentId, domain, _owner, _controller, _ref);
     }
 
     function createRegistry(
-        uint256 parentId,
+        // uint256 parentId,
         string calldata domain,
         address _owner,
         address _controller,
         string calldata _ref
-    ) public onlyDomainOwner(parentId) {
-        _createRegistry(parentId, domain, _owner, _controller, _ref);
+    ) public {
+        _createRegistry(domain, _owner, _controller, _ref);
     }
 
     function getId(string[] memory path) public pure returns (uint256) {
@@ -107,17 +141,10 @@ contract Registrar is ERC721Upgradeable {
         pure
         returns (
             bool valid,
-            bytes32 parent,
-            string memory domain,
-            bytes memory debug
+            uint256 parent,
+            string memory domain
         )
     {
-        debug = bytes(_s);
         (valid, parent, domain) = strings.validateDomain(_s);
     }
-    function getIpfsHash(string memory _s) public view returns (bytes memory) {
-        // (bool valid, , ) = validateString(_s);
-        return verifyIPFS.generateHash(_s);
-    }
-
 }

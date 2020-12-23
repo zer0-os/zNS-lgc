@@ -22,6 +22,10 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: process.env.MNEMONIC },
       url: 'https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27'
     },
+    rinkeby: {
+      accounts: { mnemonic: process.env.MNEMONIC },
+      url: 'https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27'
+    },
   },
 };
 

@@ -2,7 +2,7 @@ pragma solidity ^0.7.6;
 
 /// @title verifyIPFS
 /// @author Martin Lundfall (martin.lundfall@consensys.net)
-/// updated by xiphiness (xiphiness@protonmail.com)
+/// @author updated by xiphiness (xiphiness@protonmail.com)
 library verifyIPFS {
     //  <cidv1> ::= <multibase-prefix><multicodec-cidv1><multicodec-content-type><multihash-content-address>
     // 01 - cidv1
@@ -17,10 +17,10 @@ library verifyIPFS {
     function generateHash(string memory contentString)
         internal
         view
-        returns (bytes memory)
+        returns (string memory)
     {
         bytes memory content = bytes(contentString);
-        return rfc4648_encode(concat(prefix, toBytes(sha256(content))), 5, ALPHABET, 'b');
+        return string(rfc4648_encode(abi.encodePacked(prefix, sha256(content)), 5, ALPHABET, 'b'));
     }
 
     /// @dev Compares an IPFS hash with content
@@ -29,14 +29,14 @@ library verifyIPFS {
         view
         returns (bool)
     {
-        return equal(generateHash(contentString), bytes(hash));
+        return equal(bytes(generateHash(contentString)), bytes(hash));
     }
 
 
     function rfc4648_encode(bytes memory data, uint bitsPerChar, bytes memory alpha, bytes1 _prefix) internal view returns (bytes memory) {
         uint totalbits = data.length * 8;
-        uint totalchars = totalbits / bitsPerChar + ((totalbits % bitsPerChar) == 0 ? 1 : 2);
-        bytes memory out = new bytes(totalchars); //TODO: figure out exactly how much is needed
+        uint totalchars = totalbits / bitsPerChar + ((totalbits % bitsPerChar) == 0 ? 1 : 2); // +1 here for prefix
+        bytes memory out = new bytes(totalchars);
         // bool pad = alpha[alpha.length - 1] == '=';
         uint mask = (1 << bitsPerChar) - 1;
         uint bits = 0;
@@ -54,7 +54,6 @@ library verifyIPFS {
         }
         if(bits > 0) {
           out[outIndex] = alpha[mask & (carry << (bitsPerChar - bits))];
-          outIndex++;
         }
         //   if (pad) {
         //     while ((out.length * bitsPerChar) & 7) {

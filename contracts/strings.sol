@@ -41,8 +41,9 @@ library strings {
         uint256 _len;
         uint256 _ptr;
     }
-    uint constant dotlen = 1;
-    uint constant dotdata = 46;
+    uint256 constant dotlen = 1;
+    uint256 constant dotdata = 46;
+
     function memcpy(
         uint256 dest,
         uint256 src,
@@ -65,6 +66,29 @@ library strings {
             mstore(dest, or(destpart, srcpart))
         }
     }
+
+    // function storcpy(
+    //     uint256 dest,
+    //     uint256 src,
+    //     uint256 len
+    // ) private pure {
+    //     // Copy word-length chunks while possible
+    //     for (; len >= 32; len -= 32) {
+    //         assembly {
+    //             mstore(dest, sload(src))
+    //         }
+    //         dest += 32;
+    //         src++;
+    //     }
+
+    //     // Copy remaining bytes
+    //     uint256 mask = 256**(32 - len) - 1;
+    //     assembly {
+    //         let srcpart := and(sload(src), not(mask))
+    //         let destpart := and(mload(dest), mask)
+    //         mstore(dest, or(destpart, srcpart))
+    //     }
+    // }
 
     /*
      * @dev Returns a slice containing the entire string.
@@ -533,36 +557,37 @@ library strings {
     //     }
     // }
 
-    function validateDomain(
-        string memory path
-    )
+    function validateDomain(string memory path)
         internal
         pure
         returns (
-            bool valid,
-            bytes32 parent,
-            string memory domain
+            bool,
+            uint256,
+            string memory
         )
     {
+        bool valid;
+        bytes32 parent;
+        string memory domain;
         uint256 selfptr;
         assembly {
             selfptr := add(path, 0x20)
         }
         uint256 ptr = selfptr;
-        uint selflen = bytes(path).length;
+        uint256 selflen = bytes(path).length;
         string memory bytesref;
         uint256 bytesrefptr;
         uint256 end = selfptr + selflen;
         bytes32 ptrdata;
-        uint _len;
+        uint256 _len;
         assembly {
             ptrdata := mload(ptr)
         }
         for (; ptr <= end; ptr++) {
             if (bytes1(ptrdata) == bytes1(uint8(92))) {
-                return (false, ptrdata, "quotecase");
+                return (false, 0, "quotecase");
             }
-            if(uint8(bytes1(ptrdata)) == dotdata) {
+            if (uint8(bytes1(ptrdata)) == dotdata) {
                 _len = ptr - selfptr - 1;
                 bytesref = new string(_len);
                 assembly {
@@ -571,9 +596,10 @@ library strings {
                 memcpy(bytesrefptr, selfptr, _len);
                 parent = keccak256(abi.encode(parent, bytesref));
                 selfptr = ptr;
-            }
-            else if(uint8(bytes1(ptrdata)) < 97 || uint8(bytes1(ptrdata)) > 122) {
-                return (false, ptrdata, "fail not lowercase");
+            } else if (
+                uint8(bytes1(ptrdata)) < 97 || uint8(bytes1(ptrdata)) > 122
+            ) {
+                return (false, 0, "fail not lowercase");
             }
             assembly {
                 ptrdata := mload(ptr)
@@ -586,7 +612,7 @@ library strings {
         }
 
         memcpy(bytesrefptr, selfptr, _len);
-        return (true, hex"02", bytesref);
+        return (true, uint256(parent), bytesref);
     }
 
     // Returns the memory address of the first byte of the first occurrence of

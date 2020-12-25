@@ -38,8 +38,9 @@ contract Registrar is ERC721Upgradeable {
 
     mapping(uint256 => Entry) internal _entries;
 
-    event RegistryCreated(
-        uint256 parentId,
+    event DomainCreated(
+        uint256 indexed parentId,
+        uint256 tokenId,
         string domain,
         address _owner,
         address _controller,
@@ -47,7 +48,6 @@ contract Registrar is ERC721Upgradeable {
     );
 
     constructor(address _owner) public {
-        // registryMap[""] = _owner;
         __ERC721_init("Zer0 Name Service", "ZNS");
         _mint(_owner, 0);
         Entry storage entry = _entries[0];
@@ -93,7 +93,7 @@ contract Registrar is ERC721Upgradeable {
         // return _entries[token].domain;
     }
 
-    function _createRegistry(
+    function _createDomain(
         // uint256 parentId,
         string calldata domain,
         address _owner,
@@ -111,17 +111,17 @@ contract Registrar is ERC721Upgradeable {
         entry.ref = _ref;
         entry.domain = domain;
         entry.controller = _controller;
-        RegistryCreated(parentId, domain, _owner, _controller, _ref);
+        DomainCreated(parentId, id, domain, _owner, _controller, _ref);
     }
 
-    function createRegistry(
+    function createDomain(
         // uint256 parentId,
         string calldata domain,
         address _owner,
         address _controller,
         string calldata _ref
     ) public {
-        _createRegistry(domain, _owner, _controller, _ref);
+        _createDomain(domain, _owner, _controller, _ref);
     }
 
     function getId(string[] memory path) public pure returns (uint256) {

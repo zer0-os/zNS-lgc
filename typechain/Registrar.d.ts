@@ -25,7 +25,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
-    "createRegistry(string,address,address,string)": FunctionFragment;
+    "createDomain(string,address,address,string)": FunctionFragment;
     "entries(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
@@ -53,7 +53,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "createRegistry",
+    functionFragment: "createDomain",
     values: [string, string, string, string]
   ): string;
   encodeFunctionData(
@@ -121,7 +121,7 @@ interface RegistrarInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "createRegistry",
+    functionFragment: "createDomain",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "entries", data: BytesLike): Result;
@@ -176,13 +176,13 @@ interface RegistrarInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "RegistryCreated(uint256,string,address,address,string)": EventFragment;
+    "DomainCreated(uint256,uint256,string,address,address,string)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RegistryCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DomainCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -223,7 +223,7 @@ export class Registrar extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<[string]>;
 
-    createRegistry(
+    createDomain(
       domain: string,
       _owner: string,
       _controller: string,
@@ -231,7 +231,7 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "createRegistry(string,address,address,string)"(
+    "createDomain(string,address,address,string)"(
       domain: string,
       _owner: string,
       _controller: string,
@@ -486,7 +486,7 @@ export class Registrar extends Contract {
 
   "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
-  createRegistry(
+  createDomain(
     domain: string,
     _owner: string,
     _controller: string,
@@ -494,7 +494,7 @@ export class Registrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "createRegistry(string,address,address,string)"(
+  "createDomain(string,address,address,string)"(
     domain: string,
     _owner: string,
     _controller: string,
@@ -718,7 +718,7 @@ export class Registrar extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
-    createRegistry(
+    createDomain(
       domain: string,
       _owner: string,
       _controller: string,
@@ -726,7 +726,7 @@ export class Registrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "createRegistry(string,address,address,string)"(
+    "createDomain(string,address,address,string)"(
       domain: string,
       _owner: string,
       _controller: string,
@@ -940,8 +940,9 @@ export class Registrar extends Contract {
       approved: null
     ): EventFilter;
 
-    RegistryCreated(
-      parentId: null,
+    DomainCreated(
+      parentId: BigNumberish | null,
+      tokenId: null,
       domain: null,
       _owner: null,
       _controller: null,
@@ -979,7 +980,7 @@ export class Registrar extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    createRegistry(
+    createDomain(
       domain: string,
       _owner: string,
       _controller: string,
@@ -987,7 +988,7 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "createRegistry(string,address,address,string)"(
+    "createDomain(string,address,address,string)"(
       domain: string,
       _owner: string,
       _controller: string,
@@ -1188,7 +1189,7 @@ export class Registrar extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    createRegistry(
+    createDomain(
       domain: string,
       _owner: string,
       _controller: string,
@@ -1196,7 +1197,7 @@ export class Registrar extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "createRegistry(string,address,address,string)"(
+    "createDomain(string,address,address,string)"(
       domain: string,
       _owner: string,
       _controller: string,

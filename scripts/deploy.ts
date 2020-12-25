@@ -12,7 +12,7 @@ async function main() {
     "Registrar"
   )) as Registrar__factory;
   let nonce = await ethers.provider.getTransactionCount(accs[0]);
-  const registrar = await Registrar.deploy(accs[0], {
+  const registrar = await Registrar.deploy(accs[0], accs[0], {
     nonce: nonce++,
   });
   console.log("Registrar deployed to ", registrar.address);

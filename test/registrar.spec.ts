@@ -18,7 +18,7 @@ describe("Domain", function () {
     const factory = (await ethers.getContractFactory(
       "Registrar"
     )) as Registrar__factory;
-    registrar = await factory.deploy(accs[0]);
+    registrar = await factory.deploy(accs[0], accs[0]);
     await registrar.deployed();
   });
   it("validate domain", async function () {

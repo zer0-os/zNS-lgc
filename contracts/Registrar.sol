@@ -47,12 +47,13 @@ contract Registrar is ERC721Upgradeable {
         string _ref
     );
 
-    constructor(address _owner) public {
+    constructor(address _owner, address _controller) public {
         __ERC721_init("Zer0 Name Service", "ZNS");
         _mint(_owner, 0);
         Entry storage entry = _entries[0];
         entry.ref = "ZNS";
-        entry.controller = _owner;
+        entry.controller = _controller;
+        DomainCreated(0, 0, "zns", _owner, _controller, "zer0.io");
     }
 
     function _onlyDomainOwner(uint256 id) internal {

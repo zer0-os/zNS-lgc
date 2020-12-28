@@ -104,6 +104,7 @@ contract Registrar is ERC721Upgradeable {
     ) internal {
         // require(bytes(domain).length > 0); // is this necessary if gov controls tld?
         (bool succ, uint256 parentId, string memory child) = strings.validateDomain(domain);
+        require(succ);
         _onlyDomainOwner(parentId);
         uint256 id = uint256(keccak256(abi.encode(parentId, child)));
         _mint(_owner, id); //  _mint makes sure doesn't exist

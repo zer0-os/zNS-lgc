@@ -568,7 +568,6 @@ library strings {
     {
         bool valid;
         bytes32 parent;
-        string memory domain;
         uint256 selfptr;
         assembly {
             selfptr := add(path, 0x20)

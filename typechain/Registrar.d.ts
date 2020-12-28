@@ -40,7 +40,6 @@ interface RegistrarInterface extends ethers.utils.Interface {
     "tokenByIndex(uint256)": FunctionFragment;
     "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "tokenUri(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "validateDomain(string)": FunctionFragment;
@@ -101,10 +100,6 @@ interface RegistrarInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenUri",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
   ): string;
@@ -159,7 +154,6 @@ interface RegistrarInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "tokenUri", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -403,21 +397,11 @@ export class Registrar extends Contract {
     ): Promise<[BigNumber]>;
 
     tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    "tokenURI(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    tokenUri(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string] & { out: string }>;
 
-    "tokenUri(uint256)"(
+    "tokenURI(uint256)"(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string] & { out: string }>;
@@ -640,16 +624,9 @@ export class Registrar extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "tokenURI(uint256)"(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  tokenUri(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  "tokenUri(uint256)"(
     token: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -872,16 +849,9 @@ export class Registrar extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    tokenURI(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "tokenURI(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    tokenUri(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    "tokenUri(uint256)"(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -1117,21 +1087,11 @@ export class Registrar extends Contract {
     ): Promise<BigNumber>;
 
     tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "tokenURI(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenUri(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "tokenUri(uint256)"(
+    "tokenURI(uint256)"(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1335,21 +1295,11 @@ export class Registrar extends Contract {
     ): Promise<PopulatedTransaction>;
 
     tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "tokenURI(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenUri(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "tokenUri(uint256)"(
+    "tokenURI(uint256)"(
       token: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -8,6 +8,7 @@ pragma experimental ABIEncoderV2;
  */
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721MetadataUpgradeable.sol";
 import "./strings.sol";
 import "./IPFSHash.sol";
 
@@ -53,7 +54,7 @@ contract Registrar is ERC721Upgradeable {
         Entry storage entry = _entries[0];
         entry.ref = "ZNS";
         entry.controller = _controller;
-        DomainCreated(0, 0, "zns", _owner, _controller, "zer0.io");
+        DomainCreated(0, 0, "_root", _owner, _controller, "zer0.io");
     }
 
     function _onlyDomainOwner(uint256 id) internal {
@@ -89,8 +90,8 @@ contract Registrar is ERC721Upgradeable {
         ERC721Upgradeable._transfer(from, to, tokenId);
     }
 
-    function tokenUri(uint256 token) external view returns (string memory out) {
-        out = verifyIPFS.generateHash(string(abi.encodePacked('{"name":"', _entries[token].domain,'"}')));
+    function tokenURI(uint256 token) public view override returns (string memory out) {
+        out = string(abi.encodePacked("ipfs://",verifyIPFS.generateHash(string(abi.encodePacked('{"name":"', _entries[token].domain,'"}')))));
         // return _entries[token].domain;
     }
 
@@ -101,7 +102,7 @@ contract Registrar is ERC721Upgradeable {
         address _controller,
         string calldata _ref
     ) internal {
-        // string memory domain;
+        // require(bytes(domain).length > 0); // is this necessary if gov controls tld?
         (bool succ, uint256 parentId, string memory child) = strings.validateDomain(domain);
         _onlyDomainOwner(parentId);
         uint256 id = uint256(keccak256(abi.encode(parentId, child)));

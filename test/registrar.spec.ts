@@ -70,11 +70,13 @@ describe("Domain", function () {
   });
   it("create ipfs hash", async function () {
     const id6 = await registrar.getId(["community", "token", "trad"]);
-    const uri = await registrar.tokenUri(id6);
+    const uri = await registrar.tokenURI(id6);
     const data = JSON.stringify({name: "community.token.trad"})
     const hash = await multihashing(Buffer.from(data, "utf8"), "sha2-256");
     const c = new cid(1, "raw", hash);
-    expect(uri).to.eq(c.toV1().toString());
+    // ipfs://bafkreih6w6omp5vggawnyif6wbfidn4t74k32ks37osxtrftefi3fjsiw4
+    // foo: bafkreic5zkc6o2mj4vplxxwj4uyeqmwankpk24jywbbxfrsvkmadz7jije
+    expect(uri).to.eq("ipfs://" + c.toV1().toString());
   });
 
   it("registrar owner has root", async function () {

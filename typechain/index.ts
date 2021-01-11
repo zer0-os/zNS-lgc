@@ -8,6 +8,10 @@ export type { IERC721EnumerableUpgradeable } from "./IERC721EnumerableUpgradeabl
 export type { IERC721MetadataUpgradeable } from "./IERC721MetadataUpgradeable";
 export type { IERC721ReceiverUpgradeable } from "./IERC721ReceiverUpgradeable";
 export type { IERC721Upgradeable } from "./IERC721Upgradeable";
+export type { IERC20 } from "./IERC20";
+export type { IRegistrar } from "./IRegistrar";
+export type { IRegistry } from "./IRegistry";
+export type { LimitingRegistrar } from "./LimitingRegistrar";
 export type { Registrar } from "./Registrar";
 
 export { ERC165Upgradeable__factory } from "./factories/ERC165Upgradeable__factory";
@@ -17,4 +21,8 @@ export { IERC721EnumerableUpgradeable__factory } from "./factories/IERC721Enumer
 export { IERC721MetadataUpgradeable__factory } from "./factories/IERC721MetadataUpgradeable__factory";
 export { IERC721ReceiverUpgradeable__factory } from "./factories/IERC721ReceiverUpgradeable__factory";
 export { IERC721Upgradeable__factory } from "./factories/IERC721Upgradeable__factory";
+export { IERC20__factory } from "./factories/IERC20__factory";
+export { IRegistrar__factory } from "./factories/IRegistrar__factory";
+export { IRegistry__factory } from "./factories/IRegistry__factory";
+export { LimitingRegistrar__factory } from "./factories/LimitingRegistrar__factory";
 export { Registrar__factory } from "./factories/Registrar__factory";

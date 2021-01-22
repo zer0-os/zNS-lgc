@@ -7,6 +7,7 @@ import "./IRegistrar.sol";
 contract NameAuction {
     using SafeERC20 for IERC20;
     struct Auction {
+        uint parentId;
         uint maxBid;
         uint secondBid;
         address winner;
@@ -75,7 +76,6 @@ contract NameAuction {
             // New winner!
             if(a.winner != 0) {
                 // Ignore failed sends - bad luck for them.
-                // a.winner.send(a.maxBid);
                 IERC20(stakeToken).safeTransferFrom(address(this), a.winner, a.maxBid);
             }
             a.secondBid = a.maxBid;
@@ -90,6 +90,8 @@ contract NameAuction {
             IERC20(stakeToken).safeTransferFrom(address(this), bidder, bidAmount);
         }
     }
+
+    function createAuction
 
     // function finaliseAuction(string label) external {
     //     require(now >= revealEnds);

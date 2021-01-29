@@ -24,7 +24,7 @@ contract Registry is ERC721Upgradeable {
         uint256 parent;
         uint256 depth;
         address controller; // can create children
-        address registrar; // can set controller
+    //    address registrar; // can set controller
         string resolver;
         string domain;
         string image;
@@ -39,7 +39,7 @@ contract Registry is ERC721Upgradeable {
         uint256 parent;
         uint256 depth;
         address controller; // can create children
-        address registrar; // can set controller
+   //     address registrar; // can set controller
         string resolver;
         string image;
         string domain;
@@ -55,7 +55,8 @@ contract Registry is ERC721Upgradeable {
         uint256 tokenId,
         string domain,
         address owner,
-        address registrar,
+  //      address registrar,
+        address controller,
         string resolver,
         string image
     );
@@ -64,26 +65,32 @@ contract Registry is ERC721Upgradeable {
 
     event ResolverSet(address indexed owner, uint indexed id, string resolver);
 
-    event SetRegistrar(
-        address indexed oldRegistrar,
-        address indexed newReigstrar,
+    //event RegistrarSet(
+    //    uint indexed id,
+    //    address indexed oldRegistrar,
+    //    address indexed newRegistrar
+    //);
+
+    event ControllerSet(
         uint indexed id,
-        string resolver
+        address indexed oldController,
+        address indexed newController,
+        address sender
     );
 
-    constructor(address _owner, address _registrar, string memory _resolver, string memory _image) public {
+
+    constructor(address _owner, address _controller, string memory _resolver, string memory _image) public {
         __ERC721_init("Zer0 Name Service", "ZNS");
         _mint(_owner, ROOT_ID);
         Entry storage entry = _entries[ROOT_ID];
-        entry.registrar = _registrar;
-        entry.resolver = _resolver;
+        entry.controller = _controller;
         entry.image = _image;
-        DomainCreated(0, ROOT_ID, "ROOT", _owner, _registrar, _resolver, _image);
+        DomainCreated(0, ROOT_ID, "ROOT", _owner, _controller, _resolver, _image);
     }
 
-    function getRegistrar(uint id) external view returns (address) {
-        return _entries[id].registrar;
-    }
+    // function getRegistrar(uint id) external view returns (address) {
+    //     return _entries[id].registrar;
+    // }
 
     function getChildLength(uint id) external view returns (uint) {
         return _entries[id].children.length();
@@ -113,14 +120,15 @@ contract Registry is ERC721Upgradeable {
     }
     
     function canCreate(address creator, uint id) public returns (bool) {
-        address registrar = registrarOf(id);
+        // address registrar = registrarOf(id);
         address controller = controllerOf(id);
-        return creator == registrar || creator == controller || uint256(registrar)|uint256(controller) == 0;
+        return creator == controller;
+        // return creator == registrar || creator == controller || uint256(registrar)|uint256(controller) == 0;
     }
 
-    function registrarOf(uint256 id) public view returns (address) {
-        return _entries[id].registrar;
-    }
+   // function registrarOf(uint256 id) public view returns (address) {
+   //     return _entries[id].registrar;
+   // }
     
     function controllerOf(uint256 id) public view returns (address) {
         return _entries[id].controller;
@@ -138,12 +146,24 @@ contract Registry is ERC721Upgradeable {
         emit ResolverSet(ownerOf(id), id, resolver);
     }
 
+    // function setRegistrar(uint id, address registrar) public {
+    //     require(registrarOf(id) == msg.sender);
+    //     _entries[id].registrar = registrar;
+    //     emit RegistrarSet(id, registrarOf(id), registrar);
+    // }
+
+    function setController(uint id, address controller) public {
+        require(canCreate(msg.sender, id));
+        _entries[id].controller = controller;
+        emit ControllerSet(id, controllerOf(id), controller, msg.sender);
+    }
+
     // paginate children
     function entries(uint256 id) external view returns (EntryView memory out) {
         Entry storage entry = _entries[id];
         out.owner = ownerOf(id);
         out.parent = entry.parent;
-        out.registrar = entry.registrar;
+        // out.registrar = entry.registrar;
         out.domain = entry.domain;
         out.children = new uint256[](entry.children.length());
         for(uint i = 0; i < out.children.length; i++) {
@@ -168,7 +188,8 @@ contract Registry is ERC721Upgradeable {
         // uint256 parentId
         string calldata domain,
         address _owner,
-        address _registrar,
+        address _controller,
+        // address _registrar,
         string calldata _resolver,
         string calldata _image
     ) internal {
@@ -186,21 +207,22 @@ contract Registry is ERC721Upgradeable {
             entry.parent = parentId;
             entry.resolver = _resolver;
             entry.domain = domain;
-            entry.registrar = _registrar;
+            entry.controller = _controller;
+            // entry.registrar = _registrar;
             entry.image = _image;
         }
-        DomainCreated(parentId, id, domain, _owner, _registrar, _resolver, _image);
+        DomainCreated(parentId, id, domain, _owner, _controller, _resolver, _image);
     }
 
     function createDomain(
         // uint256 parentId,
         string calldata domain,
         address _owner,
-        address _registrar,
+        address _controller,
         string calldata resolver,
         string calldata image 
     ) public {
-        _createDomain(domain, _owner, _registrar, resolver, image);
+        _createDomain(domain, _owner, _controller, resolver, image);
     }
 
     function getId(string[] memory path) public pure returns (uint256) {

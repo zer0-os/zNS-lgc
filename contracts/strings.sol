@@ -557,7 +557,7 @@ library strings {
     //     }
     // }
 
-    function validateDomain(string memory path)
+    function validateDomain(uint256 seedParent, string memory path)
         internal
         pure
         returns (
@@ -567,7 +567,7 @@ library strings {
         )
     {
         bool valid;
-        bytes32 parent;
+        bytes32 parent = bytes32(seedParent);
         uint256 selfptr;
         assembly {
             selfptr := add(path, 0x20)

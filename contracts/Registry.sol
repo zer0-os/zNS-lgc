@@ -23,44 +23,62 @@ contract Registry is ERC721Upgradeable {
     struct Entry {
         uint256 parent;
         uint256 depth;
-        address creator; // can create children
-        address registrar; // can set creator
-        address target; // can set all other properties
-        address resolver;
-        EnumerableSetUpgradeable.UintSet children;
+        address controller; // can create children
+        address registrar; // can set controller
+        string resolver;
         string domain;
         string image;
-        string description;
+        // string description;
+        // maybe just keep it a ref counter
+        // one loses enumerability with view methods tho
+        EnumerableSetUpgradeable.UintSet children;
     }
 
     struct EntryView {
-        uint parent;
-        string ref;
-        string domain;
-        address registrar;
         address owner;
+        uint256 parent;
+        uint256 depth;
+        address controller; // can create children
+        address registrar; // can set controller
+        string resolver;
+        string image;
+        string domain;
         uint256[] children;
     }
 
     mapping(uint256 => Entry) internal _entries;
 
+    uint constant public ROOT_ID = uint256(keccak256(abi.encode(uint256(0), "ROOT")));
+
     event DomainCreated(
         uint256 indexed parentId,
         uint256 tokenId,
         string domain,
-        address _owner,
-        address _registrar,
-        address _resolver,
-        address _target
+        address owner,
+        address registrar,
+        string resolver,
+        string image
     );
 
-    constructor(address _owner, address _registrar) public {
+    event ImageSet(address indexed owner, uint indexed id, string image);
+
+    event ResolverSet(address indexed owner, uint indexed id, string resolver);
+
+    event SetRegistrar(
+        address indexed oldRegistrar,
+        address indexed newReigstrar,
+        uint indexed id,
+        string resolver
+    );
+
+    constructor(address _owner, address _registrar, string memory _resolver, string memory _image) public {
         __ERC721_init("Zer0 Name Service", "ZNS");
-        _mint(_owner, 0);
-        Entry storage entry = _entries[0];
-        entry.ref = "ZNS";
+        _mint(_owner, ROOT_ID);
+        Entry storage entry = _entries[ROOT_ID];
         entry.registrar = _registrar;
-        DomainCreated(0, 0, "ROOT", _owner, _registrar, "zer0.io");
+        entry.resolver = _resolver;
+        entry.image = _image;
+        DomainCreated(0, ROOT_ID, "ROOT", _owner, _registrar, _resolver, _image);
     }
 
     function getRegistrar(uint id) external view returns (address) {
@@ -72,50 +90,60 @@ contract Registry is ERC721Upgradeable {
     }
 
     function getDepth(uint id) external view returns (uint) {
-        return _entries[id].children.depth;
+        return _entries[id].depth;
     }
-
 
     function _onlyDomainOwner(uint256 id) internal {
         require(ownerOf(id) == msg.sender);
     }
-    
+
     modifier onlyDomainOwner(uint256 id) {
         require(ownerOf(id) == msg.sender);
         _;
     }
 
-    function _onlyDomainRegistrar(uint256 id) internal {
-        require(_entries[id].registrar == msg.sender);
-    }
-    
-    modifier onlyDomainRegistrar(uint256 id) {
-        require(_entries[id].registrar == msg.sender);
+    modifier onlyDomainController(uint256 id) {
+        require(controllerOf(id) == msg.sender);
         _;
     }
 
-    function _onlyCanCreate(uint256 id, address _registrar, address _owner) {
-        address registrar = entries[id].registrar;
-        if(registrar != address(0)) {
-            require(IRegistrar(registrar).canCreate(_owner, _registrar));
-        }
-    }
-    
-    modifier onlyCanCreate(uint256 id, address _registrar, address _owner) {
-        address registrar = entries[id].registrar;
-        if(registrar != address(0)) {
-            require(IRegistrar(registrar).canCreate(_owner, _registrar));
-        }
+    modifier onlyDomainRegistar(uint256 id) {
+        require(ownerOf(id) == msg.sender);
         _;
     }
     
-    //  paginate children
+    function canCreate(address creator, uint id) public returns (bool) {
+        address registrar = registrarOf(id);
+        address controller = controllerOf(id);
+        return creator == registrar || creator == controller || uint256(registrar)|uint256(controller) == 0;
+    }
+
+    function registrarOf(uint256 id) public view returns (address) {
+        return _entries[id].registrar;
+    }
+    
+    function controllerOf(uint256 id) public view returns (address) {
+        return _entries[id].controller;
+    }
+
+    function setImage(uint id, string calldata image) public {
+        require(ownerOf(id) == msg.sender);
+        _entries[id].image = image;
+        emit ImageSet(ownerOf(id), id, image);
+    }
+
+    function setResolver(uint id, string calldata resolver) public {
+        require(ownerOf(id) == msg.sender);
+        _entries[id].resolver = resolver;
+        emit ResolverSet(ownerOf(id), id, resolver);
+    }
+
+    // paginate children
     function entries(uint256 id) external view returns (EntryView memory out) {
         Entry storage entry = _entries[id];
         out.owner = ownerOf(id);
         out.parent = entry.parent;
         out.registrar = entry.registrar;
-        out.ref = entry.ref;
         out.domain = entry.domain;
         out.children = new uint256[](entry.children.length());
         for(uint i = 0; i < out.children.length; i++) {
@@ -128,8 +156,6 @@ contract Registry is ERC721Upgradeable {
         address to,
         uint256 tokenId
     ) internal override {
-        _entries[tokenId].target = address(0);
-        _entries[tokenId].resolver = address(0);
         ERC721Upgradeable._transfer(from, to, tokenId);
     }
 
@@ -143,23 +169,27 @@ contract Registry is ERC721Upgradeable {
         string calldata domain,
         address _owner,
         address _registrar,
-        string calldata _ref
+        string calldata _resolver,
+        string calldata _image
     ) internal {
         // require(bytes(domain).length > 0); // is this necessary if gov controls tld?
-        (bool succ, uint256 parentId, string memory child) = strings.validateDomain(domain);
-        require(succ);
-        _onlyDomainRegistrar(parentId);
+        (bool succ, uint256 parentId, string memory child) = strings.validateDomain(ROOT_ID,domain);
+        require(succ, "domain failed to validate");
         uint256 id = uint256(keccak256(abi.encode(parentId, child)));
-        _onlyCanCreate(id, _owner, _registrar);
-        _mint(_owner, id); //  _mint makes sure doesn't exist
-        require(_entries[parentId].children.add(id)); // extra check
-        Entry storage entry = _entries[id];
-        entry.depth = parent.depth + 1;
-        entry.parent = parentId;
-        entry.ref = _ref;
-        entry.domain = domain;
-        entry.registrar = _registrar;
-        DomainCreated(parentId, id, domain, _owner, _registrar, _ref);
+        require(canCreate(msg.sender, parentId), "sender cant create");
+        require(_entries[parentId].children.add(id), "domain already in children");
+        _mint(_owner, id);
+        {   // evade stack too deep
+            Entry storage parent = _entries[parentId];
+            Entry storage entry = _entries[id];
+            entry.depth = parent.depth + 1;
+            entry.parent = parentId;
+            entry.resolver = _resolver;
+            entry.domain = domain;
+            entry.registrar = _registrar;
+            entry.image = _image;
+        }
+        DomainCreated(parentId, id, domain, _owner, _registrar, _resolver, _image);
     }
 
     function createDomain(
@@ -167,17 +197,18 @@ contract Registry is ERC721Upgradeable {
         string calldata domain,
         address _owner,
         address _registrar,
-        string calldata _ref
+        string calldata resolver,
+        string calldata image 
     ) public {
-        _createDomain(domain, _owner, _registrar, _ref);
+        _createDomain(domain, _owner, _registrar, resolver, image);
     }
 
     function getId(string[] memory path) public pure returns (uint256) {
-        bytes32 _hash = "";
+        uint256 _id = ROOT_ID;
         for (uint256 i = 0; i < path.length; i++) {
-            _hash = keccak256(abi.encode(_hash, path[i]));
+            _id = uint256(keccak256(abi.encode(_id, path[i])));
         }
-        return uint256(_hash);
+        return _id;
     }
 
     function getOwner(string[] memory path) external view returns (address) {
@@ -190,9 +221,13 @@ contract Registry is ERC721Upgradeable {
         returns (
             bool valid,
             uint256 parent,
+            uint256 id,
             string memory domain
         )
     {
-        (valid, parent, domain) = strings.validateDomain(_s);
+        (valid, parent, domain) = strings.validateDomain(ROOT_ID,_s);
+        id = uint256(keccak256(abi.encode(parent, domain)));
     }
+
+
 }

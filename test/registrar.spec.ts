@@ -7,6 +7,8 @@ import { Signer, BigNumber } from "ethers";
 import { AbiCoder } from "@ethersproject/abi";
 import { keccak256 } from "@ethersproject/keccak256";
 import cid from "cids";
+import ipfsClient from "ipfs-http-client";
+import { readFileSync } from "fs";
 import { getAccounts } from "../src/utils";
 use(solidity);
 
@@ -19,7 +21,7 @@ const ROOT_ID_HASH = keccak256(
   coder.encode(["uint256", "string"], [zeroBytes32, "ROOT"])
 );
 
-const ROOT_ID = ROOT_ID_HASH.toString();
+const ROOT_ID = BigNumber.from(ROOT_ID_HASH.toString()).toString();
 
 function getDomainId(_domain: string): string {
   if (_domain === "ROOT") {
@@ -33,10 +35,20 @@ function getDomainId(_domain: string): string {
   return BigNumber.from(hash).toString();
 }
 
+const ipfs = ipfsClient({
+  host: "ipfs.infura.io",
+  port: 5001,
+  protocol: "https",
+  headers: {
+    authorization: "Bearer " + process.env.INFURA_TOKEN,
+  },
+});
+
 describe("Domain", function () {
   let registry: Registry;
   let signers: Signer[];
   let accs: string[];
+  let zeroImageCid: string;
   this.beforeAll(async function () {
     signers = await ethers.getSigners();
     accs = await getAccounts(signers);
@@ -50,6 +62,9 @@ describe("Domain", function () {
       "ipfs://Qm..."
     );
     await registry.deployed();
+    zeroImageCid = await ipfs
+      .add(readFileSync("./scripts/zero-logo.png"))
+      .then((f) => f.cid.toV0());
   });
   it("validate domain", async function () {
     expect((await registry.validateDomain('foo\\"')).valid).to.eq(false);
@@ -85,9 +100,9 @@ describe("Domain", function () {
       "ipfs://Qmimage"
     );
     const id2 = await registry.getId(["foo", "baz"]);
-    expect((await registry.entries(id0)).registrar).to.eq(accs[0]);
-    expect((await registry.entries(id1)).registrar).to.eq(accs[0]);
-    expect((await registry.entries(id2)).registrar).to.eq(accs[0]);
+    expect((await registry.entries(id0)).controller).to.eq(accs[0]);
+    expect((await registry.entries(id1)).controller).to.eq(accs[0]);
+    expect((await registry.entries(id2)).controller).to.eq(accs[0]);
 
     await registry.createDomain(
       "community",
@@ -121,9 +136,9 @@ describe("Domain", function () {
       "ipfs://Qmimage"
     );
     const id6 = await registry.getId(["community", "token", "trad"]);
-    expect((await registry.entries(id3)).registrar).to.eq(accs[0]);
-    expect((await registry.entries(id4)).registrar).to.eq(accs[0]);
-    expect((await registry.entries(id5)).registrar).to.eq(accs[0]);
+    expect((await registry.entries(id3)).controller).to.eq(accs[0]);
+    expect((await registry.entries(id4)).controller).to.eq(accs[0]);
+    expect((await registry.entries(id5)).controller).to.eq(accs[0]);
     const entry6 = await registry.entries(id6);
     expect(entry6.parent).to.eq(id5);
   });

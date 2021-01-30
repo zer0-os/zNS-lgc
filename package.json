@@ -13,6 +13,7 @@
     "cids": "^1.1.4",
     "dotenv": "^8.2.0",
     "hardhat-typechain": "^0.3.3",
+    "ipfs-http-client": "^48.2.2",
     "multihashing-async": "^2.0.1",
     "ts-generator": "^0.1.1"
   },

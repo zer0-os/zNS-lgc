@@ -163,6 +163,7 @@ contract Registry is ERC721Upgradeable {
         Entry storage entry = _entries[id];
         out.owner = ownerOf(id);
         out.parent = entry.parent;
+        out.controller = entry.controller;
         // out.registrar = entry.registrar;
         out.domain = entry.domain;
         out.children = new uint256[](entry.children.length());

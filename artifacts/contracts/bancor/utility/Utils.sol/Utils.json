@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Utils",
+  "sourceName": "contracts/bancor/utility/Utils.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122034ba5ee630ddf37aab8864ecfdd0ee12e4a6cb35a999f807ead098bcd8e4410e64736f6c634300060c0033",
+  "deployedBytecode": "0x6080604052600080fdfea264697066735822122034ba5ee630ddf37aab8864ecfdd0ee12e4a6cb35a999f807ead098bcd8e4410e64736f6c634300060c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "format": "prettier --write \"contracts/**/*.sol\" \"**/*.ts\""
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.3.0",
@@ -30,6 +31,8 @@
     "ethers": "^5.0.24",
     "hardhat": "^2.0.5",
     "mocha": "^8.2.1",
+    "prettier": "^2.2.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.3",
     "ts-node": "^9.1.1",
     "typechain": "^4.0.1",
     "typescript": "^4.1.3"

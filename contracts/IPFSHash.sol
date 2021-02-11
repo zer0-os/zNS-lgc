@@ -20,7 +20,15 @@ library verifyIPFS {
         returns (string memory)
     {
         bytes memory content = bytes(contentString);
-        return string(rfc4648_encode(abi.encodePacked(prefix, sha256(content)), 5, ALPHABET, 'b'));
+        return
+            string(
+                rfc4648_encode(
+                    abi.encodePacked(prefix, sha256(content)),
+                    5,
+                    ALPHABET,
+                    "b"
+                )
+            );
     }
 
     /// @dev Compares an IPFS hash with content
@@ -32,18 +40,23 @@ library verifyIPFS {
         return equal(bytes(generateHash(contentString)), bytes(hash));
     }
 
-
-    function rfc4648_encode(bytes memory data, uint bitsPerChar, bytes memory alpha, bytes1 _prefix) internal view returns (bytes memory) {
-        uint totalbits = data.length * 8;
-        uint totalchars = totalbits / bitsPerChar + ((totalbits % bitsPerChar) == 0 ? 1 : 2); // +1 here for prefix
+    function rfc4648_encode(
+        bytes memory data,
+        uint256 bitsPerChar,
+        bytes memory alpha,
+        bytes1 _prefix
+    ) internal view returns (bytes memory) {
+        uint256 totalbits = data.length * 8;
+        uint256 totalchars =
+            totalbits / bitsPerChar + ((totalbits % bitsPerChar) == 0 ? 1 : 2); // +1 here for prefix
         bytes memory out = new bytes(totalchars);
         // bool pad = alpha[alpha.length - 1] == '=';
-        uint mask = (1 << bitsPerChar) - 1;
-        uint bits = 0;
-        uint carry = 0;
+        uint256 mask = (1 << bitsPerChar) - 1;
+        uint256 bits = 0;
+        uint256 carry = 0;
         out[0] = _prefix;
-        uint outIndex = 1;
-        for(uint i = 0; i < data.length; i++) {
+        uint256 outIndex = 1;
+        for (uint256 i = 0; i < data.length; i++) {
             carry = (carry << 8) | uint8(data[i]);
             bits += 8;
             while (bits > bitsPerChar) {
@@ -52,8 +65,8 @@ library verifyIPFS {
                 outIndex++;
             }
         }
-        if(bits > 0) {
-          out[outIndex] = alpha[mask & (carry << (bitsPerChar - bits))];
+        if (bits > 0) {
+            out[outIndex] = alpha[mask & (carry << (bitsPerChar - bits))];
         }
         //   if (pad) {
         //     while ((out.length * bitsPerChar) & 7) {
@@ -92,9 +105,8 @@ library verifyIPFS {
         pure
         returns (bytes memory)
     {
-        bytes memory returnArray = new bytes(
-            byteArray.length + byteArray2.length
-        );
+        bytes memory returnArray =
+            new bytes(byteArray.length + byteArray2.length);
         uint16 i = 0;
         for (; i < byteArray.length; i++) {
             returnArray[i] = byteArray[i];

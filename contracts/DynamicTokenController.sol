@@ -8,18 +8,28 @@ import "./bancor/converter/interfaces/IDynamicLiquidTokenConverterProxyable.sol"
 import "./StakingController.sol";
 import "./Registry.sol";
 
-contract DynamicTokenController is IZNSController {
-    mapping (uint256 => address) public tokens;
-    mapping (uint256 => address) public converters;
+contract DynamicTokenController is IZNSController, Initializable {
+    mapping(uint256 => address) public tokens;
+    mapping(uint256 => address) public converters;
     address public DSTokenImplementation;
     address public DynamicConverterImplementation;
     address public bancorRegistry;
     StakingController public stakingController;
     Registry public registry;
-    constructor(address _dsImpl, address _dconvImpl, StakingController _stakingController, Registry _registry) {
+
+    function initialize(
+        address _dsImpl,
+        address _dconvImpl,
+        StakingController _stakingController,
+        Registry _registry,
+        address _bancorRegistry
+    ) public initializer {
         DSTokenImplementation = _dsImpl;
+        registry = _registry;
         DynamicConverterImplementation = _dconvImpl;
+        bancorRegistry = _bancorRegistry;
     }
+
     function onSetZnsController(
         address sender,
         address oldController,
@@ -31,18 +41,34 @@ contract DynamicTokenController is IZNSController {
             uint32 initWeight,
             uint32 stepWeight,
             uint32 minWeight,
-            uint256 minBid,
             uint256 mcapThreshold,
+            uint256 minBid,
             string memory name,
             string memory symbol
-        ) = abi.decode(data, (address, uint32, uint32, uint32, uint256, uint256, string, string));
-        IDSTokenProxyable tokenProxy = IDSTokenProxyable(
-            address(new NonupgradeableProxy(DSTokenImplementation))
-        );
+        ) =
+            abi.decode(
+                data,
+                (
+                    address,
+                    uint32,
+                    uint32,
+                    uint32,
+                    uint256,
+                    uint256,
+                    string,
+                    string
+                )
+            );
+
+        IDSTokenProxyable tokenProxy =
+            IDSTokenProxyable(
+                address(new NonupgradeableProxy(DSTokenImplementation))
+            );
         tokenProxy.initialize(name, symbol, 18);
-        IDynamicLiquidTokenConverterProxyable converterProxy = IDynamicLiquidTokenConverterProxyable(
-            address(new NonupgradeableProxy(DynamicConverterImplementation))
-        );
+        IDynamicLiquidTokenConverterProxyable converterProxy =
+            IDynamicLiquidTokenConverterProxyable(
+                address(new NonupgradeableProxy(DynamicConverterImplementation))
+            );
         converterProxy.initialize(address(tokenProxy), bancorRegistry, 0);
         converterProxy.addReserve(IERC20Token(reserve), initWeight);
         converterProxy.setStepWeight(stepWeight);
@@ -50,8 +76,11 @@ contract DynamicTokenController is IZNSController {
         converterProxy.setMarketCapThreshold(mcapThreshold);
         converters[id] = address(converterProxy);
         tokens[id] = address(tokenProxy);
-        registry.setController(id, address(stakingController));
-        stakingController.configureDomain(id, address(tokenProxy), minBid);
+        registry.safeSetController(
+            id,
+            address(stakingController),
+            abi.encode(address(tokenProxy), minBid)
+        );
         return this.onSetZnsController.selector;
     }
 }

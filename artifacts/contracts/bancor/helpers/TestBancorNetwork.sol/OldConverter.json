@@ -1,0 +1,51 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "OldConverter",
+  "sourceName": "contracts/bancor/helpers/TestBancorNetwork.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20Token",
+          "name": "_sourceToken",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IERC20Token",
+          "name": "_targetToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "getReturn",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516101053803806101058339818101604052602081101561003357600080fd5b505160005560bf806100466000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80631e1401f814602d575b600080fd5b606d60048036036060811015604157600080fd5b5073ffffffffffffffffffffffffffffffffffffffff813581169160208101359091169060400135607f565b60408051918252519081900360200190f35b600054939250505056fea2646970667358221220134d01f1227be6f44ba238034bc991b154a3d7ec51bb9446fe88d63fef491fef64736f6c634300060c0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80631e1401f814602d575b600080fd5b606d60048036036060811015604157600080fd5b5073ffffffffffffffffffffffffffffffffffffffff813581169160208101359091169060400135607f565b60408051918252519081900360200190f35b600054939250505056fea2646970667358221220134d01f1227be6f44ba238034bc991b154a3d7ec51bb9446fe88d63fef491fef64736f6c634300060c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

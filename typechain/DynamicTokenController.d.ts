@@ -26,6 +26,7 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     "DynamicConverterImplementation()": FunctionFragment;
     "bancorRegistry()": FunctionFragment;
     "converters(uint256)": FunctionFragment;
+    "initialize(address,address,address,address,address)": FunctionFragment;
     "onSetZnsController(address,address,uint256,bytes)": FunctionFragment;
     "registry()": FunctionFragment;
     "stakingController()": FunctionFragment;
@@ -47,6 +48,10 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "converters",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [string, string, string, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "onSetZnsController",
@@ -75,6 +80,7 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "converters", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onSetZnsController",
     data: BytesLike
@@ -129,6 +135,24 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    initialize(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "initialize(address,address,address,address,address)"(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     onSetZnsController(
       sender: string,
       oldController: string,
@@ -182,6 +206,24 @@ export class DynamicTokenController extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  initialize(
+    _dsImpl: string,
+    _dconvImpl: string,
+    _stakingController: string,
+    _registry: string,
+    _bancorRegistry: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "initialize(address,address,address,address,address)"(
+    _dsImpl: string,
+    _dconvImpl: string,
+    _stakingController: string,
+    _registry: string,
+    _bancorRegistry: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   onSetZnsController(
     sender: string,
     oldController: string,
@@ -234,6 +276,24 @@ export class DynamicTokenController extends Contract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    initialize(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "initialize(address,address,address,address,address)"(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     onSetZnsController(
       sender: string,
@@ -294,6 +354,24 @@ export class DynamicTokenController extends Contract {
     "converters(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    initialize(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "initialize(address,address,address,address,address)"(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     onSetZnsController(
@@ -359,6 +437,24 @@ export class DynamicTokenController extends Contract {
     "converters(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    initialize(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "initialize(address,address,address,address,address)"(
+      _dsImpl: string,
+      _dconvImpl: string,
+      _stakingController: string,
+      _registry: string,
+      _bancorRegistry: string,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     onSetZnsController(

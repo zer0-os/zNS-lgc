@@ -27,25 +27,28 @@ interface RegistryInterface extends ethers.utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "canCreate(address,uint256)": FunctionFragment;
+    "childCountOf(uint256)": FunctionFragment;
     "controllerOf(uint256)": FunctionFragment;
     "createDomain(string,address,address)": FunctionFragment;
     "createDomainSafeController(string,address,address,bytes)": FunctionFragment;
     "createDomainSafeMint(string,address,address,bytes)": FunctionFragment;
-    "entries(uint256)": FunctionFragment;
+    "depthOf(uint256)": FunctionFragment;
+    "entryOf(uint256)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getChildLength(uint256)": FunctionFragment;
-    "getDepth(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
     "getIdAndParent(string)": FunctionFragment;
     "getOwner(string[])": FunctionFragment;
+    "initialize(address,address,string,uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
+    "parentOf(uint256)": FunctionFragment;
     "safeCreateDomain(string,address,address,bytes,bytes)": FunctionFragment;
     "safeSetController(uint256,address,bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setChildLimit(uint256,uint256)": FunctionFragment;
     "setController(uint256,address)": FunctionFragment;
     "setImage(uint256,string)": FunctionFragment;
     "setResolver(uint256,string)": FunctionFragment;
@@ -71,6 +74,10 @@ interface RegistryInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "childCountOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "controllerOf",
     values: [BigNumberish]
   ): string;
@@ -87,7 +94,11 @@ interface RegistryInterface extends ethers.utils.Interface {
     values: [string, string, string, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "entries",
+    functionFragment: "depthOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "entryOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -98,14 +109,6 @@ interface RegistryInterface extends ethers.utils.Interface {
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "getChildLength",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getDepth",
-    values: [BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "getId", values: [string[]]): string;
   encodeFunctionData(
     functionFragment: "getIdAndParent",
@@ -113,12 +116,20 @@ interface RegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values: [string[]]): string;
   encodeFunctionData(
+    functionFragment: "initialize",
+    values: [string, string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "parentOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -136,6 +147,10 @@ interface RegistryInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setChildLimit",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setController",
@@ -185,6 +200,10 @@ interface RegistryInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canCreate", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "childCountOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "controllerOf",
     data: BytesLike
   ): Result;
@@ -200,29 +219,27 @@ interface RegistryInterface extends ethers.utils.Interface {
     functionFragment: "createDomainSafeMint",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "entries", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "depthOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "entryOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getChildLength",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "getDepth", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getIdAndParent",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "parentOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeCreateDomain",
     data: BytesLike
@@ -237,6 +254,10 @@ interface RegistryInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setChildLimit",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -278,7 +299,7 @@ interface RegistryInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "ChildLimitSet(uint256,uint256)": EventFragment;
+    "ChildLimitSet(address,uint256,uint256)": EventFragment;
     "ControllerSet(uint256,address,address,address)": EventFragment;
     "DomainCreated(uint256,uint256,string,address)": EventFragment;
     "ImageSet(address,uint256,string)": EventFragment;
@@ -349,6 +370,16 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    childCountOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     controllerOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -405,7 +436,14 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    entries(
+    depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    entryOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -419,7 +457,7 @@ export class Registry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber[]
+          BigNumber
         ] & {
           owner: string;
           parent: BigNumber;
@@ -429,7 +467,7 @@ export class Registry extends Contract {
           image: string;
           domain: string;
           childLimit: BigNumber;
-          children: BigNumber[];
+          childCount: BigNumber;
         }
       ] & {
         out: [
@@ -441,7 +479,7 @@ export class Registry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber[]
+          BigNumber
         ] & {
           owner: string;
           parent: BigNumber;
@@ -451,12 +489,12 @@ export class Registry extends Contract {
           image: string;
           domain: string;
           childLimit: BigNumber;
-          children: BigNumber[];
+          childCount: BigNumber;
         };
       }
     >;
 
-    "entries(uint256)"(
+    "entryOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -470,7 +508,7 @@ export class Registry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber[]
+          BigNumber
         ] & {
           owner: string;
           parent: BigNumber;
@@ -480,7 +518,7 @@ export class Registry extends Contract {
           image: string;
           domain: string;
           childLimit: BigNumber;
-          children: BigNumber[];
+          childCount: BigNumber;
         }
       ] & {
         out: [
@@ -492,7 +530,7 @@ export class Registry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber[]
+          BigNumber
         ] & {
           owner: string;
           parent: BigNumber;
@@ -502,7 +540,7 @@ export class Registry extends Contract {
           image: string;
           domain: string;
           childLimit: BigNumber;
-          children: BigNumber[];
+          childCount: BigNumber;
         };
       }
     >;
@@ -523,23 +561,6 @@ export class Registry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    getChildLength(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "getChildLength(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getDepth(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "getDepth(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     getId(path: string[], overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -564,6 +585,22 @@ export class Registry extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    initialize(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "initialize(address,address,string,uint256)"(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     isApprovedForAll(
       owner: string,
@@ -590,6 +627,13 @@ export class Registry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    parentOf(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "parentOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     safeCreateDomain(
       domain: string,
@@ -647,6 +691,18 @@ export class Registry extends Contract {
     "setApprovalForAll(address,bool)"(
       operator: string,
       approved: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setChildLimit(
+      id: BigNumberish,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setChildLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -814,6 +870,13 @@ export class Registry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  childCountOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "childCountOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   controllerOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "controllerOf(uint256)"(
@@ -867,7 +930,14 @@ export class Registry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  entries(
+  depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "depthOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  entryOf(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
@@ -880,7 +950,7 @@ export class Registry extends Contract {
       string,
       string,
       BigNumber,
-      BigNumber[]
+      BigNumber
     ] & {
       owner: string;
       parent: BigNumber;
@@ -890,11 +960,11 @@ export class Registry extends Contract {
       image: string;
       domain: string;
       childLimit: BigNumber;
-      children: BigNumber[];
+      childCount: BigNumber;
     }
   >;
 
-  "entries(uint256)"(
+  "entryOf(uint256)"(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
@@ -907,7 +977,7 @@ export class Registry extends Contract {
       string,
       string,
       BigNumber,
-      BigNumber[]
+      BigNumber
     ] & {
       owner: string;
       parent: BigNumber;
@@ -917,7 +987,7 @@ export class Registry extends Contract {
       image: string;
       domain: string;
       childLimit: BigNumber;
-      children: BigNumber[];
+      childCount: BigNumber;
     }
   >;
 
@@ -937,23 +1007,6 @@ export class Registry extends Contract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
-
-  getChildLength(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "getChildLength(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getDepth(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "getDepth(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   getId(path: string[], overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -979,6 +1032,22 @@ export class Registry extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  initialize(
+    _owner: string,
+    _controller: string,
+    image: string,
+    childLimit: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "initialize(address,address,string,uint256)"(
+    _owner: string,
+    _controller: string,
+    image: string,
+    childLimit: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   isApprovedForAll(
     owner: string,
     operator: string,
@@ -1001,6 +1070,13 @@ export class Registry extends Contract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  parentOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "parentOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   safeCreateDomain(
     domain: string,
@@ -1058,6 +1134,18 @@ export class Registry extends Contract {
   "setApprovalForAll(address,bool)"(
     operator: string,
     approved: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setChildLimit(
+    id: BigNumberish,
+    childLimit: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setChildLimit(uint256,uint256)"(
+    id: BigNumberish,
+    childLimit: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1222,6 +1310,16 @@ export class Registry extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    childCountOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     controllerOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "controllerOf(uint256)"(
@@ -1275,7 +1373,14 @@ export class Registry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
 
-    entries(
+    depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    entryOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -1288,7 +1393,7 @@ export class Registry extends Contract {
         string,
         string,
         BigNumber,
-        BigNumber[]
+        BigNumber
       ] & {
         owner: string;
         parent: BigNumber;
@@ -1298,11 +1403,11 @@ export class Registry extends Contract {
         image: string;
         domain: string;
         childLimit: BigNumber;
-        children: BigNumber[];
+        childCount: BigNumber;
       }
     >;
 
-    "entries(uint256)"(
+    "entryOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -1315,7 +1420,7 @@ export class Registry extends Contract {
         string,
         string,
         BigNumber,
-        BigNumber[]
+        BigNumber
       ] & {
         owner: string;
         parent: BigNumber;
@@ -1325,7 +1430,7 @@ export class Registry extends Contract {
         image: string;
         domain: string;
         childLimit: BigNumber;
-        children: BigNumber[];
+        childCount: BigNumber;
       }
     >;
 
@@ -1345,23 +1450,6 @@ export class Registry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    getChildLength(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getChildLength(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getDepth(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getDepth(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     getId(path: string[], overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1387,6 +1475,22 @@ export class Registry extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    initialize(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "initialize(address,address,string,uint256)"(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -1409,6 +1513,13 @@ export class Registry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    parentOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "parentOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     safeCreateDomain(
       domain: string,
@@ -1466,6 +1577,18 @@ export class Registry extends Contract {
     "setApprovalForAll(address,bool)"(
       operator: string,
       approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setChildLimit(
+      id: BigNumberish,
+      childLimit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setChildLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childLimit: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1604,7 +1727,11 @@ export class Registry extends Contract {
       approved: null
     ): EventFilter;
 
-    ChildLimitSet(id: BigNumberish | null, children: null): EventFilter;
+    ChildLimitSet(
+      owner: string | null,
+      id: BigNumberish | null,
+      childLimit: null
+    ): EventFilter;
 
     ControllerSet(
       id: BigNumberish | null,
@@ -1679,6 +1806,16 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    childCountOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     controllerOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1735,9 +1872,16 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    entries(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "entries(uint256)"(
+    "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    entryOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "entryOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1756,23 +1900,6 @@ export class Registry extends Contract {
 
     "getApproved(uint256)"(
       tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getChildLength(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getChildLength(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getDepth(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getDepth(uint256)"(
-      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1795,6 +1922,22 @@ export class Registry extends Contract {
     "getOwner(string[])"(
       path: string[],
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    initialize(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "initialize(address,address,string,uint256)"(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     isApprovedForAll(
@@ -1820,6 +1963,13 @@ export class Registry extends Contract {
 
     "ownerOf(uint256)"(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    parentOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "parentOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1879,6 +2029,18 @@ export class Registry extends Contract {
     "setApprovalForAll(address,bool)"(
       operator: string,
       approved: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setChildLimit(
+      id: BigNumberish,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setChildLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -2033,6 +2195,16 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    childCountOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     controllerOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -2089,12 +2261,22 @@ export class Registry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    entries(
+    depthOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "entries(uint256)"(
+    "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    entryOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "entryOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2116,26 +2298,6 @@ export class Registry extends Contract {
 
     "getApproved(uint256)"(
       tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getChildLength(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getChildLength(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getDepth(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getDepth(uint256)"(
-      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2169,6 +2331,22 @@ export class Registry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    initialize(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "initialize(address,address,string,uint256)"(
+      _owner: string,
+      _controller: string,
+      image: string,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: string,
       operator: string,
@@ -2192,6 +2370,16 @@ export class Registry extends Contract {
 
     "ownerOf(uint256)"(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    parentOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "parentOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2251,6 +2439,18 @@ export class Registry extends Contract {
     "setApprovalForAll(address,bool)"(
       operator: string,
       approved: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setChildLimit(
+      id: BigNumberish,
+      childLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setChildLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

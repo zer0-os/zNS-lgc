@@ -32,10 +32,7 @@ contract Registry is ERC721Upgradeable {
         string domain;
         string image;
         uint256 childLimit;
-        // string description;
-        // maybe just keep it a ref counter
-        // one loses enumerability with view methods tho
-        EnumerableSetUpgradeable.UintSet children;
+        uint256 childCount;
     }
 
     struct EntryView {
@@ -47,7 +44,7 @@ contract Registry is ERC721Upgradeable {
         string image;
         string domain;
         uint256 childLimit;
-        uint256[] children;
+        uint256 childCount;
     }
 
     mapping(uint256 => Entry) internal _entries;
@@ -64,7 +61,7 @@ contract Registry is ERC721Upgradeable {
 
     event ImageSet(address indexed owner, uint256 indexed id, string image);
 
-    event ChildLimitSet(uint256 indexed id, uint256 children);
+    event ChildLimitSet(address indexed owner, uint256 indexed id, uint256 childLimit);
 
     event ResolverSet(
         address indexed owner,
@@ -85,25 +82,30 @@ contract Registry is ERC721Upgradeable {
         address sender
     );
 
-    constructor(address _owner, address _controller) public {
+    function initialize(address _owner, address _controller, string memory image, uint256 childLimit) initializer public {
         __ERC721_init("Zer0 Name Service", "ZNS");
         _mint(_owner, ROOT_ID);
         Entry storage entry = _entries[ROOT_ID];
-        entry.controller = _controller;
         DomainCreated(0, ROOT_ID, "ROOT", _owner);
-        setController(ROOT_ID, _controller);
+        _setController(ROOT_ID, _controller);
+        setImage(ROOT_ID, image);
+        setChildLimit(ROOT_ID, childLimit);
     }
 
     // function getRegistrar(uint id) external view returns (address) {
     //     return _entries[id].registrar;
     // }
 
-    function getChildLength(uint256 id) external view returns (uint256) {
-        return _entries[id].children.length();
+    function childCountOf(uint256 id) external view returns (uint256) {
+        return _entries[id].childCount;
     }
 
-    function getDepth(uint256 id) external view returns (uint256) {
+    function depthOf(uint256 id) external view returns (uint256) {
         return _entries[id].depth;
+    }
+
+    function parentOf(uint256 id) external view returns (uint256) {
+        return _entries[id].parent;
     }
 
     function _onlyDomainOwner(uint256 id) internal {
@@ -120,15 +122,10 @@ contract Registry is ERC721Upgradeable {
         _;
     }
 
-    modifier onlyDomainRegistar(uint256 id) {
-        require(ownerOf(id) == msg.sender);
-        _;
-    }
-
     function canCreate(address creator, uint256 id) public returns (bool) {
         // address registrar = registrarOf(id);
         address controller = controllerOf(id);
-        return creator == controller;
+        return creator == controller || (controller == address(0) && ownerOf(id) == creator);
         // return creator == registrar || creator == controller || uint256(registrar)|uint256(controller) == 0;
     }
 
@@ -140,7 +137,14 @@ contract Registry is ERC721Upgradeable {
         return _entries[id].controller;
     }
 
-    function setImage(uint256 id, string calldata image) public {
+    function setChildLimit(uint256 id, uint256 childLimit) public {
+        require(ownerOf(id) == msg.sender);
+        require(childLimit >= _entries[id].childLimit);
+        _entries[id].childLimit = childLimit;
+        emit ChildLimitSet(ownerOf(id), id, childLimit);
+    }
+
+    function setImage(uint256 id, string memory image) public {
         require(ownerOf(id) == msg.sender);
         _entries[id].image = image;
         emit ImageSet(ownerOf(id), id, image);
@@ -158,38 +162,49 @@ contract Registry is ERC721Upgradeable {
     //     emit RegistrarSet(id, registrarOf(id), registrar);
     // }
 
-    function setController(uint256 id, address controller) public {
-        require(canCreate(msg.sender, id));
+
+    function _setController(uint256 id, address controller) internal {
         _entries[id].controller = controller;
         emit ControllerSet(id, controllerOf(id), controller, msg.sender);
+    }
+
+    function _safeSetController(
+        uint256 id,
+        address controller,
+        bytes memory _data
+    ) internal {
+        address oldController = controllerOf(id);
+        _entries[id].controller = controller;
+        emit ControllerSet(id, oldController, controller, msg.sender);
+        // we fire _checkOnSetController after we set controller and emit event, because
+        // some flows will set the controller once more
+        require(_checkOnSetController(oldController, controller, id, _data), "not a valid controller");
+    }
+
+
+    function setController(uint256 id, address controller) external {
+        require(canCreate(msg.sender, id));
+        _setController(id, controller);
     }
 
     function safeSetController(
         uint256 id,
         address controller,
         bytes calldata _data
-    ) public {
+    ) external {
         require(canCreate(msg.sender, id));
-        address oldController = controllerOf(id);
-        _entries[id].controller = controller;
-        emit ControllerSet(id, oldController, controller, msg.sender);
-        // we fire _checkOnSetController after we set controller and emit event, because
-        // some flows will set the controller once more
-        require(_checkOnSetController(oldController, controller, id, _data));
+        _safeSetController(id, controller, _data);
     }
 
-    // paginate children
-    function entries(uint256 id) external view returns (EntryView memory out) {
+    function entryOf(uint256 id) external view returns (EntryView memory out) {
         Entry storage entry = _entries[id];
         out.owner = ownerOf(id);
         out.parent = entry.parent;
         out.controller = entry.controller;
-        // out.registrar = entry.registrar;
         out.domain = entry.domain;
-        out.children = new uint256[](entry.children.length());
-        for (uint256 i = 0; i < out.children.length; i++) {
-            out.children[i] = entry.children.at(i);
-        }
+        out.childLimit = entry.childLimit;
+        out.childCount = entry.childCount;
+        out.image = entry.image;
     }
 
     function _transfer(
@@ -224,13 +239,11 @@ contract Registry is ERC721Upgradeable {
     }
 
     function _createDomainEntry(
-        // uint256 parentId
         string calldata domain,
         address _owner
     )
         internal
         returns (
-            // address _registrar,
             uint256,
             uint256
         )
@@ -241,12 +254,11 @@ contract Registry is ERC721Upgradeable {
         uint256 id = uint256(keccak256(abi.encode(parentId, child)));
         require(succ, "domain failed to validate");
         require(canCreate(msg.sender, parentId), "sender cant create");
-        require(
-            _entries[parentId].children.add(id),
-            "domain already in children"
-        );
-        require(_exists(id), "domain already spawned (bad, should NOT happen)");
+        require(_exists(parentId), "parent doesn't exist");
+        require(!_exists(id), "domain already created");
         Entry storage parent = _entries[parentId];
+        require(parent.childCount + 1 < parent.childLimit, "Child limit reached");
+        parent.childCount++;
         Entry storage entry = _entries[id];
         entry.depth = parent.depth + 1;
         entry.parent = parentId;
@@ -262,7 +274,7 @@ contract Registry is ERC721Upgradeable {
     ) public returns (uint256 id, uint256 parentId) {
         (id, parentId) = _createDomainEntry(domain, _owner);
         _mint(_owner, id);
-        setController(id, _controller);
+        _setController(id, _controller);
     }
 
     function safeCreateDomain(
@@ -274,7 +286,7 @@ contract Registry is ERC721Upgradeable {
     ) public returns (uint256 id, uint256 parentId) {
         (id, parentId) = _createDomainEntry(domain, _owner);
         _safeMint(_owner, id, mintData);
-        safeSetController(id, _controller, controllerData);
+        _safeSetController(id, _controller, controllerData);
     }
 
     function createDomainSafeController(
@@ -285,7 +297,7 @@ contract Registry is ERC721Upgradeable {
     ) public returns (uint256 id, uint256 parentId) {
         (id, parentId) = _createDomainEntry(domain, _owner);
         _mint(_owner, id);
-        safeSetController(id, _controller, controllerData);
+        _safeSetController(id, _controller, controllerData);
     }
 
     function createDomainSafeMint(
@@ -296,7 +308,7 @@ contract Registry is ERC721Upgradeable {
     ) public returns (uint256 id, uint256 parentId) {
         (id, parentId) = _createDomainEntry(domain, _owner);
         _safeMint(_owner, id, mintData);
-        setController(id, _controller);
+        _setController(id, _controller);
     }
 
     function getId(string[] memory path) public pure returns (uint256) {
@@ -338,13 +350,8 @@ contract Registry is ERC721Upgradeable {
             strings.validateDomain(ROOT_ID, _s);
         require(valid);
         uint256 id = uint256(keccak256(abi.encode(parent, domain)));
-        return (parent, id);
+        return (id, parent);
     }
-
-    // function burn(uint256 id) public {
-    //     require(msg.sender == ownerOf(id) && msg.sender == controllerOf(id));
-    //     _burn(id);
-    // }
 
     function _checkOnSetController(
         address from,
@@ -365,7 +372,7 @@ contract Registry is ERC721Upgradeable {
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
                     revert(
-                        "ZNSRegistry: transfer to non ZNSController implementer"
+                        "ZNSRegistry: controller set to non ZNSController implementer"
                     );
                 } else {
                     // solhint-disable-next-line no-inline-assembly

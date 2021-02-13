@@ -1,0 +1,24 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ConverterV28OrHigherWithoutFallback",
+  "sourceName": "contracts/bancor/helpers/TestBancorNetwork.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "isV28OrHigher",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b5060828061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063d260529c14602d575b600080fd5b60336047565b604080519115158252519081900360200190f35b60019056fea2646970667358221220c04a8ee856e6fcbd096b5c5583eb612d13f056babf352b6569301e514487dd9464736f6c634300060c0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063d260529c14602d575b600080fd5b60336047565b604080519115158252519081900360200190f35b60019056fea2646970667358221220c04a8ee856e6fcbd096b5c5583eb612d13f056babf352b6569301e514487dd9464736f6c634300060c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

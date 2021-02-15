@@ -6,7 +6,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./Registry.sol";
+import "./ZNSRegistry.sol";
 import "./IZNSController.sol";
 
 interface IBancorRegistry {
@@ -42,7 +42,7 @@ contract StakingController is IZNSController, Initializable {
         uint256 minBid;
     }
 
-    Registry registry;
+    ZNSRegistry registry;
     IBancorRegistry bancor;
     mapping(bytes32 => Stake) stakes;
     mapping(uint256 => DomainState) domainStates;
@@ -78,7 +78,7 @@ contract StakingController is IZNSController, Initializable {
         return domainStates[id];
     }
 
-    function initialize(Registry _registry, IBancorRegistry _bancor) public initializer {
+    function initialize(ZNSRegistry _registry, IBancorRegistry _bancor) public initializer {
         registry = _registry;
         bancor = _bancor;
     }
@@ -288,7 +288,6 @@ contract StakingController is IZNSController, Initializable {
         uint256 id,
         bytes memory data
     ) external override returns (bytes4) {
-        //uint256 parent = registry.parentOf(id);
         (address stakeToken, uint256 minBid) =
             abi.decode(data, (address, uint256));
         DomainState storage domainState = domainStates[id];

@@ -88,7 +88,7 @@ contract DynamicLiquidTokenConverterProxyable is LiquidTokenConverterProxyable {
       *
       * @param _reserveToken    address of the reserve token
     */
-    function reduceWeight(IERC20Token _reserveToken)
+    function reduceWeight(IERC20Token _reserveToken, address payable _to)
         public
         validReserve(_reserveToken)
         ownerOnly
@@ -110,9 +110,9 @@ contract DynamicLiquidTokenConverterProxyable is LiquidTokenConverterProxyable {
         uint256 balance = reserveBalance(_reserveToken).mul(percentage).div(1e6);
 
         if (_reserveToken == ETH_RESERVE_ADDRESS)
-          msg.sender.transfer(balance);
+          _to.transfer(balance);
         else
-          safeTransfer(_reserveToken, msg.sender, balance);
+          safeTransfer(_reserveToken, _to, balance);
 
         lastWeightAdjustmentMarketCap = currentMarketCap;
 
@@ -128,6 +128,15 @@ contract DynamicLiquidTokenConverterProxyable is LiquidTokenConverterProxyable {
     {
         Reserve storage reserve = reserves[_reserveToken];
         return reserveBalance(_reserveToken).mul(1e6).div(reserve.weight);
+    }
+
+    /**
+     * Getter functions to minimize gas cost
+    **/
+
+    function getReserve(IERC20Token reserve) external view returns (bool, uint32) {
+        Reserve storage _reserve = reserves[reserve];
+        return (_reserve.isSet, _reserve.weight);
     }
 
     /**

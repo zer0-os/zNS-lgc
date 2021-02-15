@@ -37,16 +37,21 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
     "converterType()": FunctionFragment;
     "getConnectorBalance(address)": FunctionFragment;
     "getMarketCap(address)": FunctionFragment;
+    "getReserve(address)": FunctionFragment;
     "isActive()": FunctionFragment;
+    "marketCapThreshold()": FunctionFragment;
     "maxConversionFee()": FunctionFragment;
+    "minimumWeight()": FunctionFragment;
     "owner()": FunctionFragment;
-    "reduceWeight(address)": FunctionFragment;
+    "reduceWeight(address,address)": FunctionFragment;
     "reserveBalance(address)": FunctionFragment;
+    "reserveTokens(uint256)": FunctionFragment;
     "setConversionFee(uint32)": FunctionFragment;
     "setConversionWhitelist(address)": FunctionFragment;
     "setMarketCapThreshold(uint256)": FunctionFragment;
     "setMinimumWeight(uint32)": FunctionFragment;
     "setStepWeight(uint32)": FunctionFragment;
+    "stepWeight()": FunctionFragment;
     "targetAmountAndFee(address,address,uint256)": FunctionFragment;
     "token()": FunctionFragment;
     "transferAnchorOwnership(address)": FunctionFragment;
@@ -106,19 +111,32 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
     functionFragment: "getMarketCap",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "getReserve", values: [string]): string;
   encodeFunctionData(functionFragment: "isActive", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "marketCapThreshold",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "maxConversionFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "minimumWeight",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "reduceWeight",
-    values: [string]
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "reserveBalance",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "reserveTokens",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setConversionFee",
@@ -139,6 +157,10 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setStepWeight",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "stepWeight",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "targetAmountAndFee",
@@ -207,9 +229,18 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
     functionFragment: "getMarketCap",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getReserve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isActive", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "marketCapThreshold",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "maxConversionFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "minimumWeight",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -219,6 +250,10 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "reserveBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "reserveTokens",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -241,6 +276,7 @@ interface IDynamicLiquidTokenConverterInterface extends ethers.utils.Interface {
     functionFragment: "setStepWeight",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "stepWeight", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "targetAmountAndFee",
     data: BytesLike
@@ -390,13 +426,31 @@ export class IDynamicLiquidTokenConverter extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
     isActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     "isActive()"(overrides?: CallOverrides): Promise<[boolean]>;
 
+    marketCapThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "marketCapThreshold()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     maxConversionFee(overrides?: CallOverrides): Promise<[number]>;
 
     "maxConversionFee()"(overrides?: CallOverrides): Promise<[number]>;
+
+    minimumWeight(overrides?: CallOverrides): Promise<[number]>;
+
+    "minimumWeight()"(overrides?: CallOverrides): Promise<[number]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -404,11 +458,13 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -421,6 +477,16 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _reserveToken: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     setConversionFee(
       _conversionFee: BigNumberish,
@@ -471,6 +537,10 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _stepWeight: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    stepWeight(overrides?: CallOverrides): Promise<[number]>;
+
+    "stepWeight()"(overrides?: CallOverrides): Promise<[number]>;
 
     targetAmountAndFee(
       _sourceToken: string,
@@ -649,13 +719,31 @@ export class IDynamicLiquidTokenConverter extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  getReserve(
+    reserve: string,
+    overrides?: CallOverrides
+  ): Promise<[boolean, number]>;
+
+  "getReserve(address)"(
+    reserve: string,
+    overrides?: CallOverrides
+  ): Promise<[boolean, number]>;
+
   isActive(overrides?: CallOverrides): Promise<boolean>;
 
   "isActive()"(overrides?: CallOverrides): Promise<boolean>;
 
+  marketCapThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "marketCapThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
+
   maxConversionFee(overrides?: CallOverrides): Promise<number>;
 
   "maxConversionFee()"(overrides?: CallOverrides): Promise<number>;
+
+  minimumWeight(overrides?: CallOverrides): Promise<number>;
+
+  "minimumWeight()"(overrides?: CallOverrides): Promise<number>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -663,11 +751,13 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
   reduceWeight(
     _reserveToken: string,
+    _to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "reduceWeight(address)"(
+  "reduceWeight(address,address)"(
     _reserveToken: string,
+    _to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -680,6 +770,13 @@ export class IDynamicLiquidTokenConverter extends Contract {
     _reserveToken: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  reserveTokens(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "reserveTokens(uint256)"(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   setConversionFee(
     _conversionFee: BigNumberish,
@@ -730,6 +827,10 @@ export class IDynamicLiquidTokenConverter extends Contract {
     _stepWeight: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  stepWeight(overrides?: CallOverrides): Promise<number>;
+
+  "stepWeight()"(overrides?: CallOverrides): Promise<number>;
 
   targetAmountAndFee(
     _sourceToken: string,
@@ -903,13 +1004,31 @@ export class IDynamicLiquidTokenConverter extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
     isActive(overrides?: CallOverrides): Promise<boolean>;
 
     "isActive()"(overrides?: CallOverrides): Promise<boolean>;
 
+    marketCapThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "marketCapThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxConversionFee(overrides?: CallOverrides): Promise<number>;
 
     "maxConversionFee()"(overrides?: CallOverrides): Promise<number>;
+
+    minimumWeight(overrides?: CallOverrides): Promise<number>;
+
+    "minimumWeight()"(overrides?: CallOverrides): Promise<number>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -917,11 +1036,13 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -934,6 +1055,16 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _reserveToken: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     setConversionFee(
       _conversionFee: BigNumberish,
@@ -984,6 +1115,10 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _stepWeight: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    stepWeight(overrides?: CallOverrides): Promise<number>;
+
+    "stepWeight()"(overrides?: CallOverrides): Promise<number>;
 
     targetAmountAndFee(
       _sourceToken: string,
@@ -1157,13 +1292,28 @@ export class IDynamicLiquidTokenConverter extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    getReserve(reserve: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     "isActive()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    marketCapThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "marketCapThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxConversionFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     "maxConversionFee()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    minimumWeight(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "minimumWeight()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1171,11 +1321,13 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1186,6 +1338,16 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
     "reserveBalance(address)"(
       _reserveToken: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1238,6 +1400,10 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _stepWeight: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    stepWeight(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "stepWeight()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     targetAmountAndFee(
       _sourceToken: string,
@@ -1424,9 +1590,27 @@ export class IDynamicLiquidTokenConverter extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     isActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "isActive()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    marketCapThreshold(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "marketCapThreshold()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     maxConversionFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1434,17 +1618,23 @@ export class IDynamicLiquidTokenConverter extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    minimumWeight(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "minimumWeight()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1455,6 +1645,16 @@ export class IDynamicLiquidTokenConverter extends Contract {
 
     "reserveBalance(address)"(
       _reserveToken: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1507,6 +1707,10 @@ export class IDynamicLiquidTokenConverter extends Contract {
       _stepWeight: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
+
+    stepWeight(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "stepWeight()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     targetAmountAndFee(
       _sourceToken: string,

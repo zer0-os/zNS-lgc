@@ -257,6 +257,30 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "contract IERC20Token",
+        name: "reserve",
+        type: "address",
+      },
+    ],
+    name: "getReserve",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_token",
         type: "address",
@@ -292,7 +316,33 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "marketCapThreshold",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "maxConversionFee",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "minimumWeight",
     outputs: [
       {
         internalType: "uint32",
@@ -323,6 +373,11 @@ const _abi = [
         name: "_reserveToken",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_to",
+        type: "address",
+      },
     ],
     name: "reduceWeight",
     outputs: [],
@@ -343,6 +398,25 @@ const _abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "reserveTokens",
+    outputs: [
+      {
+        internalType: "contract IERC20Token",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -411,6 +485,19 @@ const _abi = [
     name: "setStepWeight",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "stepWeight",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

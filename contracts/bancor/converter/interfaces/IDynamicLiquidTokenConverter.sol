@@ -3,7 +3,15 @@ pragma solidity >=0.4.24 <0.8.0;
 import "./ILiquidTokenConverter.sol";
 
 interface IDynamicLiquidTokenConverter is ILiquidTokenConverter {
+    function minimumWeight() external view returns (uint32);
+    function stepWeight() external view returns (uint32);
+    function marketCapThreshold() external view returns (uint256);
 
+    /**
+     *  @dev returns valid reserve & weight
+     *  @return (isSet, weight)
+    */
+    function getReserve(IERC20Token reserve) external view returns (bool, uint32);
     /**
       * @dev updates the market cap threshold
       * can only be called by the owner while inactive
@@ -34,7 +42,7 @@ interface IDynamicLiquidTokenConverter is ILiquidTokenConverter {
       *
       * @param _reserveToken    address of the reserve token
     */
-    function reduceWeight(address _reserveToken) external;
+    function reduceWeight(address _reserveToken, address _to) external;
 
     function getMarketCap(address _reserveToken) external;
 

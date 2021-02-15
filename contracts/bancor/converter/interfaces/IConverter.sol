@@ -13,6 +13,7 @@ interface IConverter is IOwned {
     function converterType() external pure returns (uint16);
     function anchor() external view returns (IConverterAnchor);
     function isActive() external view returns (bool);
+    function reserveTokens(uint256) external view returns (IERC20Token);
 
     function targetAmountAndFee(IERC20Token _sourceToken, IERC20Token _targetToken, uint256 _amount) external view returns (uint256, uint256);
     function convert(IERC20Token _sourceToken,

@@ -44,6 +44,7 @@ interface ILiquidityPoolV2ConverterInterface extends ethers.utils.Interface {
     "primaryReserveToken()": FunctionFragment;
     "reserveBalance(address)": FunctionFragment;
     "reserveStakedBalance(address)": FunctionFragment;
+    "reserveTokens(uint256)": FunctionFragment;
     "setConversionFee(uint32)": FunctionFragment;
     "setConversionWhitelist(address)": FunctionFragment;
     "setReserveStakedBalance(address,uint256)": FunctionFragment;
@@ -127,6 +128,10 @@ interface ILiquidityPoolV2ConverterInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "reserveStakedBalance",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "reserveTokens",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setConversionFee",
@@ -224,6 +229,10 @@ interface ILiquidityPoolV2ConverterInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "reserveStakedBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "reserveTokens",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -430,6 +439,16 @@ export class ILiquidityPoolV2Converter extends Contract {
       _reserveToken: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     setConversionFee(
       _conversionFee: BigNumberish,
@@ -684,6 +703,13 @@ export class ILiquidityPoolV2Converter extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  reserveTokens(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "reserveTokens(uint256)"(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   setConversionFee(
     _conversionFee: BigNumberish,
     overrides?: Overrides
@@ -932,6 +958,16 @@ export class ILiquidityPoolV2Converter extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     setConversionFee(
       _conversionFee: BigNumberish,
       overrides?: CallOverrides
@@ -1177,6 +1213,16 @@ export class ILiquidityPoolV2Converter extends Contract {
 
     "reserveStakedBalance(address)"(
       _reserveToken: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1444,6 +1490,16 @@ export class ILiquidityPoolV2Converter extends Contract {
 
     "reserveStakedBalance(address)"(
       _reserveToken: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    reserveTokens(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "reserveTokens(uint256)"(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

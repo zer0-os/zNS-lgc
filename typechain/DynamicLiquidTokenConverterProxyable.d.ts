@@ -40,6 +40,7 @@ interface DynamicLiquidTokenConverterProxyableInterface
     "converterType()": FunctionFragment;
     "getConnectorBalance(address)": FunctionFragment;
     "getMarketCap(address)": FunctionFragment;
+    "getReserve(address)": FunctionFragment;
     "getReturn(address,address,uint256)": FunctionFragment;
     "hasETHReserve()": FunctionFragment;
     "initialize(address,address,uint32)": FunctionFragment;
@@ -52,7 +53,7 @@ interface DynamicLiquidTokenConverterProxyableInterface
     "onlyOwnerCanUpdateRegistry()": FunctionFragment;
     "owner()": FunctionFragment;
     "prevRegistry()": FunctionFragment;
-    "reduceWeight(address)": FunctionFragment;
+    "reduceWeight(address,address)": FunctionFragment;
     "registry()": FunctionFragment;
     "reserveBalance(address)": FunctionFragment;
     "reserveRatio()": FunctionFragment;
@@ -138,6 +139,7 @@ interface DynamicLiquidTokenConverterProxyableInterface
     functionFragment: "getMarketCap",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "getReserve", values: [string]): string;
   encodeFunctionData(
     functionFragment: "getReturn",
     values: [string, string, BigNumberish]
@@ -179,7 +181,7 @@ interface DynamicLiquidTokenConverterProxyableInterface
   ): string;
   encodeFunctionData(
     functionFragment: "reduceWeight",
-    values: [string]
+    values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "registry", values?: undefined): string;
   encodeFunctionData(
@@ -316,6 +318,7 @@ interface DynamicLiquidTokenConverterProxyableInterface
     functionFragment: "getMarketCap",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getReserve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getReturn", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "hasETHReserve",
@@ -591,6 +594,16 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
     getReturn(
       _sourceToken: string,
       _targetToken: string,
@@ -663,11 +676,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -1014,6 +1029,16 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getReserve(
+    reserve: string,
+    overrides?: CallOverrides
+  ): Promise<[boolean, number]>;
+
+  "getReserve(address)"(
+    reserve: string,
+    overrides?: CallOverrides
+  ): Promise<[boolean, number]>;
+
   getReturn(
     _sourceToken: string,
     _targetToken: string,
@@ -1084,11 +1109,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
 
   reduceWeight(
     _reserveToken: string,
+    _to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "reduceWeight(address)"(
+  "reduceWeight(address,address)"(
     _reserveToken: string,
+    _to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1427,6 +1454,16 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean, number]>;
+
     getReturn(
       _sourceToken: string,
       _targetToken: string,
@@ -1497,11 +1534,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1879,6 +1918,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getReserve(reserve: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getReturn(
       _sourceToken: string,
       _targetToken: string,
@@ -1951,11 +1997,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -2295,6 +2343,16 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getReserve(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getReserve(address)"(
+      reserve: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getReturn(
       _sourceToken: string,
       _targetToken: string,
@@ -2375,11 +2433,13 @@ export class DynamicLiquidTokenConverterProxyable extends Contract {
 
     reduceWeight(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "reduceWeight(address)"(
+    "reduceWeight(address,address)"(
       _reserveToken: string,
+      _to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

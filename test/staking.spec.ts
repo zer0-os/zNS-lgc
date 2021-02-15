@@ -3,8 +3,8 @@ import { ethers, upgrades } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import multihashing from "multihashing-async";
 import {
-  Registry__factory,
-  Registry,
+  ZNSRegistry__factory,
+  ZNSRegistry,
   StakingController,
   StakingController__factory,
   DynamicTokenController,
@@ -90,7 +90,7 @@ const getInfinity = async (
 };
 
 describe("Staking", function () {
-  let registry: Registry;
+  let registry: ZNSRegistry;
   let signers: SignerWithAddress[];
   let staking: StakingController;
   let dynamic: DynamicTokenController;
@@ -104,14 +104,14 @@ describe("Staking", function () {
     signers = await ethers.getSigners();
     accs = await getAccounts(signers);
     const rf = (await ethers.getContractFactory(
-      "Registry"
-    )) as Registry__factory;
+      "ZNSRegistry"
+    )) as ZNSRegistry__factory;
     registry = (await upgrades.deployProxy(rf, [
       accs[0],
       accs[0],
       "",
       256,
-    ])) as Registry;
+    ])) as ZNSRegistry;
     await registry.deployed();
     const scf = (await ethers.getContractFactory(
       "StakingController"

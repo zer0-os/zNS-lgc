@@ -10,13 +10,29 @@ import {
   BigNumberish,
   PopulatedTransaction,
 } from "ethers";
-import { Contract, ContractTransaction } from "@ethersproject/contracts";
+import {
+  Contract,
+  ContractTransaction,
+  CallOverrides,
+} from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface NonupgradeableProxyInterface extends ethers.utils.Interface {
-  functions: {};
+  functions: {
+    "implementation()": FunctionFragment;
+  };
+
+  encodeFunctionData(
+    functionFragment: "implementation",
+    values?: undefined
+  ): string;
+
+  decodeFunctionResult(
+    functionFragment: "implementation",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -34,13 +50,35 @@ export class NonupgradeableProxy extends Contract {
 
   interface: NonupgradeableProxyInterface;
 
-  functions: {};
+  functions: {
+    implementation(overrides?: CallOverrides): Promise<[string]>;
 
-  callStatic: {};
+    "implementation()"(overrides?: CallOverrides): Promise<[string]>;
+  };
+
+  implementation(overrides?: CallOverrides): Promise<string>;
+
+  "implementation()"(overrides?: CallOverrides): Promise<string>;
+
+  callStatic: {
+    implementation(overrides?: CallOverrides): Promise<string>;
+
+    "implementation()"(overrides?: CallOverrides): Promise<string>;
+  };
 
   filters: {};
 
-  estimateGas: {};
+  estimateGas: {
+    implementation(overrides?: CallOverrides): Promise<BigNumber>;
 
-  populateTransaction: {};
+    "implementation()"(overrides?: CallOverrides): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    implementation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "implementation()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+  };
 }

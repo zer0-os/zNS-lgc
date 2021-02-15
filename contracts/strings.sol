@@ -41,8 +41,6 @@ library strings {
         uint256 _len;
         uint256 _ptr;
     }
-    uint256 constant dotlen = 1;
-    uint256 constant dotdata = 46;
 
     function memcpy(
         uint256 dest,
@@ -583,10 +581,8 @@ library strings {
             ptrdata := mload(ptr)
         }
         for (; ptr <= end; ptr++) {
-            if (bytes1(ptrdata) == bytes1(uint8(92))) {
-                return (false, 0, "quotecase");
-            }
-            if (uint8(bytes1(ptrdata)) == dotdata) {
+            uint8 _char = uint8(bytes1(ptrdata));
+            if (_char == 46) {
                 _len = ptr - selfptr - 1;
                 bytesref = new string(_len);
                 assembly {
@@ -596,9 +592,9 @@ library strings {
                 parent = keccak256(abi.encode(parent, bytesref));
                 selfptr = ptr;
             } else if (
-                uint8(bytes1(ptrdata)) < 97 || uint8(bytes1(ptrdata)) > 122
+                (_char < 97 || _char > 122) && (_char < 48 && _char > 57) && (_char != 45)
             ) {
-                return (false, 0, "fail not lowercase");
+                return (false, 0, "");
             }
             assembly {
                 ptrdata := mload(ptr)

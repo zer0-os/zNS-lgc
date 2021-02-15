@@ -60,7 +60,7 @@ abstract contract ConverterBase is IConverter, TokenHandler, TokenHolder, Contra
 
     IConverterAnchor public override anchor;            // converter anchor contract
     IWhitelist public override conversionWhitelist;     // whitelist contract with list of addresses that are allowed to use the converter
-    IERC20Token[] public reserveTokens;                 // ERC20 standard token addresses (prior version 17, use 'connectorTokens' instead)
+    IERC20Token[] public override reserveTokens;                 // ERC20 standard token addresses (prior version 17, use 'connectorTokens' instead)
     mapping (IERC20Token => Reserve) public reserves;   // reserve token addresses -> reserve data (prior version 17, use 'connectors' instead)
     uint32 public reserveRatio = 0;                     // ratio between the reserves and the market cap, equal to the total reserve weights
     uint32 public override maxConversionFee = 0;        // maximum conversion fee for the lifetime of the contract,

@@ -3,8 +3,8 @@ import { Provider } from "@ethersproject/providers";
 import { AbiCoder } from "@ethersproject/abi";
 import { keccak256 } from "@ethersproject/keccak256";
 import {
-  Registry__factory,
-  Registry,
+  ZNSRegistry__factory,
+  ZNSRegistry,
   StakingController,
   StakingController__factory,
   DynamicTokenController,
@@ -67,7 +67,7 @@ interface DynamicControllerData {
 }
 
 class ZeroSystem {
-  registry: Registry;
+  registry: ZNSRegistry;
   staking: StakingController;
   constructor(
     signerOrProvider: Provider | Signer,
@@ -75,7 +75,7 @@ class ZeroSystem {
     stakingController: string,
     public dynamicTokenController: string
   ) {
-    this.registry = Registry__factory.connect(registry, signerOrProvider);
+    this.registry = ZNSRegistry__factory.connect(registry, signerOrProvider);
     this.staking = StakingController__factory.connect(
       stakingController,
       signerOrProvider

@@ -82,7 +82,7 @@ contract NonupgradeableProxy {
     function _setImplementation(address newImplementation) private {
         require(
             Address.isContract(newImplementation),
-            "UpgradeableProxy: new implementation is not a contract"
+            "NonupgradeableProxy: new implementation is not a contract"
         );
 
         bytes32 slot = _IMPLEMENTATION_SLOT;
@@ -95,11 +95,18 @@ contract NonupgradeableProxy {
 
     /**
      * @dev Delegates the current call to the address returned by `_implementation()`.
-     *u
+     *
      * This function does not return to its internall call site, it will return directly to the external caller.
      */
     function _fallback() internal {
         _delegate(_implementation());
+    }
+
+    /**
+     * @dev Returns implementation that is delegatecalled in fallbacks
+     */
+    function implementation() external view returns (address) {
+        return _implementation();
     }
 
     /**

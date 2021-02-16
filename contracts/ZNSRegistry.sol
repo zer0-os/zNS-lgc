@@ -9,8 +9,6 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./ERC721Upgradeable.sol";
-import "./strings.sol";
-import "./strings.sol";
 import "./IZNSController.sol";
 
 contract ZNSRegistry is ERC721UpgradeableCustom {
@@ -34,7 +32,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         uint256 parent;
         uint256 depth;
         address controller;
-        string domain;
+        string name;
         string resolver;
         string image;
         uint256 childCreateLimit;
@@ -47,6 +45,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         uint256 parent;
         uint256 depth;
         address controller;
+        string name;
         string domain;
         string resolver;
         string image;
@@ -68,7 +67,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
     event DomainCreated(
         uint256 indexed parentId,
         uint256 tokenId,
-        string domain,
+        string name,
         address owner
     );
 
@@ -111,7 +110,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
     {
         __ERC721_init("Zer0 Name Service", "ZNS");
         Entry storage entry = _entries[ROOT_ID];
-        entry.domain = "ROOT";
+        entry.name = "ROOT";
         /// @dev permanently unlock all TLD images
         _entries[0].childImageRule = ChildImageRule.UNLOCKED;
         DomainCreated(0, ROOT_ID, "ROOT", _owner);
@@ -126,7 +125,8 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         out.parent = entry.parent;
         out.depth = entry.depth;
         out.controller = entry.controller;
-        out.domain = entry.domain;
+        out.name = entry.name;
+        // out.domain = entry.domain;
         out.resolver = entry.resolver;
         out.image = entry.image;
         out.createLimit = parent.childCreateLimit;
@@ -152,8 +152,8 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         return _entries[id].controller;
     }
 
-    function domainOf(uint256 id) public view returns (string memory) {
-        return _entries[id].domain;
+    function nameOf(uint256 id) public view returns (string memory) {
+        return _entries[id].name;
     }
 
     function resolverOf(uint256 id) public view returns (string memory) {
@@ -204,20 +204,6 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         return _exists(id);
     }
 
-    /// @notice For reading from chain and by controllers that have a multistep
-    /// creation cycle that need to know parent and child
-    function getIdAndParent(string memory _s)
-        public
-        pure
-        returns (uint256, uint256)
-    {
-        (bool valid, uint256 parent, string memory domain) =
-            strings.parseDomain(ROOT_ID, _s);
-        require(valid);
-        uint256 id = uint256(keccak256(abi.encode(parent, domain)));
-        return (id, parent);
-    }
-
     function getId(string[] memory path) public pure returns (uint256) {
         uint256 _id = ROOT_ID;
         for (uint256 i = 0; i < path.length; i++) {
@@ -226,18 +212,58 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         return _id;
     }
 
-    function parseDomain(string memory _s)
+    function calcId(uint256 parentId, string memory name)
         public
         pure
-        returns (
-            bool valid,
-            uint256 parent,
-            uint256 id,
-            string memory domain
-        )
+        returns (uint256)
     {
-        (valid, parent, domain) = strings.parseDomain(ROOT_ID, _s);
-        id = uint256(keccak256(abi.encode(parent, domain)));
+        return uint256(keccak256(abi.encode(parentId, name)));
+    }
+
+    /// @notice validates that a string consists of only alphanumeric chars + dash
+    function validateName(string memory name) public pure returns (bool) {
+        uint256 iptr;
+        bytes32 ptrdata;
+        uint256 _len = bytes(name).length;
+        uint256 stop32 = _len / 32;
+        assembly {
+            iptr := add(name, 0x20)
+        }
+        uint256 stopPtr = iptr + stop32;
+        for (; iptr < stopPtr; iptr++) {
+            assembly {
+                ptrdata := mload(iptr)
+            }
+            /// @dev 32 bytes * 8 bits/byte = 256 bits
+            for (uint256 j = 0; j < 256; j += 8) {
+                uint8 _char = uint8(bytes1(ptrdata << j));
+                /// @dev UTF8 97->122 is lowercase letters, 48-57 is numbers, 45 is '-'
+                if (
+                    (_char < 97 || _char > 122) &&
+                    (_char < 48 || _char > 57) &&
+                    (_char != 45)
+                ) {
+                    return false;
+                }
+            }
+        }
+        if (stop32 * 32 < _len) {
+            assembly {
+                ptrdata := mload(iptr)
+            }
+            uint256 stop1 = (_len - stop32 * 32) * 8;
+            for (uint256 j = 0; j < stop1; j += 8) {
+                uint8 _char = uint8(bytes1(ptrdata << j));
+                if (
+                    (_char < 97 || _char > 122) &&
+                    (_char < 48 || _char > 57) &&
+                    (_char != 45)
+                ) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -361,18 +387,16 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
 
     /**
      * @dev
-     * We return id and parentId so that controller contracts may get both
-     * without parsing the domain string again
+     * We return id so that controller contracts may retrieve it without recomputing
      */
-    function _createDomainEntry(string calldata domain, address _owner)
-        internal
-        returns (uint256, uint256)
-    {
-        require(bytes(domain).length > 0);
-        (bool succ, uint256 parentId, string memory child) =
-            strings.parseDomain(ROOT_ID, domain);
-        uint256 id = uint256(keccak256(abi.encode(parentId, child)));
-        require(succ, "domain failed to parse");
+    function _createDomainEntry(
+        uint256 parentId,
+        string calldata name,
+        address _owner
+    ) internal returns (uint256) {
+        require(bytes(name).length > 0);
+        require(validateName(name), "domain did not validate");
+        uint256 id = uint256(keccak256(abi.encode(parentId, name)));
         require(controllerLikeOf(msg.sender, parentId), "sender cant create");
         require(_exists(parentId), "parent doesn't exist");
         require(!_exists(id), "domain already created");
@@ -385,8 +409,8 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         Entry storage entry = _entries[id];
         entry.depth = parent.depth + 1;
         entry.parent = parentId;
-        entry.domain = domain;
-        DomainCreated(parentId, id, domain, _owner);
+        entry.name = name;
+        DomainCreated(parentId, id, name, _owner);
         /**
          * @dev if parent child image rule is locked, keep it locked
          * for derivative works and gallery domains
@@ -394,49 +418,53 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         if (parent.childImageRule == ChildImageRule.LOCKED) {
             _setChildImageRule(id, ChildImageRule.LOCKED);
         }
-        return (id, parentId);
+        return id;
     }
 
     function createDomain(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address _owner,
         address _controller
-    ) public returns (uint256 id, uint256 parentId) {
-        (id, parentId) = _createDomainEntry(domain, _owner);
+    ) public returns (uint256 id) {
+        id = _createDomainEntry(parentId, name, _owner);
         _mint(_owner, id);
         _setController(id, _controller);
     }
 
     function safeCreateDomain(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address _owner,
         address _controller,
         bytes calldata mintData,
         bytes calldata controllerData
-    ) public returns (uint256 id, uint256 parentId) {
-        (id, parentId) = _createDomainEntry(domain, _owner);
+    ) public returns (uint256 id) {
+        id = _createDomainEntry(parentId, name, _owner);
         _safeMint(_owner, id, mintData);
         _safeSetController(id, _controller, controllerData);
     }
 
     function createDomainSafeController(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address _owner,
         address _controller,
         bytes calldata controllerData
-    ) public returns (uint256 id, uint256 parentId) {
-        (id, parentId) = _createDomainEntry(domain, _owner);
+    ) public returns (uint256 id) {
+        id = _createDomainEntry(parentId, name, _owner);
         _mint(_owner, id);
         _safeSetController(id, _controller, controllerData);
     }
 
     function createDomainSafeMint(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address _owner,
         address _controller,
         bytes calldata mintData
-    ) public returns (uint256 id, uint256 parentId) {
-        (id, parentId) = _createDomainEntry(domain, _owner);
+    ) public returns (uint256 id) {
+        id = _createDomainEntry(parentId, name, _owner);
         _safeMint(_owner, id, mintData);
         _setController(id, _controller);
     }

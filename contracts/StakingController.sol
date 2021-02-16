@@ -100,7 +100,8 @@ contract StakingController is IZNSController, Initializable {
     event Bid(
         address indexed staker,
         address indexed controller,
-        string domain,
+        uint256 indexed parentId,
+        string name,
         address stakeToken,
         bytes data,
         string proposal,
@@ -141,13 +142,14 @@ contract StakingController is IZNSController, Initializable {
     }
 
     function claimBid(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address owner,
         address controller,
         bytes calldata data
     ) external {
         require(data.length == 0 || Address.isContract(controller));
-        (uint256 id, ) = registry.createDomainSafeController(domain, owner, controller, data);
+        uint256 id = registry.createDomainSafeController(parentId, name, owner, controller, data);
         Stake storage stake =
             stakes[keccak256(abi.encode(msg.sender, id))];
         require(stake.status == StakeStatus.ACCEPTED);
@@ -158,7 +160,8 @@ contract StakingController is IZNSController, Initializable {
     }
 
     function safeClaimBid(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address owner,
         address controller,
         bytes calldata controllerData,
@@ -166,8 +169,9 @@ contract StakingController is IZNSController, Initializable {
     ) external {
         require(controllerData.length == 0 || Address.isContract(controller));
         require(mintData.length == 0 || Address.isContract(owner));
-        (uint256 id, ) = registry.safeCreateDomain(
-            domain,
+        uint256 id = registry.safeCreateDomain(
+            parentId,
+            name,
             owner,
             controller,
             mintData,
@@ -191,17 +195,19 @@ contract StakingController is IZNSController, Initializable {
 
     // @notice this swaps tokens prior
     function bidByPath(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address controller,
         bytes calldata data,
         string calldata proposal,
         BancorSwapData calldata swapData
     ) external payable {
-        bidForByPath(domain, controller, data, proposal, swapData, msg.sender);
+        bidForByPath(parentId, name, controller, data, proposal, swapData, msg.sender);
     }
 
     function bidForByPath(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address controller,
         bytes calldata data,
         string calldata proposal,
@@ -211,7 +217,7 @@ contract StakingController is IZNSController, Initializable {
         address stakeToken = swapData.path[swapData.path.length - 1];
         uint amt;
         {
-            (uint256 id, uint256 parentId) = registry.getIdAndParent(domain);
+            uint256 id = registry.calcId(parentId, name);
             require(!registry.exists(id));
             require(registry.controllerOf(parentId) == address(this));
             DomainConfig storage domainConfig = domainConfigs[parentId];
@@ -233,7 +239,8 @@ contract StakingController is IZNSController, Initializable {
        emit Bid(
             staker,
             controller,
-            domain,
+            parentId,
+            name,
             stakeToken,
             data,
             proposal,
@@ -242,17 +249,19 @@ contract StakingController is IZNSController, Initializable {
     }
 
     function bid(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address controller,
         bytes calldata data,
         string calldata proposal,
         uint256 amt
     ) external {
-       bidFor(domain, controller, data, proposal, amt, msg.sender);
+       bidFor(parentId, name, controller, data, proposal, amt, msg.sender);
     }
 
     function bidFor(
-        string calldata domain,
+        uint256 parentId,
+        string calldata name,
         address controller,
         bytes calldata data,
         string calldata proposal,
@@ -262,7 +271,7 @@ contract StakingController is IZNSController, Initializable {
         require(data.length == 0 || Address.isContract(controller));
         address stakeToken;
         {
-            (uint256 id, uint256 parentId) = registry.getIdAndParent(domain);
+            uint256 id = registry.calcId(parentId, name);
             require(!registry.exists(id));
             require(registry.controllerOf(parentId) == address(this));
             DomainConfig storage domainConfig = domainConfigs[parentId];
@@ -282,7 +291,8 @@ contract StakingController is IZNSController, Initializable {
         emit Bid(
             staker,
             controller,
-            domain,
+            parentId,
+            name,
             stakeToken,
             data,
             proposal,

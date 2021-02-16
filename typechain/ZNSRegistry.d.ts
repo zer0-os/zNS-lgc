@@ -26,32 +26,31 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
+    "calcId(uint256,string)": FunctionFragment;
     "childCountOf(uint256)": FunctionFragment;
     "childCreateLimitOf(uint256)": FunctionFragment;
     "childImageRuleOf(uint256)": FunctionFragment;
     "controllerLikeOf(address,uint256)": FunctionFragment;
     "controllerOf(uint256)": FunctionFragment;
-    "createDomain(string,address,address)": FunctionFragment;
-    "createDomainSafeController(string,address,address,bytes)": FunctionFragment;
-    "createDomainSafeMint(string,address,address,bytes)": FunctionFragment;
+    "createDomain(uint256,string,address,address)": FunctionFragment;
+    "createDomainSafeController(uint256,string,address,address,bytes)": FunctionFragment;
+    "createDomainSafeMint(uint256,string,address,address,bytes)": FunctionFragment;
     "createLimitOf(uint256)": FunctionFragment;
     "depthOf(uint256)": FunctionFragment;
-    "domainOf(uint256)": FunctionFragment;
     "entryOf(uint256)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
-    "getIdAndParent(string)": FunctionFragment;
     "imageOf(uint256)": FunctionFragment;
     "imageRuleOf(uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "name()": FunctionFragment;
+    "nameOf(uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parentOf(uint256)": FunctionFragment;
-    "parseDomain(string)": FunctionFragment;
     "resolverOf(uint256)": FunctionFragment;
-    "safeCreateDomain(string,address,address,bytes,bytes)": FunctionFragment;
+    "safeCreateDomain(uint256,string,address,address,bytes,bytes)": FunctionFragment;
     "safeSetController(uint256,address,bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
@@ -68,6 +67,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "validateName(string)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "ROOT_ID", values?: undefined): string;
@@ -77,6 +77,10 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "calcId",
+    values: [BigNumberish, string]
+  ): string;
   encodeFunctionData(
     functionFragment: "childCountOf",
     values: [BigNumberish]
@@ -99,15 +103,15 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createDomain",
-    values: [string, string, string]
+    values: [BigNumberish, string, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "createDomainSafeController",
-    values: [string, string, string, BytesLike]
+    values: [BigNumberish, string, string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "createDomainSafeMint",
-    values: [string, string, string, BytesLike]
+    values: [BigNumberish, string, string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "createLimitOf",
@@ -115,10 +119,6 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "depthOf",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "domainOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -134,10 +134,6 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "getId", values: [string[]]): string;
-  encodeFunctionData(
-    functionFragment: "getIdAndParent",
-    values: [string]
-  ): string;
   encodeFunctionData(
     functionFragment: "imageOf",
     values: [BigNumberish]
@@ -156,6 +152,10 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "nameOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
   ): string;
@@ -163,14 +163,13 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "parentOf",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "parseDomain", values: [string]): string;
   encodeFunctionData(
     functionFragment: "resolverOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeCreateDomain",
-    values: [string, string, string, BytesLike, BytesLike]
+    values: [BigNumberish, string, string, string, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "safeSetController",
@@ -230,11 +229,16 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "validateName",
+    values: [string]
+  ): string;
 
   decodeFunctionResult(functionFragment: "ROOT_ID", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "calcId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "childCountOf",
     data: BytesLike
@@ -272,7 +276,6 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "depthOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "domainOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "entryOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
   decodeFunctionResult(
@@ -280,10 +283,6 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getId", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getIdAndParent",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "imageOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "imageRuleOf",
@@ -295,12 +294,9 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "nameOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "parentOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "parseDomain",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "resolverOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeCreateDomain",
@@ -356,6 +352,10 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "validateName",
     data: BytesLike
   ): Result;
 
@@ -425,6 +425,18 @@ export class ZNSRegistry extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<[string]>;
 
+    calcId(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "calcId(uint256,string)"(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     childCountOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -478,29 +490,33 @@ export class ZNSRegistry extends Contract {
     ): Promise<[string]>;
 
     createDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "createDomain(string,address,address)"(
-      domain: string,
+    "createDomain(uint256,string,address,address)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     createDomainSafeController(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "createDomainSafeController(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeController(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
@@ -508,15 +524,17 @@ export class ZNSRegistry extends Contract {
     ): Promise<ContractTransaction>;
 
     createDomainSafeMint(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "createDomainSafeMint(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeMint(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -540,13 +558,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
-
-    "domainOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
     entryOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -556,6 +567,7 @@ export class ZNSRegistry extends Contract {
           string,
           BigNumber,
           BigNumber,
+          string,
           string,
           string,
           string,
@@ -570,6 +582,7 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          name: string;
           domain: string;
           resolver: string;
           image: string;
@@ -588,6 +601,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -598,6 +612,7 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          name: string;
           domain: string;
           resolver: string;
           image: string;
@@ -623,6 +638,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -633,6 +649,7 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          name: string;
           domain: string;
           resolver: string;
           image: string;
@@ -651,6 +668,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -661,6 +679,7 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          name: string;
           domain: string;
           resolver: string;
           image: string;
@@ -696,16 +715,6 @@ export class ZNSRegistry extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    getIdAndParent(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
-
-    "getIdAndParent(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
 
     imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
@@ -749,6 +758,13 @@ export class ZNSRegistry extends Contract {
 
     "name()"(overrides?: CallOverrides): Promise<[string]>;
 
+    nameOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+
+    "nameOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -766,30 +782,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    parseDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
-    "parseDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
     resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     "resolverOf(uint256)"(
@@ -798,7 +790,8 @@ export class ZNSRegistry extends Contract {
     ): Promise<[string]>;
 
     safeCreateDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -806,8 +799,9 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "safeCreateDomain(string,address,address,bytes,bytes)"(
-      domain: string,
+    "safeCreateDomain(uint256,string,address,address,bytes,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -989,6 +983,13 @@ export class ZNSRegistry extends Contract {
       tokenId: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    validateName(name: string, overrides?: CallOverrides): Promise<[boolean]>;
+
+    "validateName(string)"(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
   ROOT_ID(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1017,6 +1018,18 @@ export class ZNSRegistry extends Contract {
   baseURI(overrides?: CallOverrides): Promise<string>;
 
   "baseURI()"(overrides?: CallOverrides): Promise<string>;
+
+  calcId(
+    parentId: BigNumberish,
+    name: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "calcId(uint256,string)"(
+    parentId: BigNumberish,
+    name: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   childCountOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1065,29 +1078,33 @@ export class ZNSRegistry extends Contract {
   ): Promise<string>;
 
   createDomain(
-    domain: string,
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "createDomain(string,address,address)"(
-    domain: string,
+  "createDomain(uint256,string,address,address)"(
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   createDomainSafeController(
-    domain: string,
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     controllerData: BytesLike,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "createDomainSafeController(string,address,address,bytes)"(
-    domain: string,
+  "createDomainSafeController(uint256,string,address,address,bytes)"(
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     controllerData: BytesLike,
@@ -1095,15 +1112,17 @@ export class ZNSRegistry extends Contract {
   ): Promise<ContractTransaction>;
 
   createDomainSafeMint(
-    domain: string,
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     mintData: BytesLike,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "createDomainSafeMint(string,address,address,bytes)"(
-    domain: string,
+  "createDomainSafeMint(uint256,string,address,address,bytes)"(
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     mintData: BytesLike,
@@ -1127,13 +1146,6 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  "domainOf(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
   entryOf(
     id: BigNumberish,
     overrides?: CallOverrides
@@ -1142,6 +1154,7 @@ export class ZNSRegistry extends Contract {
       string,
       BigNumber,
       BigNumber,
+      string,
       string,
       string,
       string,
@@ -1156,6 +1169,7 @@ export class ZNSRegistry extends Contract {
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      name: string;
       domain: string;
       resolver: string;
       image: string;
@@ -1179,6 +1193,7 @@ export class ZNSRegistry extends Contract {
       string,
       string,
       string,
+      string,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1189,6 +1204,7 @@ export class ZNSRegistry extends Contract {
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      name: string;
       domain: string;
       resolver: string;
       image: string;
@@ -1223,16 +1239,6 @@ export class ZNSRegistry extends Contract {
     path: string[],
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  getIdAndParent(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber]>;
-
-  "getIdAndParent(string)"(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber]>;
 
   imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1276,6 +1282,13 @@ export class ZNSRegistry extends Contract {
 
   "name()"(overrides?: CallOverrides): Promise<string>;
 
+  nameOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "nameOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "ownerOf(uint256)"(
@@ -1290,30 +1303,6 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  parseDomain(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber, string] & {
-      valid: boolean;
-      parent: BigNumber;
-      id: BigNumber;
-      domain: string;
-    }
-  >;
-
-  "parseDomain(string)"(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber, string] & {
-      valid: boolean;
-      parent: BigNumber;
-      id: BigNumber;
-      domain: string;
-    }
-  >;
-
   resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "resolverOf(uint256)"(
@@ -1322,7 +1311,8 @@ export class ZNSRegistry extends Contract {
   ): Promise<string>;
 
   safeCreateDomain(
-    domain: string,
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     mintData: BytesLike,
@@ -1330,8 +1320,9 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "safeCreateDomain(string,address,address,bytes,bytes)"(
-    domain: string,
+  "safeCreateDomain(uint256,string,address,address,bytes,bytes)"(
+    parentId: BigNumberish,
+    name: string,
     _owner: string,
     _controller: string,
     mintData: BytesLike,
@@ -1511,6 +1502,13 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  validateName(name: string, overrides?: CallOverrides): Promise<boolean>;
+
+  "validateName(string)"(
+    name: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   callStatic: {
     ROOT_ID(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1538,6 +1536,18 @@ export class ZNSRegistry extends Contract {
     baseURI(overrides?: CallOverrides): Promise<string>;
 
     "baseURI()"(overrides?: CallOverrides): Promise<string>;
+
+    calcId(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "calcId(uint256,string)"(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     childCountOf(
       id: BigNumberish,
@@ -1589,50 +1599,56 @@ export class ZNSRegistry extends Contract {
     ): Promise<string>;
 
     createDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
-    "createDomain(string,address,address)"(
-      domain: string,
+    "createDomain(uint256,string,address,address)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
     createDomainSafeController(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
-    "createDomainSafeController(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeController(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
     createDomainSafeMint(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
-    "createDomainSafeMint(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeMint(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
     createLimitOf(
       id: BigNumberish,
@@ -1651,13 +1667,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    "domainOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     entryOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1666,6 +1675,7 @@ export class ZNSRegistry extends Contract {
         string,
         BigNumber,
         BigNumber,
+        string,
         string,
         string,
         string,
@@ -1680,6 +1690,7 @@ export class ZNSRegistry extends Contract {
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        name: string;
         domain: string;
         resolver: string;
         image: string;
@@ -1703,6 +1714,7 @@ export class ZNSRegistry extends Contract {
         string,
         string,
         string,
+        string,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1713,6 +1725,7 @@ export class ZNSRegistry extends Contract {
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        name: string;
         domain: string;
         resolver: string;
         image: string;
@@ -1747,16 +1760,6 @@ export class ZNSRegistry extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getIdAndParent(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
-
-    "getIdAndParent(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
 
     imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1800,6 +1803,13 @@ export class ZNSRegistry extends Contract {
 
     "name()"(overrides?: CallOverrides): Promise<string>;
 
+    nameOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "nameOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "ownerOf(uint256)"(
@@ -1814,30 +1824,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    parseDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
-    "parseDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
     resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "resolverOf(uint256)"(
@@ -1846,22 +1832,24 @@ export class ZNSRegistry extends Contract {
     ): Promise<string>;
 
     safeCreateDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       controllerData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
-    "safeCreateDomain(string,address,address,bytes,bytes)"(
-      domain: string,
+    "safeCreateDomain(uint256,string,address,address,bytes,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       controllerData: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
+    ): Promise<BigNumber>;
 
     safeSetController(
       id: BigNumberish,
@@ -2031,6 +2019,13 @@ export class ZNSRegistry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    validateName(name: string, overrides?: CallOverrides): Promise<boolean>;
+
+    "validateName(string)"(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
   filters: {
@@ -2070,7 +2065,7 @@ export class ZNSRegistry extends Contract {
     DomainCreated(
       parentId: BigNumberish | null,
       tokenId: null,
-      domain: null,
+      name: null,
       owner: null
     ): EventFilter;
 
@@ -2120,6 +2115,18 @@ export class ZNSRegistry extends Contract {
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     "baseURI()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    calcId(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "calcId(uint256,string)"(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     childCountOf(
       id: BigNumberish,
@@ -2174,29 +2181,33 @@ export class ZNSRegistry extends Contract {
     ): Promise<BigNumber>;
 
     createDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "createDomain(string,address,address)"(
-      domain: string,
+    "createDomain(uint256,string,address,address)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     createDomainSafeController(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "createDomainSafeController(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeController(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
@@ -2204,15 +2215,17 @@ export class ZNSRegistry extends Contract {
     ): Promise<BigNumber>;
 
     createDomainSafeMint(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "createDomainSafeMint(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeMint(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -2232,13 +2245,6 @@ export class ZNSRegistry extends Contract {
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "depthOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "domainOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2271,13 +2277,6 @@ export class ZNSRegistry extends Contract {
 
     "getId(string[])"(
       path: string[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getIdAndParent(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getIdAndParent(string)"(
-      _s: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2326,6 +2325,13 @@ export class ZNSRegistry extends Contract {
 
     "name()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    nameOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "nameOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -2343,13 +2349,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    parseDomain(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "parseDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "resolverOf(uint256)"(
@@ -2358,7 +2357,8 @@ export class ZNSRegistry extends Contract {
     ): Promise<BigNumber>;
 
     safeCreateDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -2366,8 +2366,9 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "safeCreateDomain(string,address,address,bytes,bytes)"(
-      domain: string,
+    "safeCreateDomain(uint256,string,address,address,bytes,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -2546,6 +2547,13 @@ export class ZNSRegistry extends Contract {
       tokenId: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    validateName(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "validateName(string)"(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -2578,6 +2586,18 @@ export class ZNSRegistry extends Contract {
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "baseURI()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    calcId(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "calcId(uint256,string)"(
+      parentId: BigNumberish,
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     childCountOf(
       id: BigNumberish,
@@ -2632,29 +2652,33 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     createDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "createDomain(string,address,address)"(
-      domain: string,
+    "createDomain(uint256,string,address,address)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     createDomainSafeController(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "createDomainSafeController(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeController(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       controllerData: BytesLike,
@@ -2662,15 +2686,17 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     createDomainSafeMint(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "createDomainSafeMint(string,address,address,bytes)"(
-      domain: string,
+    "createDomainSafeMint(uint256,string,address,address,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -2693,16 +2719,6 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "depthOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    domainOf(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "domainOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2744,16 +2760,6 @@ export class ZNSRegistry extends Contract {
 
     "getId(string[])"(
       path: string[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getIdAndParent(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getIdAndParent(string)"(
-      _s: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2805,6 +2811,16 @@ export class ZNSRegistry extends Contract {
 
     "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    nameOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "nameOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -2825,16 +2841,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    parseDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "parseDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     resolverOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -2846,7 +2852,8 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     safeCreateDomain(
-      domain: string,
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -2854,8 +2861,9 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "safeCreateDomain(string,address,address,bytes,bytes)"(
-      domain: string,
+    "safeCreateDomain(uint256,string,address,address,bytes,bytes)"(
+      parentId: BigNumberish,
+      name: string,
       _owner: string,
       _controller: string,
       mintData: BytesLike,
@@ -3036,6 +3044,16 @@ export class ZNSRegistry extends Contract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    validateName(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "validateName(string)"(
+      name: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

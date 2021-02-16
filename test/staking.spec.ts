@@ -159,6 +159,26 @@ describe("Staking", function () {
       staking: staking.address,
       dynamic: dynamic.address,
     });
+    console.log("s", await registry.validateName("hmm"));
+    console.log(
+      "s",
+      await registry.validateName(
+        "hmmmmmmm-mmmmmm-mmmmmmmmm-mmmmmmmmmmmmmmm-mmmmmmmmmm"
+      )
+    );
+    console.log(
+      "s",
+      await registry.validateName(
+        "-hmmmmmmm-mmmmmm-mmmmmmmmm-mmmmmmmmmmmmmmm-mmmmmmmmmm-"
+      )
+    );
+    console.log("f", await registry.validateName("hm.m"));
+    console.log("f", await registry.validateName(".hmm"));
+    console.log("f", await registry.validateName("hmm."));
+    console.log(
+      "f",
+      await registry.validateName(".m.m.m.m.m.m.m.m.m.m.m.m.m.m.")
+    );
   });
   it("get some infinity", async function () {
     await getInfinity(signers[1], bancor, infConv, infinity.address);
@@ -176,38 +196,45 @@ describe("Staking", function () {
     console.log("controllerof", await registry.controllerOf(ROOT_ID));
   });
   it("do stake with zero addr controller and accept and claim", async function () {
-    const _staking = staking.connect(signers[1]);
     expect(
-      _staking.bid(
+      zero.bid(
+        signers[1],
         "zero",
-        zeroAddress,
-        "0x",
         "Qm....",
-        BigNumber.from(10).pow(3)
+        BigNumber.from(10).pow(3),
+        zeroAddress,
+        "0x"
       )
     ).to.revertedWith("");
     await infinity.connect(signers[1]).approve(staking.address, MAX_256);
-    await _staking.bid(
+    await zero.bid(
+      signers[1],
       "zero",
-      zeroAddress,
-      "0x",
       "Qm....",
-      BigNumber.from(10).pow(18)
+      BigNumber.from(10).pow(18),
+      zeroAddress,
+      "0x"
     );
     await staking.acceptBid(signers[1].address, getDomainId("zero"), ROOT_ID);
-    await _staking.claimBid("zero", signers[1].address, zeroAddress, "0x");
+    await zero.claimBid(
+      signers[1],
+      "zero",
+      signers[1].address,
+      zeroAddress,
+      "0x"
+    );
     console.log("signer1", signers[1].address);
     console.log("owner of zero", await registry.ownerOf(getDomainId("zero")));
   });
   it("do stake with dynamic token controller and accept and claim", async function () {
-    const _staking = staking.connect(signers[1]);
     expect(
-      _staking.bid(
+      zero.bid(
+        signers[1],
         "wilder",
-        zeroAddress,
-        "0x",
         "Qm....",
-        BigNumber.from(10).pow(3)
+        BigNumber.from(10).pow(3),
+        zeroAddress,
+        "0x"
       )
     ).to.revertedWith("");
     await infinity.connect(signers[1]).approve(staking.address, MAX_256);
@@ -258,13 +285,8 @@ describe("Staking", function () {
         getDomainId("wilder"),
         "qmagbegubgeurbghebguerbguerbgergergerg"
       );
-
-    const getidtx = await registry.populateTransaction
-      .getIdAndParent("foo.bar.baz")
-      .then((x) => signers[0].sendTransaction(x));
-
-    const [b, a, c, i, g] = await Promise.all(
-      [bidtx, acceptx, claimtx, imagetx, getidtx].map((x) =>
+    const [b, a, c, i] = await Promise.all(
+      [bidtx, acceptx, claimtx, imagetx].map((x) =>
         x.wait(1).then((x) => x.gasUsed.toString())
       )
     );
@@ -273,6 +295,5 @@ describe("Staking", function () {
     console.log("accept gas", a);
     console.log("claim gas", c);
     console.log("image gas", i);
-    console.log("getid gas", g);
   });
 });

@@ -55,6 +55,20 @@ function getDomainId(_domain: string): string {
   return BigNumber.from(hash).toString();
 }
 
+function calcParentIdAndName(_domain: string): [string, string] {
+  if (_domain === "ROOT") {
+    return [ROOT_ID, "ROOT"];
+  }
+  let domains = _domain.split(".");
+  const name = domains[domains.length - 1];
+  domains = domains.slice(0, -1);
+  let hash = ROOT_ID_HASH;
+  for (const domain of domains) {
+    hash = keccak256(coder.encode(["uint256", "string"], [hash, domain]));
+  }
+  return [BigNumber.from(hash).toString(), name];
+}
+
 interface DynamicControllerData {
   reserveAddr: string;
   initWeight: BigNumberish;
@@ -96,31 +110,58 @@ class ZeroSystem {
     amt: BigNumberish,
     data: DynamicControllerData
   ) {
+    return this.bid(
+      signer,
+      domain,
+      proposal,
+      amt,
+      this.dynamicTokenController,
+      this.encodeDynamicData(data)
+    );
+  }
+
+  async bid(
+    signer: Signer,
+    domain: string,
+    proposal: string,
+    amt: BigNumberish,
+    controller: string,
+    data: BytesLike
+  ) {
+    const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
       .connect(signer)
-      .bid(
-        domain,
-        this.dynamicTokenController,
-        this.encodeDynamicData(data),
-        proposal,
-        amt
-      );
+      .bid(parentId, name, controller, data, proposal, amt);
   }
+
   async claimBidWithDynamicController(
     signer: Signer,
     domain: string,
     owner: string,
     data: DynamicControllerData
   ) {
+    return this.claimBid(
+      signer,
+      domain,
+      owner,
+      this.dynamicTokenController,
+      this.encodeDynamicData(data)
+    );
+  }
+
+  async claimBid(
+    signer: Signer,
+    domain: string,
+    owner: string,
+    controller: string,
+    data: BytesLike
+  ) {
+    const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
       .connect(signer)
-      .claimBid(
-        domain,
-        owner,
-        this.dynamicTokenController,
-        this.encodeDynamicData(data)
-      );
+      .claimBid(parentId, name, owner, controller, data);
   }
+
   encodeDynamicData({
     reserveAddr,
     initWeight,

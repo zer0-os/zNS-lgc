@@ -4,7 +4,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./IZNSController.sol";
 import "./NonupgradeableProxy.sol";
 import "./bancor/token/interfaces/IERC20Token.sol";
@@ -13,7 +12,16 @@ import "./bancor/converter/interfaces/IDynamicLiquidTokenConverterProxyable.sol"
 import "./StakingController.sol";
 import "./ZNSRegistry.sol";
 
-contract DynamicTokenController is IZNSController, OwnableUpgradeable {
+/**
+ * @notice DynamicTokenController
+ * This contract is designed to interact with the staking controller. It creates a dynamic token
+ * and a converter for a domain, and then transfers the controller to the staking controller, configuring the
+ * the domain's reserve and minimum bid in the process. It keeps a registry of converters and tokens for each
+ * domain, and allows for upgrades if the implementation gets changed by the root owner. It also offers
+ * a flow for unsafely setting the controller to this contract, and then creating a dynamic token
+ * and configuring the domain with the StakingController in a separate call.
+ */
+contract DynamicTokenController is IZNSController, Initializable {
     using Address for address payable;
     using SafeERC20 for IERC20;
     mapping(uint256 => IDSTokenProxyable) public tokens;
@@ -24,7 +32,6 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
     address constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     StakingController public stakingController;
     ZNSRegistry public registry;
-    bool receivingEth;
 
     event DynamicTokenCreated(
         uint256 indexed id,
@@ -47,26 +54,27 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
         ZNSRegistry _registry,
         address _bancorRegistry
     ) public initializer {
-        __Ownable_init();
-        receivingEth = false;
         dsTokenImplementation = _dsImpl;
-        registry = _registry;
         dynamicConverterImplementation = _dconvImpl;
+        stakingController = _stakingController;
+        registry = _registry;
         bancorRegistry = _bancorRegistry;
     }
 
-    function setBancorRegistry(address _registry) external onlyOwner {
+    modifier onlyRoot() {
+        require(registry.ownerOf(registry.ROOT_ID()) == msg.sender);
+        _;
+    }
+
+    function setBancorRegistry(address _registry) external onlyRoot {
         bancorRegistry = _registry;
     }
 
-    function setDSTokenImplementation(address _impl) external onlyOwner {
+    function setDSTokenImplementation(address _impl) external onlyRoot {
         dsTokenImplementation = _impl;
     }
 
-    function setDynamicConverterImplemenation(address _impl)
-        external
-        onlyOwner
-    {
+    function setDynamicConverterImplemenation(address _impl) external onlyRoot {
         dynamicConverterImplementation = _impl;
     }
 
@@ -144,7 +152,7 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
         return converterProxy;
     }
 
-    function _configureDynamicController(
+    function _createDynamicTokenAndConfigureStake(
         uint256 id,
         address reserve,
         uint32 initWeight,
@@ -179,11 +187,16 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
             address(stakingController),
             abi.encode(address(tokenProxy), minBid)
         );
-        emit DynamicTokenCreated(id, reserve, address(tokenProxy), address(converterProxy));
+        emit DynamicTokenCreated(
+            id,
+            reserve,
+            address(tokenProxy),
+            address(converterProxy)
+        );
     }
 
-
-    function configureDynamicController(
+    /// @notice For flows that unsafely set this contract as the controller
+    function createDynamicTokenAndConfigureStake(
         uint256 id,
         address reserve,
         uint32 initWeight,
@@ -196,6 +209,18 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
     ) public {
         require(msg.sender == registry.ownerOf(id));
         require(address(tokens[id]) == address(0));
+        require(registry.controllerOf(id) == address(this));
+        _createDynamicTokenAndConfigureStake(
+            id,
+            reserve,
+            initWeight,
+            stepWeight,
+            minWeight,
+            mcapThreshold,
+            minBid,
+            name,
+            symbol
+        );
     }
 
     function onSetZnsController(
@@ -204,6 +229,7 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
         uint256 id,
         bytes memory data
     ) external override returns (bytes4) {
+        require(msg.sender == address(registry));
         (
             address reserve,
             uint32 initWeight,
@@ -227,7 +253,8 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
                     string
                 )
             );
-        _configureDynamicController(
+
+        _createDynamicTokenAndConfigureStake(
             id,
             reserve,
             initWeight,
@@ -238,10 +265,7 @@ contract DynamicTokenController is IZNSController, OwnableUpgradeable {
             name,
             symbol
         );
-        return this.onSetZnsController.selector;
-    }
 
-    receive() external payable {
-        require(receivingEth);
+        return this.onSetZnsController.selector;
     }
 }

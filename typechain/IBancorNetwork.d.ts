@@ -13,7 +13,7 @@ import {
 import {
   Contract,
   ContractTransaction,
-  Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -59,7 +59,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
     "convertByPath(address[],uint256,uint256,address,address,uint256)"(
@@ -69,7 +69,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
   };
 
@@ -80,7 +80,7 @@ export class IBancorNetwork extends Contract {
     _beneficiary: string,
     _affiliateAccount: string,
     _affiliateFee: BigNumberish,
-    overrides?: Overrides
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
   "convertByPath(address[],uint256,uint256,address,address,uint256)"(
@@ -90,7 +90,7 @@ export class IBancorNetwork extends Contract {
     _beneficiary: string,
     _affiliateAccount: string,
     _affiliateFee: BigNumberish,
-    overrides?: Overrides
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
   callStatic: {
@@ -125,7 +125,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
     "convertByPath(address[],uint256,uint256,address,address,uint256)"(
@@ -135,7 +135,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
   };
 
@@ -147,7 +147,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
     "convertByPath(address[],uint256,uint256,address,address,uint256)"(
@@ -157,7 +157,7 @@ export class IBancorNetwork extends Contract {
       _beneficiary: string,
       _affiliateAccount: string,
       _affiliateFee: BigNumberish,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

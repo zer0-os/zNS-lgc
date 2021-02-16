@@ -23,23 +23,20 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 interface DynamicTokenControllerInterface extends ethers.utils.Interface {
   functions: {
     "bancorRegistry()": FunctionFragment;
-    "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)": FunctionFragment;
     "converters(uint256)": FunctionFragment;
+    "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)": FunctionFragment;
     "dsTokenImplementation()": FunctionFragment;
     "dynamicConverterImplementation()": FunctionFragment;
     "initialize(address,address,address,address,address)": FunctionFragment;
     "onSetZnsController(address,address,uint256,bytes)": FunctionFragment;
-    "owner()": FunctionFragment;
     "reduceWeight(uint256,address)": FunctionFragment;
     "reduceWeightTo(uint256,address,address)": FunctionFragment;
     "registry()": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "setBancorRegistry(address)": FunctionFragment;
     "setDSTokenImplementation(address)": FunctionFragment;
     "setDynamicConverterImplemenation(address)": FunctionFragment;
     "stakingController()": FunctionFragment;
     "tokens(uint256)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
     "upgradeConverter(uint256)": FunctionFragment;
   };
 
@@ -48,7 +45,11 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "configureDynamicController",
+    functionFragment: "converters",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "createDynamicTokenAndConfigureStake",
     values: [
       BigNumberish,
       string,
@@ -60,10 +61,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
       string,
       string
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "converters",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "dsTokenImplementation",
@@ -81,7 +78,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     functionFragment: "onSetZnsController",
     values: [string, string, BigNumberish, BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "reduceWeight",
     values: [BigNumberish, string]
@@ -91,10 +87,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     values: [BigNumberish, string, string]
   ): string;
   encodeFunctionData(functionFragment: "registry", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "setBancorRegistry",
     values: [string]
@@ -116,10 +108,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "upgradeConverter",
     values: [BigNumberish]
   ): string;
@@ -128,11 +116,11 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     functionFragment: "bancorRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "converters", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "configureDynamicController",
+    functionFragment: "createDynamicTokenAndConfigureStake",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "converters", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "dsTokenImplementation",
     data: BytesLike
@@ -146,7 +134,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     functionFragment: "onSetZnsController",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "reduceWeight",
     data: BytesLike
@@ -156,10 +143,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "registry", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "setBancorRegistry",
     data: BytesLike
@@ -178,10 +161,6 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "tokens", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "upgradeConverter",
     data: BytesLike
   ): Result;
@@ -189,12 +168,10 @@ interface DynamicTokenControllerInterface extends ethers.utils.Interface {
   events: {
     "DynamicConverterUpgraded(uint256,address,address,address,address)": EventFragment;
     "DynamicTokenCreated(uint256,address,address,address)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DynamicConverterUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DynamicTokenCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
 
 export class DynamicTokenController extends Contract {
@@ -215,32 +192,6 @@ export class DynamicTokenController extends Contract {
 
     "bancorRegistry()"(overrides?: CallOverrides): Promise<[string]>;
 
-    configureDynamicController(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     converters(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -250,6 +201,32 @@ export class DynamicTokenController extends Contract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    createDynamicTokenAndConfigureStake(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     dsTokenImplementation(overrides?: CallOverrides): Promise<[string]>;
 
@@ -297,10 +274,6 @@ export class DynamicTokenController extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    "owner()"(overrides?: CallOverrides): Promise<[string]>;
-
     reduceWeight(
       id: BigNumberish,
       reserveToken: string,
@@ -330,10 +303,6 @@ export class DynamicTokenController extends Contract {
     registry(overrides?: CallOverrides): Promise<[string]>;
 
     "registry()"(overrides?: CallOverrides): Promise<[string]>;
-
-    renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
-
-    "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
 
     setBancorRegistry(
       _registry: string,
@@ -376,16 +345,6 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "transferOwnership(address)"(
-      newOwner: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     upgradeConverter(
       id: BigNumberish,
       overrides?: Overrides
@@ -401,38 +360,38 @@ export class DynamicTokenController extends Contract {
 
   "bancorRegistry()"(overrides?: CallOverrides): Promise<string>;
 
-  configureDynamicController(
-    id: BigNumberish,
-    reserve: string,
-    initWeight: BigNumberish,
-    stepWeight: BigNumberish,
-    minWeight: BigNumberish,
-    mcapThreshold: BigNumberish,
-    minBid: BigNumberish,
-    name: string,
-    symbol: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
-    id: BigNumberish,
-    reserve: string,
-    initWeight: BigNumberish,
-    stepWeight: BigNumberish,
-    minWeight: BigNumberish,
-    mcapThreshold: BigNumberish,
-    minBid: BigNumberish,
-    name: string,
-    symbol: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   converters(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "converters(uint256)"(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  createDynamicTokenAndConfigureStake(
+    id: BigNumberish,
+    reserve: string,
+    initWeight: BigNumberish,
+    stepWeight: BigNumberish,
+    minWeight: BigNumberish,
+    mcapThreshold: BigNumberish,
+    minBid: BigNumberish,
+    name: string,
+    symbol: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
+    id: BigNumberish,
+    reserve: string,
+    initWeight: BigNumberish,
+    stepWeight: BigNumberish,
+    minWeight: BigNumberish,
+    mcapThreshold: BigNumberish,
+    minBid: BigNumberish,
+    name: string,
+    symbol: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   dsTokenImplementation(overrides?: CallOverrides): Promise<string>;
 
@@ -478,10 +437,6 @@ export class DynamicTokenController extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  "owner()"(overrides?: CallOverrides): Promise<string>;
-
   reduceWeight(
     id: BigNumberish,
     reserveToken: string,
@@ -511,10 +466,6 @@ export class DynamicTokenController extends Contract {
   registry(overrides?: CallOverrides): Promise<string>;
 
   "registry()"(overrides?: CallOverrides): Promise<string>;
-
-  renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
-
-  "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   setBancorRegistry(
     _registry: string,
@@ -557,16 +508,6 @@ export class DynamicTokenController extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  transferOwnership(
-    newOwner: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "transferOwnership(address)"(
-    newOwner: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   upgradeConverter(
     id: BigNumberish,
     overrides?: Overrides
@@ -582,38 +523,38 @@ export class DynamicTokenController extends Contract {
 
     "bancorRegistry()"(overrides?: CallOverrides): Promise<string>;
 
-    configureDynamicController(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     converters(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "converters(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    createDynamicTokenAndConfigureStake(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     dsTokenImplementation(overrides?: CallOverrides): Promise<string>;
 
@@ -659,10 +600,6 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    "owner()"(overrides?: CallOverrides): Promise<string>;
-
     reduceWeight(
       id: BigNumberish,
       reserveToken: string,
@@ -692,10 +629,6 @@ export class DynamicTokenController extends Contract {
     registry(overrides?: CallOverrides): Promise<string>;
 
     "registry()"(overrides?: CallOverrides): Promise<string>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
 
     setBancorRegistry(
       _registry: string,
@@ -738,16 +671,6 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "transferOwnership(address)"(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     upgradeConverter(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -774,43 +697,12 @@ export class DynamicTokenController extends Contract {
       dsToken: null,
       converter: null
     ): EventFilter;
-
-    OwnershipTransferred(
-      previousOwner: string | null,
-      newOwner: string | null
-    ): EventFilter;
   };
 
   estimateGas: {
     bancorRegistry(overrides?: CallOverrides): Promise<BigNumber>;
 
     "bancorRegistry()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    configureDynamicController(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
 
     converters(
       arg0: BigNumberish,
@@ -820,6 +712,32 @@ export class DynamicTokenController extends Contract {
     "converters(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    createDynamicTokenAndConfigureStake(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     dsTokenImplementation(overrides?: CallOverrides): Promise<BigNumber>;
@@ -868,10 +786,6 @@ export class DynamicTokenController extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     reduceWeight(
       id: BigNumberish,
       reserveToken: string,
@@ -901,10 +815,6 @@ export class DynamicTokenController extends Contract {
     registry(overrides?: CallOverrides): Promise<BigNumber>;
 
     "registry()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    renounceOwnership(overrides?: Overrides): Promise<BigNumber>;
-
-    "renounceOwnership()"(overrides?: Overrides): Promise<BigNumber>;
 
     setBancorRegistry(
       _registry: string,
@@ -947,16 +857,6 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "transferOwnership(address)"(
-      newOwner: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
     upgradeConverter(
       id: BigNumberish,
       overrides?: Overrides
@@ -975,32 +875,6 @@ export class DynamicTokenController extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    configureDynamicController(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "configureDynamicController(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
-      id: BigNumberish,
-      reserve: string,
-      initWeight: BigNumberish,
-      stepWeight: BigNumberish,
-      minWeight: BigNumberish,
-      mcapThreshold: BigNumberish,
-      minBid: BigNumberish,
-      name: string,
-      symbol: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
     converters(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1009,6 +883,32 @@ export class DynamicTokenController extends Contract {
     "converters(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    createDynamicTokenAndConfigureStake(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "createDynamicTokenAndConfigureStake(uint256,address,uint32,uint32,uint32,uint256,uint256,string,string)"(
+      id: BigNumberish,
+      reserve: string,
+      initWeight: BigNumberish,
+      stepWeight: BigNumberish,
+      minWeight: BigNumberish,
+      mcapThreshold: BigNumberish,
+      minBid: BigNumberish,
+      name: string,
+      symbol: string,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     dsTokenImplementation(
@@ -1061,10 +961,6 @@ export class DynamicTokenController extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     reduceWeight(
       id: BigNumberish,
       reserveToken: string,
@@ -1094,10 +990,6 @@ export class DynamicTokenController extends Contract {
     registry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "registry()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    renounceOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
-
-    "renounceOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     setBancorRegistry(
       _registry: string,
@@ -1143,16 +1035,6 @@ export class DynamicTokenController extends Contract {
     "tokens(uint256)"(
       arg0: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "transferOwnership(address)"(
-      newOwner: string,
-      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     upgradeConverter(

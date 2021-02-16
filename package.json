@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.3.0",
-    "@openzeppelin/contracts-upgradeable": "^3.3.0",
+    "@openzeppelin/contracts-upgradeable": "^3.4.0",
     "@openzeppelin/upgrades": "^2.8.0",
     "cids": "^1.1.4",
     "dotenv": "^8.2.0",

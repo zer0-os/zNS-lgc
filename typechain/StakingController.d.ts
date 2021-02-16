@@ -14,6 +14,7 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -25,14 +26,15 @@ interface StakingControllerInterface extends ethers.utils.Interface {
     "acceptBid(address,uint256,uint256)": FunctionFragment;
     "bancorNetwork()": FunctionFragment;
     "bid(string,address,bytes,string,uint256)": FunctionFragment;
-    "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)": FunctionFragment;
+    "bidByPath(string,address,bytes,string,tuple)": FunctionFragment;
     "bidFor(string,address,bytes,string,uint256,address)": FunctionFragment;
-    "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)": FunctionFragment;
+    "bidForByPath(string,address,bytes,string,tuple,address)": FunctionFragment;
     "claimBid(string,address,address,bytes)": FunctionFragment;
     "configureDomain(uint256,address,uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
     "onSetZnsController(address,address,uint256,bytes)": FunctionFragment;
     "safeClaimBid(string,address,address,bytes,bytes)": FunctionFragment;
+    "setMinBid(uint256,uint256)": FunctionFragment;
     "stakeOf(address,uint256)": FunctionFragment;
     "stateOf(uint256)": FunctionFragment;
     "unbid(uint256,uint256)": FunctionFragment;
@@ -53,14 +55,11 @@ interface StakingControllerInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "bidByPath",
     values: [
-      string[],
-      BigNumberish,
-      BigNumberish,
       string,
       string,
       BytesLike,
       string,
-      string
+      { path: string[]; amount: BigNumberish; minOut: BigNumberish }
     ]
   ): string;
   encodeFunctionData(
@@ -70,13 +69,11 @@ interface StakingControllerInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "bidForByPath",
     values: [
-      string[],
-      BigNumberish,
-      BigNumberish,
       string,
       string,
       BytesLike,
       string,
+      { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       string
     ]
   ): string;
@@ -99,6 +96,10 @@ interface StakingControllerInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "safeClaimBid",
     values: [string, string, string, BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinBid",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "stakeOf",
@@ -139,6 +140,7 @@ interface StakingControllerInterface extends ethers.utils.Interface {
     functionFragment: "safeClaimBid",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setMinBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "stakeOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "stateOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "unbid", data: BytesLike): Result;
@@ -147,14 +149,16 @@ interface StakingControllerInterface extends ethers.utils.Interface {
     "Bid(address,address,string,address,bytes,string,uint256)": EventFragment;
     "BidAccepted(address,uint256)": EventFragment;
     "BidClaimed(address,address,uint256,address)": EventFragment;
-    "DomainConfigured(uint256,address,uint256)": EventFragment;
+    "MinBidSet(uint256,uint256)": EventFragment;
+    "StakeTokenSet(uint256,address)": EventFragment;
     "Unbid(address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BidAccepted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BidClaimed"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DomainConfigured"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MinBidSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StakeTokenSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unbid"): EventFragment;
 }
 
@@ -209,27 +213,21 @@ export class StakingController extends Contract {
     ): Promise<ContractTransaction>;
 
     bidByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidByPath(string,address,bytes,string,tuple)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
     bidFor(
@@ -253,27 +251,23 @@ export class StakingController extends Contract {
     ): Promise<ContractTransaction>;
 
     bidForByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidForByPath(string,address,bytes,string,tuple,address)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
     claimBid(
@@ -349,6 +343,18 @@ export class StakingController extends Contract {
       controller: string,
       controllerData: BytesLike,
       mintData: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMinBid(
+      id: BigNumberish,
+      minBid: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMinBid(uint256,uint256)"(
+      id: BigNumberish,
+      minBid: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -448,27 +454,21 @@ export class StakingController extends Contract {
   ): Promise<ContractTransaction>;
 
   bidByPath(
-    _path: string[],
-    _amount: BigNumberish,
-    _minReturn: BigNumberish,
     domain: string,
     controller: string,
     data: BytesLike,
     proposal: string,
-    staker: string,
-    overrides?: Overrides
+    swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-    _path: string[],
-    _amount: BigNumberish,
-    _minReturn: BigNumberish,
+  "bidByPath(string,address,bytes,string,tuple)"(
     domain: string,
     controller: string,
     data: BytesLike,
     proposal: string,
-    staker: string,
-    overrides?: Overrides
+    swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
   bidFor(
@@ -492,27 +492,23 @@ export class StakingController extends Contract {
   ): Promise<ContractTransaction>;
 
   bidForByPath(
-    _path: string[],
-    _amount: BigNumberish,
-    _minReturn: BigNumberish,
     domain: string,
     controller: string,
     data: BytesLike,
     proposal: string,
+    swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
     staker: string,
-    overrides?: Overrides
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-    _path: string[],
-    _amount: BigNumberish,
-    _minReturn: BigNumberish,
+  "bidForByPath(string,address,bytes,string,tuple,address)"(
     domain: string,
     controller: string,
     data: BytesLike,
     proposal: string,
+    swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
     staker: string,
-    overrides?: Overrides
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
   claimBid(
@@ -588,6 +584,18 @@ export class StakingController extends Contract {
     controller: string,
     controllerData: BytesLike,
     mintData: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setMinBid(
+    id: BigNumberish,
+    minBid: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMinBid(uint256,uint256)"(
+    id: BigNumberish,
+    minBid: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -679,26 +687,20 @@ export class StakingController extends Contract {
     ): Promise<void>;
 
     bidByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidByPath(string,address,bytes,string,tuple)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -723,25 +725,21 @@ export class StakingController extends Contract {
     ): Promise<void>;
 
     bidForByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidForByPath(string,address,bytes,string,tuple,address)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -819,6 +817,18 @@ export class StakingController extends Contract {
       controller: string,
       controllerData: BytesLike,
       mintData: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinBid(
+      id: BigNumberish,
+      minBid: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setMinBid(uint256,uint256)"(
+      id: BigNumberish,
+      minBid: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -893,11 +903,9 @@ export class StakingController extends Contract {
       controller: string | null
     ): EventFilter;
 
-    DomainConfigured(
-      parentId: BigNumberish | null,
-      stakeToken: null,
-      minBid: null
-    ): EventFilter;
+    MinBidSet(id: BigNumberish | null, minBid: null): EventFilter;
+
+    StakeTokenSet(id: BigNumberish | null, stakeToken: null): EventFilter;
 
     Unbid(staker: null, id: null, parentId: BigNumberish | null): EventFilter;
   };
@@ -940,27 +948,21 @@ export class StakingController extends Contract {
     ): Promise<BigNumber>;
 
     bidByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidByPath(string,address,bytes,string,tuple)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
     bidFor(
@@ -984,27 +986,23 @@ export class StakingController extends Contract {
     ): Promise<BigNumber>;
 
     bidForByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidForByPath(string,address,bytes,string,tuple,address)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
     claimBid(
@@ -1080,6 +1078,18 @@ export class StakingController extends Contract {
       controller: string,
       controllerData: BytesLike,
       mintData: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMinBid(
+      id: BigNumberish,
+      minBid: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setMinBid(uint256,uint256)"(
+      id: BigNumberish,
+      minBid: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1153,27 +1163,21 @@ export class StakingController extends Contract {
     ): Promise<PopulatedTransaction>;
 
     bidByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bidByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidByPath(string,address,bytes,string,tuple)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
-      staker: string,
-      overrides?: Overrides
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
     bidFor(
@@ -1197,27 +1201,23 @@ export class StakingController extends Contract {
     ): Promise<PopulatedTransaction>;
 
     bidForByPath(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bidForByPath(address[],uint256,uint256,string,address,bytes,string,address)"(
-      _path: string[],
-      _amount: BigNumberish,
-      _minReturn: BigNumberish,
+    "bidForByPath(string,address,bytes,string,tuple,address)"(
       domain: string,
       controller: string,
       data: BytesLike,
       proposal: string,
+      swapData: { path: string[]; amount: BigNumberish; minOut: BigNumberish },
       staker: string,
-      overrides?: Overrides
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
     claimBid(
@@ -1293,6 +1293,18 @@ export class StakingController extends Contract {
       controller: string,
       controllerData: BytesLike,
       mintData: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMinBid(
+      id: BigNumberish,
+      minBid: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMinBid(uint256,uint256)"(
+      id: BigNumberish,
+      minBid: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

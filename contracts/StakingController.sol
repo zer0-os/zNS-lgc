@@ -2,7 +2,6 @@ pragma solidity ^0.7.6;
 
 pragma abicoder v2;
 
-
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -14,21 +13,46 @@ interface IBancorRegistry {
 }
 
 interface IBancorNetwork {
- function convertByPath(
+   function convertByPath(
         address[] memory _path,
         uint256 _amount,
         uint256 _minReturn,
         address payable _beneficiary,
         address _affiliateAccount,
         uint256 _affiliateFee
-    ) external returns (uint256);
+      ) external payable returns (uint256);
 }
-
+/* ff*
+ * @notice This is a ZNS controller that implements an auction system for domains, however instead
+ * of there being a beneficiary, tokens are permanently locked. A bid includes also the controller
+ * and the data which will be forwarded to the safe controller data in the domain creator on the.
+ * registry, as well as a proposal IPFS hash which includes a value description of the purpose or
+ * value prop of the domain to be staked. Once the staking token for a domain has been set, it cannot
+ * be changed, however, the minimum bid may be updated at whim. Bids are accepted at the whim of the
+ * parent, it does not go to the maximum bidder, the goal here is that the bid includes the value prop
+ * and also the intention and contract (if there is one) for distributing subdomains.
+ *
+ * In particular, the controller + data field is used in conjunction with the DynamicTokenController,
+ * to which the data is forwarded, which creates a new dynamic token and converter using the specified
+ * reserve token, which would be most commonly in the initial use cases the parent's staking token. amd
+ * then then configures sets the controller back to the StakingController.
+ *
+ * However, one may also use safeSetController with the expected data, or unsafely set this
+ * contract as the controller and then call configureDomain for different configurations.
+ *
+ * This contract also supports staking from any token to the required stake token via bancor's
+ * path converter.
+ */
 contract StakingController is IZNSController, Initializable {
     using SafeERC20 for IERC20;
 
     enum StakeStatus {NULL, BID, ACCEPTED, STAKED}
-
+    /**
+     * @dev Stake
+     * @param createHash We forward data to be passed safe controller setting data in our create functions
+     * but to save on gas, we don't store the data but only its hash
+     * Hash is keccak256(abi.encode(controller, data))
+     */
     struct Stake {
         StakeStatus status;
         uint256 parentId;
@@ -37,28 +61,42 @@ contract StakingController is IZNSController, Initializable {
         address stakeToken;
     }
 
-    struct DomainState {
+    struct DomainConfig {
         address stakeToken;
         uint256 minBid;
     }
 
     ZNSRegistry registry;
     IBancorRegistry bancor;
+    /// @dev Mapping index here is keccak256(abi.encode(staker, domainId))
     mapping(bytes32 => Stake) stakes;
-    mapping(uint256 => DomainState) domainStates;
+    mapping(uint256 => DomainConfig) domainConfigs;
 
-    event DomainConfigured(
-        uint256 indexed parentId,
-        address stakeToken,
+    struct BancorSwapData {
+        address[] path;
+        uint256 amount;
+        uint256 minOut;
+    }
+
+    event StakeTokenSet(
+        uint256 indexed id,
+        address stakeToken
+    );
+
+    event MinBidSet(
+        uint256 indexed id,
         uint256 minBid
     );
+
     event BidAccepted(address staker, uint256 id);
+
     event BidClaimed(
         address staker,
         address indexed owner,
         uint256 indexed id,
         address indexed controller
     );
+
     event Bid(
         address indexed staker,
         address indexed controller,
@@ -68,14 +106,15 @@ contract StakingController is IZNSController, Initializable {
         string proposal,
         uint256 amt
     );
+
     event Unbid(address staker, uint256 id, uint256 indexed parentId);
 
     function stakeOf(address staker, uint256 id) external view returns (Stake memory) {
-        return stakes[keccak256(abi.encodePacked(staker, id))];
+        return stakes[keccak256(abi.encode(staker, id))];
     }
 
-    function stateOf(uint256 id) external view returns (DomainState memory) {
-        return domainStates[id];
+    function stateOf(uint256 id) external view returns (DomainConfig memory) {
+        return domainConfigs[id];
     }
 
     function initialize(ZNSRegistry _registry, IBancorRegistry _bancor) public initializer {
@@ -93,7 +132,7 @@ contract StakingController is IZNSController, Initializable {
         uint256 parentId
     ) external {
         require(registry.ownerOf(parentId) == msg.sender);
-        bytes32 stakeHash = keccak256(abi.encodePacked(staker, id));
+        bytes32 stakeHash = keccak256(abi.encode(staker, id));
         Stake storage stake = stakes[stakeHash];
         require(stake.parentId == parentId);
         require(stake.status == StakeStatus.BID);
@@ -110,10 +149,10 @@ contract StakingController is IZNSController, Initializable {
         require(data.length == 0 || Address.isContract(controller));
         (uint256 id, ) = registry.createDomainSafeController(domain, owner, controller, data);
         Stake storage stake =
-            stakes[keccak256(abi.encodePacked(msg.sender, id))];
+            stakes[keccak256(abi.encode(msg.sender, id))];
         require(stake.status == StakeStatus.ACCEPTED);
         require(
-            stake.createHash == keccak256(abi.encodePacked(controller, data))
+            stake.createHash == keccak256(abi.encode(controller, data))
         );
         emit BidClaimed(msg.sender, owner, id, controller);
     }
@@ -135,11 +174,11 @@ contract StakingController is IZNSController, Initializable {
             controllerData
         );
         Stake storage stake =
-            stakes[keccak256(abi.encodePacked(msg.sender, id))];
+            stakes[keccak256(abi.encode(msg.sender, id))];
         require(stake.status == StakeStatus.ACCEPTED);
         require(
             stake.createHash ==
-                keccak256(abi.encodePacked(controller, controllerData))
+                keccak256(abi.encode(controller, controllerData))
         );
 
         emit BidClaimed(
@@ -150,48 +189,46 @@ contract StakingController is IZNSController, Initializable {
         );
     }
 
+    // @notice this swaps tokens prior
     function bidByPath(
-        address[] memory _path,
-        uint256 _amount,
-        uint256 _minReturn,
         string calldata domain,
         address controller,
         bytes calldata data,
         string calldata proposal,
-        address staker
-    ) external {
-        bidForByPath(_path, _amount, _minReturn, domain, controller, data, proposal, msg.sender);
+        BancorSwapData calldata swapData
+    ) external payable {
+        bidForByPath(domain, controller, data, proposal, swapData, msg.sender);
     }
 
     function bidForByPath(
-        address[] memory _path,
-        uint256 _amount,
-        uint256 _minReturn,
         string calldata domain,
         address controller,
         bytes calldata data,
         string calldata proposal,
+        BancorSwapData calldata swapData,
         address staker
-    ) public {
-        address stakeToken = _path[_path.length -1];
-        uint256 amt = bancorNetwork().convertByPath(_path, _amount, _minReturn, payable(address(this)), address(0), 0);
+    ) public payable {
+        address stakeToken = swapData.path[swapData.path.length - 1];
+        uint amt;
         {
             (uint256 id, uint256 parentId) = registry.getIdAndParent(domain);
             require(!registry.exists(id));
             require(registry.controllerOf(parentId) == address(this));
-            DomainState storage domainState = domainStates[parentId];
-            require(stakeToken == domainState.stakeToken);
+            DomainConfig storage domainConfig = domainConfigs[parentId];
+            require(stakeToken == domainConfig.stakeToken);
             bytes32 stakeHash =
-                keccak256(abi.encodePacked(staker, id));
+                keccak256(abi.encode(staker, id));
             Stake storage stake = stakes[stakeHash];
             require(stake.status == StakeStatus.NULL);
             stake.status = StakeStatus.BID;
-            require(domainState.minBid <= amt);
-            stake.amount = amt;
+            require(domainConfig.minBid <= swapData.minOut);
             stake.status = StakeStatus.BID;
             stake.stakeToken = stakeToken;
-            stake.createHash = keccak256(abi.encodePacked(controller, data));
+            stake.createHash = keccak256(abi.encode(controller, data));
             stake.parentId = parentId;
+            amt = bancorNetwork().convertByPath{value: address(this).balance}(swapData.path, swapData.amount, swapData.minOut, payable(address(this)), address(0), 0);
+            require(address(this).balance == 0);
+            stake.amount = amt;
        }
        emit Bid(
             staker,
@@ -228,17 +265,17 @@ contract StakingController is IZNSController, Initializable {
             (uint256 id, uint256 parentId) = registry.getIdAndParent(domain);
             require(!registry.exists(id));
             require(registry.controllerOf(parentId) == address(this));
-            DomainState storage domainState = domainStates[parentId];
-            stakeToken = domainState.stakeToken;
-            require(domainState.minBid <= amt);
+            DomainConfig storage domainConfig = domainConfigs[parentId];
+            stakeToken = domainConfig.stakeToken;
+            require(domainConfig.minBid <= amt);
             bytes32 stakeHash =
-                keccak256(abi.encodePacked(staker, id));
+                keccak256(abi.encode(staker, id));
             Stake storage stake = stakes[stakeHash];
             require(stake.status == StakeStatus.NULL);
             stake.status = StakeStatus.BID;
             stake.amount = amt;
             stake.stakeToken = stakeToken;
-            stake.createHash = keccak256(abi.encodePacked(controller, data));
+            stake.createHash = keccak256(abi.encode(controller, data));
             stake.parentId = parentId;
             IERC20(stakeToken).safeTransferFrom(staker, address(this), amt);
         }
@@ -255,7 +292,7 @@ contract StakingController is IZNSController, Initializable {
 
     function unbid(uint256 id, uint256 parentId) external {
         bytes32 stakeHash =
-            keccak256(abi.encodePacked(msg.sender, id));
+            keccak256(abi.encode(msg.sender, id));
         Stake storage stake = stakes[stakeHash];
         require(
             stake.status == StakeStatus.BID ||
@@ -271,38 +308,51 @@ contract StakingController is IZNSController, Initializable {
         emit Unbid(msg.sender, id, parentId);
     }
 
-    function _configureDomain(
-        DomainState storage domainState,
-        uint256 id,
-        address stakeToken,
-        uint256 minBid
-    ) internal {
-        domainState.stakeToken = stakeToken;
-        domainState.minBid = minBid;
-        emit DomainConfigured(id, stakeToken, minBid);
-    }
-
     function onSetZnsController(
         address sender,
         address oldController,
         uint256 id,
         bytes memory data
     ) external override returns (bytes4) {
+        require(msg.sender == address(registry));
         (address stakeToken, uint256 minBid) =
             abi.decode(data, (address, uint256));
-        DomainState storage domainState = domainStates[id];
-        _configureDomain(domainState, id, stakeToken, minBid);
+        DomainConfig storage domainConfig = domainConfigs[id];
+        _configureDomain(domainConfig, id, stakeToken, minBid);
         return this.onSetZnsController.selector;
     }
 
+    function _setMinBid(
+        DomainConfig storage domainConfig,
+        uint256 id,
+        uint256 minBid
+    ) internal {
+        domainConfig.minBid = minBid;
+        emit MinBidSet(id, minBid);
+    }
+
+    function setMinBid(uint256 id, uint256 minBid) external {
+        require(registry.ownerOf(id) == msg.sender);
+        _setMinBid(domainConfigs[id], id, minBid);
+    }
+
+    function _configureDomain(DomainConfig storage domainConfig, uint256 id, address stakeToken, uint256 minBid) internal {
+        domainConfig.stakeToken = stakeToken;
+        emit StakeTokenSet(id, stakeToken);
+        _setMinBid(domainConfig, id, minBid);
+    }
+
+    /// @notice For flows that unsafely set this contract as the controller
     function configureDomain(
         uint256 id,
         address stakeToken,
         uint256 minBid
     ) external {
-        DomainState storage domainState = domainStates[id];
-        require(domainState.stakeToken == address(0)); // can only be set once
+        require(registry.controllerOf(id) == address(this));
         require(registry.ownerOf(id) == msg.sender);
-        _configureDomain(domainState, id, stakeToken, minBid);
+        DomainConfig storage domainConfig = domainConfigs[id];
+        /// @dev can only be set once
+        require(domainConfig.stakeToken == address(0));
+        _configureDomain(domainConfig, id, stakeToken, minBid);
     }
 }

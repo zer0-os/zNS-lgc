@@ -535,27 +535,7 @@ library strings {
         return self;
     }
 
-    // if (bytes1(ptrdata) == '\\' && ptr + 1 < selfptr) {
-    //     // handle escaped characters: skip over it
-    //     ptr++;
-    //     bytes1 next = bytes1(ptrdata << 1);
-    //     if (
-    //         next == '"' ||
-    //         next == "/" ||
-    //         next == "\\" ||
-    //         next == "f" ||
-    //         next == "r" ||
-    //         next == "n" ||
-    //         next == "b" ||
-    //         next == "t"
-    //     ) {
-    //         // continue;
-    //     } else {
-    //         return (false, ptrdata, "escape fail case");
-    //     }
-    // }
-
-    function validateDomain(uint256 seedParent, string memory path)
+    function parseDomain(uint256 seedParent, string memory path)
         internal
         pure
         returns (
@@ -564,7 +544,6 @@ library strings {
             string memory
         )
     {
-        bool valid;
         bytes32 parent = bytes32(seedParent);
         uint256 selfptr;
         assembly {
@@ -582,6 +561,7 @@ library strings {
         }
         for (; ptr <= end; ptr++) {
             uint8 _char = uint8(bytes1(ptrdata));
+            // UTF8 46 is '.', split up domain
             if (_char == 46) {
                 _len = ptr - selfptr - 1;
                 bytesref = new string(_len);
@@ -591,7 +571,9 @@ library strings {
                 memcpy(bytesrefptr, selfptr, _len);
                 parent = keccak256(abi.encode(parent, bytesref));
                 selfptr = ptr;
-            } else if (
+            }
+            // UTF8 97->122 is lowercase letters, 48-57 is numbers, 45 is '-'
+            else if (
                 (_char < 97 || _char > 122) && (_char < 48 && _char > 57) && (_char != 45)
             ) {
                 return (false, 0, "");

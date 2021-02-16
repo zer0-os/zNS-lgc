@@ -109,10 +109,9 @@ describe("Staking", function () {
     registry = (await upgrades.deployProxy(rf, [
       accs[0],
       accs[0],
-      "",
-      256,
     ])) as ZNSRegistry;
     await registry.deployed();
+    await registry.setChildCreateLimit(0, 100);
     const scf = (await ethers.getContractFactory(
       "StakingController"
     )) as StakingController__factory;
@@ -259,8 +258,13 @@ describe("Staking", function () {
         getDomainId("wilder"),
         "qmagbegubgeurbghebguerbguerbgergergerg"
       );
-    const [b, a, c, i] = await Promise.all(
-      [bidtx, acceptx, claimtx, imagetx].map((x) =>
+
+    const getidtx = await registry.populateTransaction
+      .getIdAndParent("foo.bar.baz")
+      .then((x) => signers[0].sendTransaction(x));
+
+    const [b, a, c, i, g] = await Promise.all(
+      [bidtx, acceptx, claimtx, imagetx, getidtx].map((x) =>
         x.wait(1).then((x) => x.gasUsed.toString())
       )
     );
@@ -269,5 +273,6 @@ describe("Staking", function () {
     console.log("accept gas", a);
     console.log("claim gas", c);
     console.log("image gas", i);
+    console.log("getid gas", g);
   });
 });

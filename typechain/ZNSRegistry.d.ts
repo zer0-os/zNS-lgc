@@ -26,29 +26,38 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
-    "canCreate(address,uint256)": FunctionFragment;
     "childCountOf(uint256)": FunctionFragment;
+    "childCreateLimitOf(uint256)": FunctionFragment;
+    "childImageRuleOf(uint256)": FunctionFragment;
+    "controllerLikeOf(address,uint256)": FunctionFragment;
     "controllerOf(uint256)": FunctionFragment;
     "createDomain(string,address,address)": FunctionFragment;
     "createDomainSafeController(string,address,address,bytes)": FunctionFragment;
     "createDomainSafeMint(string,address,address,bytes)": FunctionFragment;
+    "createLimitOf(uint256)": FunctionFragment;
     "depthOf(uint256)": FunctionFragment;
+    "domainOf(uint256)": FunctionFragment;
     "entryOf(uint256)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
     "getIdAndParent(string)": FunctionFragment;
-    "getOwner(string[])": FunctionFragment;
-    "initialize(address,address,string,uint256)": FunctionFragment;
+    "imageOf(uint256)": FunctionFragment;
+    "imageRuleOf(uint256)": FunctionFragment;
+    "initialize(address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parentOf(uint256)": FunctionFragment;
+    "parseDomain(string)": FunctionFragment;
+    "resolverOf(uint256)": FunctionFragment;
     "safeCreateDomain(string,address,address,bytes,bytes)": FunctionFragment;
     "safeSetController(uint256,address,bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setChildLimit(uint256,uint256)": FunctionFragment;
+    "setBaseURI(string)": FunctionFragment;
+    "setChildCreateLimit(uint256,uint256)": FunctionFragment;
+    "setChildImageRule(uint256,uint8)": FunctionFragment;
     "setController(uint256,address)": FunctionFragment;
     "setImage(uint256,string)": FunctionFragment;
     "setResolver(uint256,string)": FunctionFragment;
@@ -59,7 +68,6 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "validateDomain(string)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "ROOT_ID", values?: undefined): string;
@@ -70,12 +78,20 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "canCreate",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "childCountOf",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "childCreateLimitOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "childImageRuleOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "controllerLikeOf",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "controllerOf",
@@ -94,7 +110,15 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [string, string, string, BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "createLimitOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "depthOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "domainOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -114,10 +138,17 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "getIdAndParent",
     values: [string]
   ): string;
-  encodeFunctionData(functionFragment: "getOwner", values: [string[]]): string;
+  encodeFunctionData(
+    functionFragment: "imageOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "imageRuleOf",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string, string, BigNumberish]
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -130,6 +161,11 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "parentOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "parseDomain", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "resolverOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -148,8 +184,13 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
+  encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "setChildLimit",
+    functionFragment: "setChildCreateLimit",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setChildImageRule",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -189,18 +230,25 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "validateDomain",
-    values: [string]
-  ): string;
 
   decodeFunctionResult(functionFragment: "ROOT_ID", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "canCreate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "childCountOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "childCreateLimitOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "childImageRuleOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "controllerLikeOf",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -219,7 +267,12 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "createDomainSafeMint",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "createLimitOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "depthOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "domainOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "entryOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
   decodeFunctionResult(
@@ -231,7 +284,11 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "getIdAndParent",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "imageOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "imageRuleOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -240,6 +297,11 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "parentOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "parseDomain",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "resolverOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeCreateDomain",
     data: BytesLike
@@ -256,8 +318,13 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setChildLimit",
+    functionFragment: "setChildCreateLimit",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setChildImageRule",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -291,15 +358,13 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "validateDomain",
-    data: BytesLike
-  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "ChildLimitSet(address,uint256,uint256)": EventFragment;
+    "BaseURISet(string)": EventFragment;
+    "ChildCreateLimitSet(address,uint256,uint256)": EventFragment;
+    "ChildImageRuleSet(address,uint256,uint8)": EventFragment;
     "ControllerSet(uint256,address,address,address)": EventFragment;
     "DomainCreated(uint256,uint256,string,address)": EventFragment;
     "ImageSet(address,uint256,string)": EventFragment;
@@ -309,7 +374,9 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChildLimitSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BaseURISet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChildCreateLimitSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChildImageRuleSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ControllerSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DomainCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ImageSet"): EventFragment;
@@ -358,18 +425,6 @@ export class ZNSRegistry extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<[string]>;
 
-    canCreate(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "canCreate(address,uint256)"(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     childCountOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -379,6 +434,38 @@ export class ZNSRegistry extends Contract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    childCreateLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "childCreateLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    childImageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    "childImageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    controllerLikeOf(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "controllerLikeOf(address,uint256)"(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     controllerOf(
       id: BigNumberish,
@@ -436,12 +523,29 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    createLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "createLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "depthOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+
+    "domainOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     entryOf(
       id: BigNumberish,
@@ -457,17 +561,23 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber
+          BigNumber,
+          BigNumber,
+          number,
+          number
         ] & {
           owner: string;
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          domain: string;
           resolver: string;
           image: string;
-          domain: string;
-          childLimit: BigNumber;
+          createLimit: BigNumber;
+          childCreateLimit: BigNumber;
           childCount: BigNumber;
+          imageRule: number;
+          childImageRule: number;
         }
       ] & {
         out: [
@@ -479,17 +589,23 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber
+          BigNumber,
+          BigNumber,
+          number,
+          number
         ] & {
           owner: string;
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          domain: string;
           resolver: string;
           image: string;
-          domain: string;
-          childLimit: BigNumber;
+          createLimit: BigNumber;
+          childCreateLimit: BigNumber;
           childCount: BigNumber;
+          imageRule: number;
+          childImageRule: number;
         };
       }
     >;
@@ -508,17 +624,23 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber
+          BigNumber,
+          BigNumber,
+          number,
+          number
         ] & {
           owner: string;
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          domain: string;
           resolver: string;
           image: string;
-          domain: string;
-          childLimit: BigNumber;
+          createLimit: BigNumber;
+          childCreateLimit: BigNumber;
           childCount: BigNumber;
+          imageRule: number;
+          childImageRule: number;
         }
       ] & {
         out: [
@@ -530,17 +652,23 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           BigNumber,
-          BigNumber
+          BigNumber,
+          BigNumber,
+          number,
+          number
         ] & {
           owner: string;
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          domain: string;
           resolver: string;
           image: string;
-          domain: string;
-          childLimit: BigNumber;
+          createLimit: BigNumber;
+          childCreateLimit: BigNumber;
           childCount: BigNumber;
+          imageRule: number;
+          childImageRule: number;
         };
       }
     >;
@@ -579,26 +707,29 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
-    getOwner(path: string[], overrides?: CallOverrides): Promise<[string]>;
+    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
-    "getOwner(string[])"(
-      path: string[],
+    "imageOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
+
+    "imageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
 
     initialize(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "initialize(address,address,string,uint256)"(
+    "initialize(address,address)"(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -634,6 +765,37 @@ export class ZNSRegistry extends Contract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    parseDomain(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber, string] & {
+        valid: boolean;
+        parent: BigNumber;
+        id: BigNumber;
+        domain: string;
+      }
+    >;
+
+    "parseDomain(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber, string] & {
+        valid: boolean;
+        parent: BigNumber;
+        id: BigNumber;
+        domain: string;
+      }
+    >;
+
+    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+
+    "resolverOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     safeCreateDomain(
       domain: string,
@@ -694,15 +856,37 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    setChildLimit(
-      id: BigNumberish,
-      childLimit: BigNumberish,
+    setBaseURI(
+      baseURI: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "setChildLimit(uint256,uint256)"(
+    "setBaseURI(string)"(
+      baseURI: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setChildCreateLimit(
       id: BigNumberish,
-      childLimit: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setChildCreateLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setChildImageRule(
+      id: BigNumberish,
+      rule: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setChildImageRule(uint256,uint8)"(
+      id: BigNumberish,
+      rule: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -779,14 +963,14 @@ export class ZNSRegistry extends Contract {
     ): Promise<[BigNumber]>;
 
     tokenURI(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string] & { out: string }>;
+    ): Promise<[string]>;
 
     "tokenURI(uint256)"(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string] & { out: string }>;
+    ): Promise<[string]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -805,30 +989,6 @@ export class ZNSRegistry extends Contract {
       tokenId: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
-
-    validateDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
-    "validateDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
   };
 
   ROOT_ID(overrides?: CallOverrides): Promise<BigNumber>;
@@ -858,24 +1018,44 @@ export class ZNSRegistry extends Contract {
 
   "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
-  canCreate(
-    creator: string,
-    id: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "canCreate(address,uint256)"(
-    creator: string,
-    id: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   childCountOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   "childCountOf(uint256)"(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  childCreateLimitOf(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "childCreateLimitOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  childImageRuleOf(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  "childImageRuleOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  controllerLikeOf(
+    creator: string,
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "controllerLikeOf(address,uint256)"(
+    creator: string,
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   controllerOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -930,12 +1110,29 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  createLimitOf(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "createLimitOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   "depthOf(uint256)"(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "domainOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   entryOf(
     id: BigNumberish,
@@ -950,17 +1147,23 @@ export class ZNSRegistry extends Contract {
       string,
       string,
       BigNumber,
-      BigNumber
+      BigNumber,
+      BigNumber,
+      number,
+      number
     ] & {
       owner: string;
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      domain: string;
       resolver: string;
       image: string;
-      domain: string;
-      childLimit: BigNumber;
+      createLimit: BigNumber;
+      childCreateLimit: BigNumber;
       childCount: BigNumber;
+      imageRule: number;
+      childImageRule: number;
     }
   >;
 
@@ -977,17 +1180,23 @@ export class ZNSRegistry extends Contract {
       string,
       string,
       BigNumber,
-      BigNumber
+      BigNumber,
+      BigNumber,
+      number,
+      number
     ] & {
       owner: string;
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      domain: string;
       resolver: string;
       image: string;
-      domain: string;
-      childLimit: BigNumber;
+      createLimit: BigNumber;
+      childCreateLimit: BigNumber;
       childCount: BigNumber;
+      imageRule: number;
+      childImageRule: number;
     }
   >;
 
@@ -1025,26 +1234,29 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber]>;
 
-  getOwner(path: string[], overrides?: CallOverrides): Promise<string>;
+  imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-  "getOwner(string[])"(
-    path: string[],
+  "imageOf(uint256)"(
+    id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
+
+  "imageRuleOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
 
   initialize(
     _owner: string,
     _controller: string,
-    image: string,
-    childLimit: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "initialize(address,address,string,uint256)"(
+  "initialize(address,address)"(
     _owner: string,
     _controller: string,
-    image: string,
-    childLimit: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1077,6 +1289,37 @@ export class ZNSRegistry extends Contract {
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  parseDomain(
+    _s: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, BigNumber, BigNumber, string] & {
+      valid: boolean;
+      parent: BigNumber;
+      id: BigNumber;
+      domain: string;
+    }
+  >;
+
+  "parseDomain(string)"(
+    _s: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, BigNumber, BigNumber, string] & {
+      valid: boolean;
+      parent: BigNumber;
+      id: BigNumber;
+      domain: string;
+    }
+  >;
+
+  resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "resolverOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   safeCreateDomain(
     domain: string,
@@ -1137,15 +1380,37 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setChildLimit(
-    id: BigNumberish,
-    childLimit: BigNumberish,
+  setBaseURI(
+    baseURI: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "setChildLimit(uint256,uint256)"(
+  "setBaseURI(string)"(
+    baseURI: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setChildCreateLimit(
     id: BigNumberish,
-    childLimit: BigNumberish,
+    childCreateLimit: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setChildCreateLimit(uint256,uint256)"(
+    id: BigNumberish,
+    childCreateLimit: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setChildImageRule(
+    id: BigNumberish,
+    rule: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setChildImageRule(uint256,uint8)"(
+    id: BigNumberish,
+    rule: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1221,10 +1486,10 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  tokenURI(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   "tokenURI(uint256)"(
-    token: BigNumberish,
+    tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -1245,30 +1510,6 @@ export class ZNSRegistry extends Contract {
     tokenId: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
-
-  validateDomain(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber, string] & {
-      valid: boolean;
-      parent: BigNumber;
-      id: BigNumber;
-      domain: string;
-    }
-  >;
-
-  "validateDomain(string)"(
-    _s: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber, string] & {
-      valid: boolean;
-      parent: BigNumber;
-      id: BigNumber;
-      domain: string;
-    }
-  >;
 
   callStatic: {
     ROOT_ID(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1298,18 +1539,6 @@ export class ZNSRegistry extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
-    canCreate(
-      creator: string,
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    "canCreate(address,uint256)"(
-      creator: string,
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     childCountOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1319,6 +1548,38 @@ export class ZNSRegistry extends Contract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    childCreateLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "childCreateLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    childImageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    "childImageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    controllerLikeOf(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "controllerLikeOf(address,uint256)"(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     controllerOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1373,12 +1634,29 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber] & { id: BigNumber; parentId: BigNumber }>;
 
+    createLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "createLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "depthOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "domainOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     entryOf(
       id: BigNumberish,
@@ -1393,17 +1671,23 @@ export class ZNSRegistry extends Contract {
         string,
         string,
         BigNumber,
-        BigNumber
+        BigNumber,
+        BigNumber,
+        number,
+        number
       ] & {
         owner: string;
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        domain: string;
         resolver: string;
         image: string;
-        domain: string;
-        childLimit: BigNumber;
+        createLimit: BigNumber;
+        childCreateLimit: BigNumber;
         childCount: BigNumber;
+        imageRule: number;
+        childImageRule: number;
       }
     >;
 
@@ -1420,17 +1704,23 @@ export class ZNSRegistry extends Contract {
         string,
         string,
         BigNumber,
-        BigNumber
+        BigNumber,
+        BigNumber,
+        number,
+        number
       ] & {
         owner: string;
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        domain: string;
         resolver: string;
         image: string;
-        domain: string;
-        childLimit: BigNumber;
+        createLimit: BigNumber;
+        childCreateLimit: BigNumber;
         childCount: BigNumber;
+        imageRule: number;
+        childImageRule: number;
       }
     >;
 
@@ -1468,26 +1758,29 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
-    getOwner(path: string[], overrides?: CallOverrides): Promise<string>;
+    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-    "getOwner(string[])"(
-      path: string[],
+    "imageOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
+
+    "imageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     initialize(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "initialize(address,address,string,uint256)"(
+    "initialize(address,address)"(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1520,6 +1813,37 @@ export class ZNSRegistry extends Contract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    parseDomain(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber, string] & {
+        valid: boolean;
+        parent: BigNumber;
+        id: BigNumber;
+        domain: string;
+      }
+    >;
+
+    "parseDomain(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, BigNumber, BigNumber, string] & {
+        valid: boolean;
+        parent: BigNumber;
+        id: BigNumber;
+        domain: string;
+      }
+    >;
+
+    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "resolverOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     safeCreateDomain(
       domain: string,
@@ -1580,15 +1904,34 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setChildLimit(
-      id: BigNumberish,
-      childLimit: BigNumberish,
+    setBaseURI(baseURI: string, overrides?: CallOverrides): Promise<void>;
+
+    "setBaseURI(string)"(
+      baseURI: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "setChildLimit(uint256,uint256)"(
+    setChildCreateLimit(
       id: BigNumberish,
-      childLimit: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setChildCreateLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setChildImageRule(
+      id: BigNumberish,
+      rule: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setChildImageRule(uint256,uint8)"(
+      id: BigNumberish,
+      rule: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1664,10 +2007,10 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tokenURI(token: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     "tokenURI(uint256)"(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -1688,30 +2031,6 @@ export class ZNSRegistry extends Contract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    validateDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
-
-    "validateDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber, string] & {
-        valid: boolean;
-        parent: BigNumber;
-        id: BigNumber;
-        domain: string;
-      }
-    >;
   };
 
   filters: {
@@ -1727,10 +2046,18 @@ export class ZNSRegistry extends Contract {
       approved: null
     ): EventFilter;
 
-    ChildLimitSet(
+    BaseURISet(baseURI: null): EventFilter;
+
+    ChildCreateLimitSet(
       owner: string | null,
       id: BigNumberish | null,
-      childLimit: null
+      childCreateLimit: null
+    ): EventFilter;
+
+    ChildImageRuleSet(
+      owner: string | null,
+      id: BigNumberish | null,
+      rule: null
     ): EventFilter;
 
     ControllerSet(
@@ -1794,24 +2121,44 @@ export class ZNSRegistry extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    canCreate(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "canCreate(address,uint256)"(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
     childCountOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    childCreateLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "childCreateLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    childImageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "childImageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    controllerLikeOf(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "controllerLikeOf(address,uint256)"(
+      creator: string,
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1872,9 +2219,26 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    createLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "createLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    domainOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "domainOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1917,26 +2281,32 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getOwner(path: string[], overrides?: CallOverrides): Promise<BigNumber>;
+    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "getOwner(string[])"(
-      path: string[],
+    "imageOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    imageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "imageRuleOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     initialize(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "initialize(address,address,string,uint256)"(
+    "initialize(address,address)"(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1969,6 +2339,20 @@ export class ZNSRegistry extends Contract {
     parentOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "parentOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    parseDomain(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "parseDomain(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "resolverOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2032,15 +2416,34 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setChildLimit(
-      id: BigNumberish,
-      childLimit: BigNumberish,
+    setBaseURI(baseURI: string, overrides?: Overrides): Promise<BigNumber>;
+
+    "setBaseURI(string)"(
+      baseURI: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "setChildLimit(uint256,uint256)"(
+    setChildCreateLimit(
       id: BigNumberish,
-      childLimit: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setChildCreateLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setChildImageRule(
+      id: BigNumberish,
+      rule: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setChildImageRule(uint256,uint8)"(
+      id: BigNumberish,
+      rule: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -2117,12 +2520,12 @@ export class ZNSRegistry extends Contract {
     ): Promise<BigNumber>;
 
     tokenURI(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     "tokenURI(uint256)"(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2142,13 +2545,6 @@ export class ZNSRegistry extends Contract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    validateDomain(_s: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "validateDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -2183,24 +2579,44 @@ export class ZNSRegistry extends Contract {
 
     "baseURI()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    canCreate(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "canCreate(address,uint256)"(
-      creator: string,
-      id: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
     childCountOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "childCountOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    childCreateLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "childCreateLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    childImageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "childImageRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    controllerLikeOf(
+      creator: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "controllerLikeOf(address,uint256)"(
+      creator: string,
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2261,12 +2677,32 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    createLimitOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "createLimitOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     depthOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "depthOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    domainOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "domainOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2321,29 +2757,35 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getOwner(
-      path: string[],
+    imageOf(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getOwner(string[])"(
-      path: string[],
+    "imageOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    imageRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "imageRuleOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     initialize(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "initialize(address,address,string,uint256)"(
+    "initialize(address,address)"(
       _owner: string,
       _controller: string,
-      image: string,
-      childLimit: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -2379,6 +2821,26 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "parentOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    parseDomain(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "parseDomain(string)"(
+      _s: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    resolverOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "resolverOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2442,15 +2904,37 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    setChildLimit(
-      id: BigNumberish,
-      childLimit: BigNumberish,
+    setBaseURI(
+      baseURI: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "setChildLimit(uint256,uint256)"(
+    "setBaseURI(string)"(
+      baseURI: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setChildCreateLimit(
       id: BigNumberish,
-      childLimit: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setChildCreateLimit(uint256,uint256)"(
+      id: BigNumberish,
+      childCreateLimit: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setChildImageRule(
+      id: BigNumberish,
+      rule: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setChildImageRule(uint256,uint8)"(
+      id: BigNumberish,
+      rule: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -2527,12 +3011,12 @@ export class ZNSRegistry extends Contract {
     ): Promise<PopulatedTransaction>;
 
     tokenURI(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "tokenURI(uint256)"(
-      token: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2552,16 +3036,6 @@ export class ZNSRegistry extends Contract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    validateDomain(
-      _s: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "validateDomain(string)"(
-      _s: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

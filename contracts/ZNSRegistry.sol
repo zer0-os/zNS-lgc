@@ -188,11 +188,16 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
 
     /// @notice if controller is not set, then the owner may act as controller
     /// root domain owner may always act as its own controller
-    function controllerLikeOf(address creator, uint256 id) public view returns (bool) {
+    function controllerLikeOf(address creator, uint256 id)
+        public
+        view
+        returns (bool)
+    {
         address controller = controllerOf(id);
         return
             creator == controller ||
-            ((controller == address(0) || id == ROOT_ID) && ownerOf(id) == creator);
+            ((controller == address(0) || id == ROOT_ID) &&
+                ownerOf(id) == creator);
     }
 
     function exists(uint256 id) external view returns (bool) {
@@ -261,7 +266,9 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
      * we make an exception for the 0 point, used exclusively here, and may be set by ROOT
      * for all other intents and purposes the 0 point does not exist, and is not a token
      */
-    function setChildCreateLimit(uint256 id, uint256 childCreateLimit) external {
+    function setChildCreateLimit(uint256 id, uint256 childCreateLimit)
+        external
+    {
         address owner = id == 0 ? ownerOf(ROOT_ID) : ownerOf(id);
         require(owner == msg.sender);
         require(childCreateLimit >= _entries[id].childCreateLimit);
@@ -384,7 +391,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
          * @dev if parent child image rule is locked, keep it locked
          * for derivative works and gallery domains
          */
-        if(parent.childImageRule == ChildImageRule.LOCKED) {
+        if (parent.childImageRule == ChildImageRule.LOCKED) {
             _setChildImageRule(id, ChildImageRule.LOCKED);
         }
         return (id, parentId);

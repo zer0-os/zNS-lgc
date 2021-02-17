@@ -32,6 +32,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         uint256 parent;
         uint256 depth;
         address controller;
+        address creator;
         string name;
         string resolver;
         string image;
@@ -45,6 +46,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         uint256 parent;
         uint256 depth;
         address controller;
+        address creator;
         string name;
         string domain;
         string resolver;
@@ -125,6 +127,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         out.parent = entry.parent;
         out.depth = entry.depth;
         out.controller = entry.controller;
+        out.creator = entry.creator;
         out.name = entry.name;
         // out.domain = entry.domain;
         out.resolver = entry.resolver;
@@ -150,6 +153,10 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
 
     function controllerOf(uint256 id) public view returns (address) {
         return _entries[id].controller;
+    }
+
+    function creatorOf(uint256 id) public view returns (address) {
+        return _entries[id].creator;
     }
 
     function nameOf(uint256 id) public view returns (string memory) {
@@ -265,6 +272,47 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         }
         return true;
     }
+
+    // TODO: not very important, would never be called by a contract
+    // basically just an etherscan utility function, or for ppl not querying subgraph
+    // function domainOf(uint256 id) public view returns (string memory) {
+    //     if (id == ROOT_ID) {
+    //         return "ROOT";
+    //     }
+    //     uint256 i;
+    //     string[] memory names = new string(256);
+    //     uint256 len = 0;
+    //     for (; id != ROOT_ID; i++) {
+    //         Entry storage entry = _entries[id];
+    //         names[i] = entry.name;
+    //         len += bytes(names[i]).length + 1;
+    //         id = entry.parentId;
+    //     }
+    //     len -= 1;
+    //     string memory out = new string(len);
+    //     uint256 iptr;
+    //     assembly {
+    //         iptr := add(out, 0x20)
+    //     }
+    //     for (; 1 < i; i--) {
+    //         uint partLen = bytes(names[i]).length + 1;
+    //         for (; len >= 32; len -= 32) {
+    //             assembly {
+    //                 mstore(dest, mload(src))
+    //             }
+    //             dest += 32;
+    //             src += 32;
+    //         }
+
+    //         // Copy remaining bytes
+    //         uint256 mask = 256**(32 - len) - 1;
+    //         assembly {
+    //             let srcpart := and(mload(src), not(mask))
+    //             let destpart := and(mload(dest), mask)
+    //             mstore(dest, or(destpart, srcpart))
+    //         }
+    //     }
+    // }
 
     /**
      * @notice setters - we save controller for last, as it's the most involved
@@ -410,6 +458,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         entry.depth = parent.depth + 1;
         entry.parent = parentId;
         entry.name = name;
+        entry.creator = _owner;
         DomainCreated(parentId, id, name, _owner);
         /**
          * @dev if parent child image rule is locked, keep it locked

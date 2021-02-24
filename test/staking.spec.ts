@@ -342,9 +342,9 @@ describe("Staking", function () {
       const bidTx = await zero.bidWithDynamicControllerByPath(
         signers[2],
         "wilder.frank",
-        "qm...",
+        "Qmproposal",
         data,
-        "qm...",
+        "Qmlproperties",
         {
           path: [
             ethAddress,
@@ -357,10 +357,19 @@ describe("Staking", function () {
           minOut: wamt,
         }
       );
+      const stakeHash = keccak256(
+        coder.encode(["address", "uint256"], [signers[2].address, wilderfrank])
+      );
+      console.log(
+        "hash",
+        stakeHash.toString(),
+        "stake",
+        await staking.stakes(stakeHash)
+      );
       newBal = wbal.add(wamt);
       expect(await wilderToken.balanceOf(staking.address)).eq(newBal);
     });
-    it("it stake from infinity", async function () {
+    it("stake from infinity", async function () {
       await bancor
         .connect(signers[3])
         .convertByPath(

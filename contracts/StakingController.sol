@@ -71,8 +71,8 @@ contract StakingController is IZNSController, Initializable {
     ZNSRegistry registry;
     IBancorRegistry bancor;
     /// @dev Mapping index here is keccak256(abi.encode(staker, domainId))
-    mapping(bytes32 => Stake) stakes;
-    mapping(uint256 => DomainConfig) domainConfigs;
+    mapping(bytes32 => Stake) public stakes;
+    mapping(uint256 => DomainConfig) public domainConfigs;
 
     struct BancorSwapData {
         address[] path;

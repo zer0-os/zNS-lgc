@@ -343,7 +343,6 @@ describe("Staking", function () {
         signers[2],
         "wilder.frank",
         "qm...",
-        BigNumber.from(10).pow(18),
         data,
         "qm...",
         {
@@ -374,12 +373,11 @@ describe("Staking", function () {
           { value: ethAmt }
         );
       expect(await infinity.balanceOf(signers[3].address)).eq(infAmt);
-      infinity.connect(signers[3]).approve(staking.address, infAmt);
+      await infinity.connect(signers[3]).approve(staking.address, infAmt);
       const bidTx = await zero.bidWithDynamicControllerByPath(
         signers[3],
         "wilder.alice",
         "qm...",
-        BigNumber.from(10).pow(18),
         data,
         "qm...",
         {
@@ -396,7 +394,6 @@ describe("Staking", function () {
         signers[4],
         "wilder.bob",
         "qm...",
-        BigNumber.from(10).pow(18),
         data,
         "qm...",
         {
@@ -411,8 +408,17 @@ describe("Staking", function () {
           minOut: wamt,
         }
       );
+      console.log(
+        "gas stake eth -> infinity -> wilder",
+        await bidTx.wait(1).then((x) => x.gasUsed.toString())
+      );
       newBal = wbal.add(wamt);
       expect(await wilderToken.balanceOf(staking.address)).eq(newBal);
     });
+  });
+  it("print contract addresses", function () {
+    console.log("registry", registry.address);
+    console.log("staking", staking.address);
+    console.log("dynamic", dynamic.address);
   });
 });

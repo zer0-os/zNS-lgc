@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, BytesLike, Signer } from "ethers";
+import { BigNumber, BigNumberish, BytesLike, Overrides, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import { AbiCoder } from "@ethersproject/abi";
 import { keccak256 } from "@ethersproject/keccak256";
@@ -106,10 +106,16 @@ class ZeroSystem {
   async controllerToStaking(
     id: BigNumberish,
     stakeToken: string,
-    minBid: BigNumberish
+    minBid: BigNumberish,
+    overrides: Overrides = {}
   ) {
     const data = coder.encode(["address", "uint256"], [stakeToken, minBid]);
-    return this.registry.safeSetController(id, this.staking.address, data);
+    return this.registry.safeSetController(
+      id,
+      this.staking.address,
+      data,
+      overrides
+    );
   }
 
   async bidWithDynamicController(
@@ -118,7 +124,8 @@ class ZeroSystem {
     proposal: string,
     amt: BigNumberish,
     controllerData: DynamicControllerData,
-    lockableProperties: string
+    lockableProperties: string,
+    overrides: Overrides = {}
   ) {
     return this.bid(
       signer,
@@ -127,7 +134,8 @@ class ZeroSystem {
       amt,
       this.dynamicTokenController,
       this.encodeDynamicData(controllerData),
-      lockableProperties
+      lockableProperties,
+      overrides
     );
   }
 
@@ -138,7 +146,8 @@ class ZeroSystem {
     amt: BigNumberish,
     controller: string,
     controllerData: BytesLike,
-    lockableProperties: string
+    lockableProperties: string,
+    overrides: Overrides = {}
   ) {
     const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
@@ -149,7 +158,8 @@ class ZeroSystem {
         controller,
         { controllerData, lockableProperties },
         proposal,
-        amt
+        amt,
+        overrides
       );
   }
 
@@ -157,20 +167,20 @@ class ZeroSystem {
     signer: Signer,
     domain: string,
     proposal: string,
-    amt: BigNumberish,
     controllerData: DynamicControllerData,
     lockableProperties: string,
-    swapData: BancorSwapData
+    swapData: BancorSwapData,
+    overrides: Overrides = {}
   ) {
     return this.bidByPath(
       signer,
       domain,
       proposal,
-      amt,
       this.dynamicTokenController,
       this.encodeDynamicData(controllerData),
       lockableProperties,
-      swapData
+      swapData,
+      overrides
     );
   }
 
@@ -178,16 +188,16 @@ class ZeroSystem {
     signer: Signer,
     domain: string,
     proposal: string,
-    amt: BigNumberish,
     controller: string,
     controllerData: BytesLike,
     lockableProperties: string,
-    swapData: BancorSwapData
+    swapData: BancorSwapData,
+    overrides: Overrides = {}
   ) {
-    const overrides =
+    const _overrides =
       swapData.path[0].toLowerCase() === ethAddress
-        ? { value: swapData.amount }
-        : {};
+        ? { ...overrides, value: swapData.amount }
+        : overrides;
     const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
       .connect(signer)
@@ -198,7 +208,7 @@ class ZeroSystem {
         { controllerData, lockableProperties },
         proposal,
         swapData,
-        overrides
+        _overrides
       );
   }
 
@@ -207,7 +217,8 @@ class ZeroSystem {
     domain: string,
     owner: string,
     controllerData: DynamicControllerData,
-    lockableProperties: string
+    lockableProperties: string,
+    overrides: Overrides = {}
   ) {
     return this.claimBid(
       signer,
@@ -215,7 +226,8 @@ class ZeroSystem {
       owner,
       this.dynamicTokenController,
       this.encodeDynamicData(controllerData),
-      lockableProperties
+      lockableProperties,
+      overrides
     );
   }
 
@@ -225,7 +237,8 @@ class ZeroSystem {
     owner: string,
     controller: string,
     controllerData: BytesLike,
-    lockableProperties: string
+    lockableProperties: string,
+    overrides: Overrides = {}
   ) {
     const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
@@ -236,7 +249,8 @@ class ZeroSystem {
         owner,
         controller,
         controllerData,
-        lockableProperties
+        lockableProperties,
+        overrides
       );
   }
 

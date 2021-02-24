@@ -14,19 +14,19 @@ import "./IZNSController.sol";
 contract ZNSRegistry is ERC721UpgradeableCustom {
     using Address for address;
 
-    enum ChildImageRule {NULL, LOCKED, UNLOCKED}
+    enum ChildLockablePropertiesRule {NULL, LOCKED, UNLOCKED}
 
     /**
      * @notice Entry
      * entries are id'd by keccak(abi.encode(parentId, subdomainString))
      * @param controller is the role which may create child domains
      * @param domain is the full domain path
-     * @param resolver contains ipfs hash of metadata - will be a json payload
+     * @param properties contains ipfs hash of metadata - will be a json payload
      * that can specify various meanings to a domain some of which will be in
      * json payload from tokenURI
      * @param childCreateLimit this value sets how many children a child of this domain can set
-     * @param childImageRule - tokenized art is a major use case, so we allow domains to
-     * permanently lock the images of children once set
+     * @param childLockablePropertiesRule - tokenized art is a major use case, so we allow domains to
+     * permanently lock the lockablePropertiess of children once set
      */
     struct Entry {
         uint256 parent;
@@ -34,11 +34,11 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         address controller;
         address creator;
         string name;
-        string resolver;
-        string image;
+        string properties;
+        string lockableProperties;
         uint256 childCreateLimit;
         uint256 childCount;
-        ChildImageRule childImageRule;
+        ChildLockablePropertiesRule childLockablePropertiesRule;
     }
 
     struct EntryView {
@@ -49,13 +49,13 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         address creator;
         string name;
         string domain;
-        string resolver;
-        string image;
+        string properties;
+        string lockableProperties;
         uint256 createLimit;
         uint256 childCreateLimit;
         uint256 childCount;
-        ChildImageRule imageRule;
-        ChildImageRule childImageRule;
+        ChildLockablePropertiesRule lockablePropertiesRule;
+        ChildLockablePropertiesRule childLockablePropertiesRule;
     }
 
     /// @dev Index is domain ID, i.e. keccak256(abi.encode(parentId, subdomainString))
@@ -73,7 +73,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         address owner
     );
 
-    event ImageSet(address indexed owner, uint256 indexed id, string image);
+    event LockablePropertiesSet(address indexed owner, uint256 indexed id, string lockableProperties);
 
     event ChildCreateLimitSet(
         address indexed owner,
@@ -81,10 +81,10 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         uint256 childCreateLimit
     );
 
-    event ResolverSet(
+    event PropertiesSet(
         address indexed owner,
         uint256 indexed id,
-        string resolver
+        string properties
     );
 
     event ControllerSet(
@@ -94,10 +94,10 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         address sender
     );
 
-    event ChildImageRuleSet(
+    event ChildLockablePropertiesRuleSet(
         address indexed owner,
         uint256 indexed id,
-        ChildImageRule rule
+        ChildLockablePropertiesRule rule
     );
 
     event BaseURISet(string baseURI);
@@ -113,8 +113,8 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         __ERC721_init("Zer0 Name Service", "ZNS");
         Entry storage entry = _entries[ROOT_ID];
         entry.name = "ROOT";
-        /// @dev permanently unlock all TLD images
-        _entries[0].childImageRule = ChildImageRule.UNLOCKED;
+        /// @dev permanently unlock all TLD lockablePropertiess
+        _entries[0].childLockablePropertiesRule = ChildLockablePropertiesRule.UNLOCKED;
         DomainCreated(0, ROOT_ID, "ROOT", _owner);
         _mint(_owner, ROOT_ID);
         _setController(ROOT_ID, _controller);
@@ -130,13 +130,13 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         out.creator = entry.creator;
         out.name = entry.name;
         // out.domain = entry.domain;
-        out.resolver = entry.resolver;
-        out.image = entry.image;
+        out.properties = entry.properties;
+        out.lockableProperties = entry.lockableProperties;
         out.createLimit = parent.childCreateLimit;
         out.childCreateLimit = entry.childCreateLimit;
         out.childCount = entry.childCount;
-        out.imageRule = parent.childImageRule;
-        out.childImageRule = entry.childImageRule;
+        out.lockablePropertiesRule = parent.childLockablePropertiesRule;
+        out.childLockablePropertiesRule = entry.childLockablePropertiesRule;
     }
 
     /**
@@ -163,12 +163,12 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         return _entries[id].name;
     }
 
-    function resolverOf(uint256 id) public view returns (string memory) {
-        return _entries[id].resolver;
+    function propertiesOf(uint256 id) public view returns (string memory) {
+        return _entries[id].properties;
     }
 
-    function imageOf(uint256 id) public view returns (string memory) {
-        return _entries[id].image;
+    function lockablePropertiesOf(uint256 id) public view returns (string memory) {
+        return _entries[id].lockableProperties;
     }
 
     function childCreateLimitOf(uint256 id) public view returns (uint256) {
@@ -184,13 +184,13 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         return _entries[id].childCount;
     }
 
-    function childImageRuleOf(uint256 id) public view returns (ChildImageRule) {
-        return _entries[id].childImageRule;
+    function childLockablePropertiesRuleOf(uint256 id) public view returns (ChildLockablePropertiesRule) {
+        return _entries[id].childLockablePropertiesRule;
     }
 
-    /// @notice the imageRule of selected domain is the childImageRule of its parent
-    function imageRuleOf(uint256 id) public view returns (ChildImageRule) {
-        return childImageRuleOf(_entries[id].parent);
+    /// @notice the lockablePropertiesRule of selected domain is the childLockablePropertiesRule of its parent
+    function lockablePropertiesRuleOf(uint256 id) public view returns (ChildLockablePropertiesRule) {
+        return childLockablePropertiesRuleOf(_entries[id].parent);
     }
 
     /// @notice if controller is not set, then the owner may act as controller
@@ -318,21 +318,21 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
      * @notice setters - we save controller for last, as it's the most involved
      */
 
-    function setImage(uint256 id, string memory image) external {
+    function setLockableProperties(uint256 id, string memory lockableProperties) external {
         require(ownerOf(id) == msg.sender);
         Entry storage entry = _entries[id];
         require(
-            _entries[entry.parent].childImageRule != ChildImageRule.LOCKED ||
-                bytes(entry.image).length == 0
+            _entries[entry.parent].childLockablePropertiesRule != ChildLockablePropertiesRule.LOCKED ||
+                bytes(entry.lockableProperties).length == 0
         );
-        entry.image = image;
-        emit ImageSet(ownerOf(id), id, image);
+        entry.lockableProperties = lockableProperties;
+        emit LockablePropertiesSet(ownerOf(id), id, lockableProperties);
     }
 
-    function setResolver(uint256 id, string calldata resolver) external {
+    function setProperties(uint256 id, string calldata properties) external {
         require(ownerOf(id) == msg.sender);
-        _entries[id].resolver = resolver;
-        emit ResolverSet(ownerOf(id), id, resolver);
+        _entries[id].properties = properties;
+        emit PropertiesSet(ownerOf(id), id, properties);
     }
 
     /**
@@ -345,24 +345,24 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
     {
         address owner = id == 0 ? ownerOf(ROOT_ID) : ownerOf(id);
         require(owner == msg.sender);
-        require(childCreateLimit >= _entries[id].childCreateLimit);
+        require(childCreateLimit > _entries[id].childCreateLimit);
         _entries[id].childCreateLimit = childCreateLimit;
         emit ChildCreateLimitSet(owner, id, childCreateLimit);
     }
 
     /**
      * @notice once set to nonnull, cannot be set again
-     * Cannot be set for root, as TLD's may change their image at whim
+     * Cannot be set for root, as TLD's may change their lockableProperties at whim
      */
-    function setChildImageRule(uint256 id, ChildImageRule rule) external {
+    function setChildLockablePropertiesRule(uint256 id, ChildLockablePropertiesRule rule) external {
         require(ownerOf(id) == msg.sender);
-        require(childImageRuleOf(id) == ChildImageRule.NULL);
-        _setChildImageRule(id, rule);
+        require(childLockablePropertiesRuleOf(id) == ChildLockablePropertiesRule.NULL);
+        _setChildLockablePropertiesRule(id, rule);
     }
 
-    function _setChildImageRule(uint256 id, ChildImageRule rule) internal {
-        _entries[id].childImageRule = rule;
-        emit ChildImageRuleSet(ownerOf(id), id, rule);
+    function _setChildLockablePropertiesRule(uint256 id, ChildLockablePropertiesRule rule) internal {
+        _entries[id].childLockablePropertiesRule = rule;
+        emit ChildLockablePropertiesRuleSet(ownerOf(id), id, rule);
     }
 
     /// @notice can only be set by owner of ROOT_ID
@@ -430,11 +430,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
 
     /**
      * @dev _createDomainEntry does all of the creation and relevant assertions except
-     * for setting the controller and mining - we leave that separate for the safe cases
-     */
-
-    /**
-     * @dev
+     * for setting the controller and minting - we leave that separate for the safe cases
      * We return id so that controller contracts may retrieve it without recomputing
      */
     function _createDomainEntry(
@@ -450,7 +446,7 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         require(!_exists(id), "domain already created");
         Entry storage parent = _entries[parentId];
         require(
-            parent.childCount + 1 < childCreateLimitOf(parent.parent),
+            parent.childCount + 1 <= childCreateLimitOf(parent.parent),
             "Child limit reached"
         );
         parent.childCount++;
@@ -461,11 +457,11 @@ contract ZNSRegistry is ERC721UpgradeableCustom {
         entry.creator = _owner;
         DomainCreated(parentId, id, name, _owner);
         /**
-         * @dev if parent child image rule is locked, keep it locked
+         * @dev if parent child lockableProperties rule is locked, keep it locked
          * for derivative works and gallery domains
          */
-        if (parent.childImageRule == ChildImageRule.LOCKED) {
-            _setChildImageRule(id, ChildImageRule.LOCKED);
+        if (parent.childLockablePropertiesRule == ChildLockablePropertiesRule.LOCKED) {
+            _setChildLockablePropertiesRule(id, ChildLockablePropertiesRule.LOCKED);
         }
         return id;
     }

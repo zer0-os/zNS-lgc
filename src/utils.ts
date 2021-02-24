@@ -32,6 +32,8 @@ async function getAccounts(signers: Signer[]) {
   return accs;
 }
 
+const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+
 const zeroBytes32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -43,7 +45,7 @@ const ROOT_ID_HASH = keccak256(
 
 const ROOT_ID = BigNumber.from(ROOT_ID_HASH.toString()).toString();
 
-function getDomainId(_domain: string): string {
+function calcId(_domain: string): string {
   if (_domain === "ROOT") {
     return ROOT_ID;
   }
@@ -80,6 +82,12 @@ interface DynamicControllerData {
   symbol: string;
 }
 
+interface BancorSwapData {
+  path: string[];
+  amount: BigNumberish;
+  minOut: BigNumberish;
+}
+
 class ZeroSystem {
   registry: ZNSRegistry;
   staking: StakingController;
@@ -103,12 +111,14 @@ class ZeroSystem {
     const data = coder.encode(["address", "uint256"], [stakeToken, minBid]);
     return this.registry.safeSetController(id, this.staking.address, data);
   }
+
   async bidWithDynamicController(
     signer: Signer,
     domain: string,
     proposal: string,
     amt: BigNumberish,
-    data: DynamicControllerData
+    controllerData: DynamicControllerData,
+    lockableProperties: string
   ) {
     return this.bid(
       signer,
@@ -116,7 +126,8 @@ class ZeroSystem {
       proposal,
       amt,
       this.dynamicTokenController,
-      this.encodeDynamicData(data)
+      this.encodeDynamicData(controllerData),
+      lockableProperties
     );
   }
 
@@ -126,26 +137,85 @@ class ZeroSystem {
     proposal: string,
     amt: BigNumberish,
     controller: string,
-    data: BytesLike
+    controllerData: BytesLike,
+    lockableProperties: string
   ) {
     const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
       .connect(signer)
-      .bid(parentId, name, controller, data, proposal, amt);
+      .bid(
+        parentId,
+        name,
+        controller,
+        { controllerData, lockableProperties },
+        proposal,
+        amt
+      );
+  }
+
+  async bidWithDynamicControllerByPath(
+    signer: Signer,
+    domain: string,
+    proposal: string,
+    amt: BigNumberish,
+    controllerData: DynamicControllerData,
+    lockableProperties: string,
+    swapData: BancorSwapData
+  ) {
+    return this.bidByPath(
+      signer,
+      domain,
+      proposal,
+      amt,
+      this.dynamicTokenController,
+      this.encodeDynamicData(controllerData),
+      lockableProperties,
+      swapData
+    );
+  }
+
+  async bidByPath(
+    signer: Signer,
+    domain: string,
+    proposal: string,
+    amt: BigNumberish,
+    controller: string,
+    controllerData: BytesLike,
+    lockableProperties: string,
+    swapData: BancorSwapData
+  ) {
+    const overrides =
+      swapData.path[0].toLowerCase() === ethAddress
+        ? { value: swapData.amount }
+        : {};
+    const [parentId, name] = calcParentIdAndName(domain);
+    return this.staking
+      .connect(signer)
+      .bidByPath(
+        parentId,
+        name,
+        controller,
+        { controllerData, lockableProperties },
+        proposal,
+        swapData,
+        overrides
+      );
   }
 
   async claimBidWithDynamicController(
     signer: Signer,
     domain: string,
     owner: string,
-    data: DynamicControllerData
+    controllerData: DynamicControllerData,
+    lockableProperties: string
   ) {
     return this.claimBid(
       signer,
       domain,
       owner,
       this.dynamicTokenController,
-      this.encodeDynamicData(data)
+      this.encodeDynamicData(controllerData),
+      lockableProperties
     );
   }
 
@@ -154,12 +224,20 @@ class ZeroSystem {
     domain: string,
     owner: string,
     controller: string,
-    data: BytesLike
+    controllerData: BytesLike,
+    lockableProperties: string
   ) {
     const [parentId, name] = calcParentIdAndName(domain);
     return this.staking
       .connect(signer)
-      .claimBid(parentId, name, owner, controller, data);
+      .claimBid(
+        parentId,
+        name,
+        owner,
+        controller,
+        controllerData,
+        lockableProperties
+      );
   }
 
   encodeDynamicData({
@@ -202,4 +280,6 @@ export {
   bancorRegistryAddresses,
   ZeroSystem,
   DynamicControllerData,
+  calcId,
+  calcParentIdAndName,
 };

@@ -29,6 +29,7 @@ import {
   bancorRegistryAddresses,
   ZeroSystem,
   DynamicControllerData,
+  calcId,
 } from "../src/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 use(solidity);
@@ -99,6 +100,11 @@ describe("Staking", function () {
   let infinity: ERC20Token;
   let infConv: DynamicLiquidTokenConverter;
   let zero: ZeroSystem;
+  let data: DynamicControllerData;
+  const wilder = calcId("wilder");
+  const wilderfrank = calcId("wilder.frank");
+  const wilderalice = calcId("wilder.alice");
+  const wilderbob = calcId("wilder.bob");
   this.beforeAll(async function () {
     this.timeout(100000);
     signers = await ethers.getSigners();
@@ -153,31 +159,40 @@ describe("Staking", function () {
       staking.address,
       dynamic.address
     );
+    data = {
+      reserveAddr: infinity.address,
+      initWeight: 9000,
+      stepWeight: 10000,
+      minWeight: 3000,
+      mcapThreshold: "111000000000000000000",
+      minBid: BigNumber.from(10).pow(18),
+      name: "Wilder",
+      symbol: "WLD",
+    };
     console.log("addresses", {
       infinity: infinity.address,
       registry: registry.address,
       staking: staking.address,
       dynamic: dynamic.address,
     });
-    console.log("s", await registry.validateName("hmm"));
-    console.log(
-      "s",
+  });
+  it("domains validate appropriately", async function () {
+    expect(await registry.validateName("hmm")).eq(true);
+    expect(
       await registry.validateName(
         "hmmmmmmm-mmmmmm-mmmmmmmmm-mmmmmmmmmmmmmmm-mmmmmmmmmm"
       )
-    );
-    console.log(
-      "s",
+    ).eq(true);
+    expect(
       await registry.validateName(
         "-hmmmmmmm-mmmmmm-mmmmmmmmm-mmmmmmmmmmmmmmm-mmmmmmmmmm-"
       )
-    );
-    console.log("f", await registry.validateName("hm.m"));
-    console.log("f", await registry.validateName(".hmm"));
-    console.log("f", await registry.validateName("hmm."));
-    console.log(
-      "f",
-      await registry.validateName(".m.m.m.m.m.m.m.m.m.m.m.m.m.m.")
+    ).eq(true);
+    expect(await registry.validateName("hm.m")).eq(false);
+    expect(await registry.validateName(".hmm")).eq(false);
+    expect(await registry.validateName("hmm.")).eq(false);
+    expect(await registry.validateName(".m.m.m.m.m.m.m.m.m.m.m.m.m.m.")).eq(
+      false
     );
   });
   it("get some infinity", async function () {
@@ -192,39 +207,44 @@ describe("Staking", function () {
       infinity.address,
       BigNumber.from(10).pow(18)
     );
-    console.log("stakingcontroller", staking.address);
-    console.log("controllerof", await registry.controllerOf(ROOT_ID));
+    expect(await registry.controllerOf(ROOT_ID)).eq(staking.address);
   });
   it("do stake with zero addr controller and accept and claim", async function () {
     expect(
       zero.bid(
         signers[1],
         "zero",
-        "Qm....",
+        "qm...",
         BigNumber.from(10).pow(3),
         zeroAddress,
-        "0x"
+        "0x",
+        "qm..."
       )
     ).to.revertedWith("");
     await infinity.connect(signers[1]).approve(staking.address, MAX_256);
     await zero.bid(
       signers[1],
       "zero",
-      "Qm....",
+      "qm....",
       BigNumber.from(10).pow(18),
       zeroAddress,
-      "0x"
+      "0x",
+      "qm..."
     );
     await staking.acceptBid(signers[1].address, getDomainId("zero"), ROOT_ID);
-    await zero.claimBid(
+    const tx = await zero.claimBid(
       signers[1],
       "zero",
       signers[1].address,
       zeroAddress,
-      "0x"
+      "0x",
+      "qm..."
     );
-    console.log("signer1", signers[1].address);
-    console.log("owner of zero", await registry.ownerOf(getDomainId("zero")));
+    expect(await registry.ownerOf(getDomainId("zero"))).eq(signers[1].address);
+    console.log(
+      "gas for claim w/ zero address",
+      await tx.wait(1).then((x) => x.gasUsed.toString())
+    );
   });
   it("do stake with dynamic token controller and accept and claim", async function () {
     expect(
@@ -234,7 +254,8 @@ describe("Staking", function () {
         "Qm....",
         BigNumber.from(10).pow(3),
         zeroAddress,
-        "0x"
+        "0x",
+        "qm..."
       )
     ).to.revertedWith("");
     await infinity.connect(signers[1]).approve(staking.address, MAX_256);
@@ -245,23 +266,14 @@ describe("Staking", function () {
     //   "Qm....",
     //   BigNumber.from(10).pow(18)
     // );
-    const data: DynamicControllerData = {
-      reserveAddr: infinity.address,
-      initWeight: 9000,
-      stepWeight: 10000,
-      minWeight: 3000,
-      mcapThreshold: "111000000000000000000",
-      minBid: BigNumber.from(10).pow(18),
-      name: "Wilder",
-      symbol: "WLD",
-    };
     console.log("wilder id", getDomainId("wilder"));
     const bidtx = await zero.bidWithDynamicController(
       signers[1],
       "wilder",
       "qm...",
       BigNumber.from(10).pow(18),
-      data
+      data,
+      "qm..."
     );
     const acceptx = await staking.acceptBid(
       signers[1].address,
@@ -272,21 +284,20 @@ describe("Staking", function () {
       signers[1],
       "wilder",
       signers[1].address,
-      data
+      data,
+      "qm..."
     );
-    console.log("signer1", signers[1].address);
-    console.log(
-      "owner of wilder",
-      await registry.ownerOf(getDomainId("wilder"))
+    expect(await registry.ownerOf(getDomainId("wilder"))).eq(
+      signers[1].address
     );
-    const imagetx = await registry
+    const lockablePropertiestx = await registry
       .connect(signers[1])
-      .setImage(
+      .setLockableProperties(
         getDomainId("wilder"),
         "qmagbegubgeurbghebguerbguerbgergergerg"
       );
     const [b, a, c, i] = await Promise.all(
-      [bidtx, acceptx, claimtx, imagetx].map((x) =>
+      [bidtx, acceptx, claimtx, lockablePropertiestx].map((x) =>
         x.wait(1).then((x) => x.gasUsed.toString())
       )
     );
@@ -294,6 +305,114 @@ describe("Staking", function () {
     console.log("bid gas", b);
     console.log("accept gas", a);
     console.log("claim gas", c);
-    console.log("image gas", i);
+    console.log("lockableProperties gas", i);
+  });
+  describe("stake under wilder", function () {
+    let wilderToken: ERC20Token;
+    let wilderConv: DynamicLiquidTokenConverter;
+    const ethAmt = BigNumber.from(13).pow(18);
+    let infAmt: BigNumber;
+    let wamt: BigNumber;
+    let wbal = BigNumber.from(0);
+    let newBal = BigNumber.from(0);
+    this.beforeAll(async function () {
+      wilderToken = ERC20Token__factory.connect(
+        await dynamic.tokens(wilder),
+        ethers.provider
+      );
+      wilderConv = DynamicLiquidTokenConverter__factory.connect(
+        await dynamic.converters(wilder),
+        ethers.provider
+      );
+    });
+    this.beforeEach(async function () {
+      infAmt = (await infConv.getReturn(ethAddress, infAddress, ethAmt))[0];
+      wamt = (
+        await wilderConv.getReturn(
+          infinity.address,
+          wilderToken.address,
+          infAmt
+        )
+      )[0];
+    });
+    this.afterEach(async function () {
+      wbal = newBal;
+    });
+    it("stake wilder directly", async function () {
+      const bidTx = await zero.bidWithDynamicControllerByPath(
+        signers[2],
+        "wilder.frank",
+        "qm...",
+        BigNumber.from(10).pow(18),
+        data,
+        "qm...",
+        {
+          path: [
+            ethAddress,
+            infAddress,
+            infAddress,
+            wilderToken.address,
+            wilderToken.address,
+          ],
+          amount: ethAmt,
+          minOut: wamt,
+        }
+      );
+      newBal = wbal.add(wamt);
+      expect(await wilderToken.balanceOf(staking.address)).eq(newBal);
+    });
+    it("it stake from infinity", async function () {
+      await bancor
+        .connect(signers[3])
+        .convertByPath(
+          [ethAddress, infAddress, infAddress],
+          ethAmt,
+          infAmt,
+          zeroAddress,
+          zeroAddress,
+          0,
+          { value: ethAmt }
+        );
+      expect(await infinity.balanceOf(signers[3].address)).eq(infAmt);
+      infinity.connect(signers[3]).approve(staking.address, infAmt);
+      const bidTx = await zero.bidWithDynamicControllerByPath(
+        signers[3],
+        "wilder.alice",
+        "qm...",
+        BigNumber.from(10).pow(18),
+        data,
+        "qm...",
+        {
+          path: [infAddress, wilderToken.address, wilderToken.address],
+          amount: infAmt,
+          minOut: wamt,
+        }
+      );
+      newBal = wbal.add(wamt);
+      expect(await wilderToken.balanceOf(staking.address)).eq(newBal);
+    });
+    it("stake from eth", async function () {
+      const bidTx = await zero.bidWithDynamicControllerByPath(
+        signers[4],
+        "wilder.bob",
+        "qm...",
+        BigNumber.from(10).pow(18),
+        data,
+        "qm...",
+        {
+          path: [
+            ethAddress,
+            infAddress,
+            infAddress,
+            wilderToken.address,
+            wilderToken.address,
+          ],
+          amount: ethAmt,
+          minOut: wamt,
+        }
+      );
+      newBal = wbal.add(wamt);
+      expect(await wilderToken.balanceOf(staking.address)).eq(newBal);
+    });
   });
 });

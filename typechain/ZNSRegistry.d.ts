@@ -29,37 +29,38 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "calcId(uint256,string)": FunctionFragment;
     "childCountOf(uint256)": FunctionFragment;
     "childCreateLimitOf(uint256)": FunctionFragment;
-    "childImageRuleOf(uint256)": FunctionFragment;
+    "childLockablePropertiesRuleOf(uint256)": FunctionFragment;
     "controllerLikeOf(address,uint256)": FunctionFragment;
     "controllerOf(uint256)": FunctionFragment;
     "createDomain(uint256,string,address,address)": FunctionFragment;
     "createDomainSafeController(uint256,string,address,address,bytes)": FunctionFragment;
     "createDomainSafeMint(uint256,string,address,address,bytes)": FunctionFragment;
     "createLimitOf(uint256)": FunctionFragment;
+    "creatorOf(uint256)": FunctionFragment;
     "depthOf(uint256)": FunctionFragment;
     "entryOf(uint256)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getId(string[])": FunctionFragment;
-    "imageOf(uint256)": FunctionFragment;
-    "imageRuleOf(uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "lockablePropertiesOf(uint256)": FunctionFragment;
+    "lockablePropertiesRuleOf(uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "nameOf(uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parentOf(uint256)": FunctionFragment;
-    "resolverOf(uint256)": FunctionFragment;
+    "propertiesOf(uint256)": FunctionFragment;
     "safeCreateDomain(uint256,string,address,address,bytes,bytes)": FunctionFragment;
     "safeSetController(uint256,address,bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setChildCreateLimit(uint256,uint256)": FunctionFragment;
-    "setChildImageRule(uint256,uint8)": FunctionFragment;
+    "setChildLockablePropertiesRule(uint256,uint8)": FunctionFragment;
     "setController(uint256,address)": FunctionFragment;
-    "setImage(uint256,string)": FunctionFragment;
-    "setResolver(uint256,string)": FunctionFragment;
+    "setLockableProperties(uint256,string)": FunctionFragment;
+    "setProperties(uint256,string)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenByIndex(uint256)": FunctionFragment;
@@ -90,7 +91,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "childImageRuleOf",
+    functionFragment: "childLockablePropertiesRuleOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -118,6 +119,10 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "creatorOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "depthOf",
     values: [BigNumberish]
   ): string;
@@ -135,20 +140,20 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getId", values: [string[]]): string;
   encodeFunctionData(
-    functionFragment: "imageOf",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "imageRuleOf",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "initialize",
     values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lockablePropertiesOf",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lockablePropertiesRuleOf",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -164,7 +169,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "resolverOf",
+    functionFragment: "propertiesOf",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -189,7 +194,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "setChildImageRule",
+    functionFragment: "setChildLockablePropertiesRule",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -197,11 +202,11 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setImage",
+    functionFragment: "setLockableProperties",
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setResolver",
+    functionFragment: "setProperties",
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
@@ -248,7 +253,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "childImageRuleOf",
+    functionFragment: "childLockablePropertiesRuleOf",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -275,6 +280,7 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     functionFragment: "createLimitOf",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "creatorOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "depthOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "entryOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
@@ -283,21 +289,27 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "imageOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "imageRuleOf",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lockablePropertiesOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lockablePropertiesRuleOf",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nameOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "parentOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "resolverOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "propertiesOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "safeCreateDomain",
     data: BytesLike
@@ -320,16 +332,19 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setChildImageRule",
+    functionFragment: "setChildLockablePropertiesRule",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "setController",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setImage", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setResolver",
+    functionFragment: "setLockableProperties",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProperties",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -364,11 +379,11 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "BaseURISet(string)": EventFragment;
     "ChildCreateLimitSet(address,uint256,uint256)": EventFragment;
-    "ChildImageRuleSet(address,uint256,uint8)": EventFragment;
+    "ChildLockablePropertiesRuleSet(address,uint256,uint8)": EventFragment;
     "ControllerSet(uint256,address,address,address)": EventFragment;
     "DomainCreated(uint256,uint256,string,address)": EventFragment;
-    "ImageSet(address,uint256,string)": EventFragment;
-    "ResolverSet(address,uint256,string)": EventFragment;
+    "LockablePropertiesSet(address,uint256,string)": EventFragment;
+    "PropertiesSet(address,uint256,string)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
@@ -376,11 +391,13 @@ interface ZNSRegistryInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BaseURISet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ChildCreateLimitSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChildImageRuleSet"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "ChildLockablePropertiesRuleSet"
+  ): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ControllerSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DomainCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ImageSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ResolverSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LockablePropertiesSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PropertiesSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -457,12 +474,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    childImageRuleOf(
+    childLockablePropertiesRuleOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number]>;
 
-    "childImageRuleOf(uint256)"(
+    "childLockablePropertiesRuleOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number]>;
@@ -551,6 +568,13 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    creatorOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+
+    "creatorOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "depthOf(uint256)"(
@@ -572,6 +596,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -582,15 +607,16 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          creator: string;
           name: string;
           domain: string;
-          resolver: string;
-          image: string;
+          properties: string;
+          lockableProperties: string;
           createLimit: BigNumber;
           childCreateLimit: BigNumber;
           childCount: BigNumber;
-          imageRule: number;
-          childImageRule: number;
+          lockablePropertiesRule: number;
+          childLockablePropertiesRule: number;
         }
       ] & {
         out: [
@@ -602,6 +628,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -612,15 +639,16 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          creator: string;
           name: string;
           domain: string;
-          resolver: string;
-          image: string;
+          properties: string;
+          lockableProperties: string;
           createLimit: BigNumber;
           childCreateLimit: BigNumber;
           childCount: BigNumber;
-          imageRule: number;
-          childImageRule: number;
+          lockablePropertiesRule: number;
+          childLockablePropertiesRule: number;
         };
       }
     >;
@@ -639,6 +667,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -649,15 +678,16 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          creator: string;
           name: string;
           domain: string;
-          resolver: string;
-          image: string;
+          properties: string;
+          lockableProperties: string;
           createLimit: BigNumber;
           childCreateLimit: BigNumber;
           childCount: BigNumber;
-          imageRule: number;
-          childImageRule: number;
+          lockablePropertiesRule: number;
+          childLockablePropertiesRule: number;
         }
       ] & {
         out: [
@@ -669,6 +699,7 @@ export class ZNSRegistry extends Contract {
           string,
           string,
           string,
+          string,
           BigNumber,
           BigNumber,
           BigNumber,
@@ -679,15 +710,16 @@ export class ZNSRegistry extends Contract {
           parent: BigNumber;
           depth: BigNumber;
           controller: string;
+          creator: string;
           name: string;
           domain: string;
-          resolver: string;
-          image: string;
+          properties: string;
+          lockableProperties: string;
           createLimit: BigNumber;
           childCreateLimit: BigNumber;
           childCount: BigNumber;
-          imageRule: number;
-          childImageRule: number;
+          lockablePropertiesRule: number;
+          childLockablePropertiesRule: number;
         };
       }
     >;
@@ -716,20 +748,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
-
-    "imageOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
-
-    "imageRuleOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
-
     initialize(
       _owner: string,
       _controller: string,
@@ -753,6 +771,26 @@ export class ZNSRegistry extends Contract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    lockablePropertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "lockablePropertiesOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    lockablePropertiesRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    "lockablePropertiesRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
@@ -782,9 +820,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    propertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
-    "resolverOf(uint256)"(
+    "propertiesOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -872,13 +913,13 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    setChildImageRule(
+    setChildLockablePropertiesRule(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "setChildImageRule(uint256,uint8)"(
+    "setChildLockablePropertiesRule(uint256,uint8)"(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
@@ -896,27 +937,27 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    setImage(
+    setLockableProperties(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "setImage(uint256,string)"(
+    "setLockableProperties(uint256,string)"(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    setResolver(
+    setProperties(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "setResolver(uint256,string)"(
+    "setProperties(uint256,string)"(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -1048,12 +1089,12 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  childImageRuleOf(
+  childLockablePropertiesRuleOf(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<number>;
 
-  "childImageRuleOf(uint256)"(
+  "childLockablePropertiesRuleOf(uint256)"(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<number>;
@@ -1139,6 +1180,13 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  creatorOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "creatorOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   "depthOf(uint256)"(
@@ -1159,6 +1207,7 @@ export class ZNSRegistry extends Contract {
       string,
       string,
       string,
+      string,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1169,15 +1218,16 @@ export class ZNSRegistry extends Contract {
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      creator: string;
       name: string;
       domain: string;
-      resolver: string;
-      image: string;
+      properties: string;
+      lockableProperties: string;
       createLimit: BigNumber;
       childCreateLimit: BigNumber;
       childCount: BigNumber;
-      imageRule: number;
-      childImageRule: number;
+      lockablePropertiesRule: number;
+      childLockablePropertiesRule: number;
     }
   >;
 
@@ -1194,6 +1244,7 @@ export class ZNSRegistry extends Contract {
       string,
       string,
       string,
+      string,
       BigNumber,
       BigNumber,
       BigNumber,
@@ -1204,15 +1255,16 @@ export class ZNSRegistry extends Contract {
       parent: BigNumber;
       depth: BigNumber;
       controller: string;
+      creator: string;
       name: string;
       domain: string;
-      resolver: string;
-      image: string;
+      properties: string;
+      lockableProperties: string;
       createLimit: BigNumber;
       childCreateLimit: BigNumber;
       childCount: BigNumber;
-      imageRule: number;
-      childImageRule: number;
+      lockablePropertiesRule: number;
+      childLockablePropertiesRule: number;
     }
   >;
 
@@ -1240,20 +1292,6 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  "imageOf(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
-
-  "imageRuleOf(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<number>;
-
   initialize(
     _owner: string,
     _controller: string,
@@ -1277,6 +1315,26 @@ export class ZNSRegistry extends Contract {
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  lockablePropertiesOf(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  "lockablePropertiesOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  lockablePropertiesRuleOf(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  "lockablePropertiesRuleOf(uint256)"(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
@@ -1303,9 +1361,9 @@ export class ZNSRegistry extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  propertiesOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-  "resolverOf(uint256)"(
+  "propertiesOf(uint256)"(
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -1393,13 +1451,13 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setChildImageRule(
+  setChildLockablePropertiesRule(
     id: BigNumberish,
     rule: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "setChildImageRule(uint256,uint8)"(
+  "setChildLockablePropertiesRule(uint256,uint8)"(
     id: BigNumberish,
     rule: BigNumberish,
     overrides?: Overrides
@@ -1417,27 +1475,27 @@ export class ZNSRegistry extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setImage(
+  setLockableProperties(
     id: BigNumberish,
-    image: string,
+    lockableProperties: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "setImage(uint256,string)"(
+  "setLockableProperties(uint256,string)"(
     id: BigNumberish,
-    image: string,
+    lockableProperties: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setResolver(
+  setProperties(
     id: BigNumberish,
-    resolver: string,
+    properties: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "setResolver(uint256,string)"(
+  "setProperties(uint256,string)"(
     id: BigNumberish,
-    resolver: string,
+    properties: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1569,12 +1627,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    childImageRuleOf(
+    childLockablePropertiesRuleOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<number>;
 
-    "childImageRuleOf(uint256)"(
+    "childLockablePropertiesRuleOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<number>;
@@ -1660,6 +1718,13 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    creatorOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "creatorOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "depthOf(uint256)"(
@@ -1680,6 +1745,7 @@ export class ZNSRegistry extends Contract {
         string,
         string,
         string,
+        string,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1690,15 +1756,16 @@ export class ZNSRegistry extends Contract {
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        creator: string;
         name: string;
         domain: string;
-        resolver: string;
-        image: string;
+        properties: string;
+        lockableProperties: string;
         createLimit: BigNumber;
         childCreateLimit: BigNumber;
         childCount: BigNumber;
-        imageRule: number;
-        childImageRule: number;
+        lockablePropertiesRule: number;
+        childLockablePropertiesRule: number;
       }
     >;
 
@@ -1715,6 +1782,7 @@ export class ZNSRegistry extends Contract {
         string,
         string,
         string,
+        string,
         BigNumber,
         BigNumber,
         BigNumber,
@@ -1725,15 +1793,16 @@ export class ZNSRegistry extends Contract {
         parent: BigNumber;
         depth: BigNumber;
         controller: string;
+        creator: string;
         name: string;
         domain: string;
-        resolver: string;
-        image: string;
+        properties: string;
+        lockableProperties: string;
         createLimit: BigNumber;
         childCreateLimit: BigNumber;
         childCount: BigNumber;
-        imageRule: number;
-        childImageRule: number;
+        lockablePropertiesRule: number;
+        childLockablePropertiesRule: number;
       }
     >;
 
@@ -1761,20 +1830,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    "imageOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    imageRuleOf(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
-
-    "imageRuleOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
-
     initialize(
       _owner: string,
       _controller: string,
@@ -1798,6 +1853,26 @@ export class ZNSRegistry extends Contract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    lockablePropertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "lockablePropertiesOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    lockablePropertiesRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    "lockablePropertiesRuleOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -1824,9 +1899,9 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    propertiesOf(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-    "resolverOf(uint256)"(
+    "propertiesOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -1911,13 +1986,13 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setChildImageRule(
+    setChildLockablePropertiesRule(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "setChildImageRule(uint256,uint8)"(
+    "setChildLockablePropertiesRule(uint256,uint8)"(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: CallOverrides
@@ -1935,27 +2010,27 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setImage(
+    setLockableProperties(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "setImage(uint256,string)"(
+    "setLockableProperties(uint256,string)"(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setResolver(
+    setProperties(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "setResolver(uint256,string)"(
+    "setProperties(uint256,string)"(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2049,7 +2124,7 @@ export class ZNSRegistry extends Contract {
       childCreateLimit: null
     ): EventFilter;
 
-    ChildImageRuleSet(
+    ChildLockablePropertiesRuleSet(
       owner: string | null,
       id: BigNumberish | null,
       rule: null
@@ -2069,16 +2144,16 @@ export class ZNSRegistry extends Contract {
       owner: null
     ): EventFilter;
 
-    ImageSet(
+    LockablePropertiesSet(
       owner: string | null,
       id: BigNumberish | null,
-      image: null
+      lockableProperties: null
     ): EventFilter;
 
-    ResolverSet(
+    PropertiesSet(
       owner: string | null,
       id: BigNumberish | null,
-      resolver: null
+      properties: null
     ): EventFilter;
 
     Transfer(
@@ -2148,12 +2223,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    childImageRuleOf(
+    childLockablePropertiesRuleOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "childImageRuleOf(uint256)"(
+    "childLockablePropertiesRuleOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2242,6 +2317,13 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    creatorOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "creatorOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depthOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "depthOf(uint256)"(
@@ -2280,23 +2362,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    imageOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "imageOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    imageRuleOf(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "imageRuleOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     initialize(
       _owner: string,
       _controller: string,
@@ -2318,6 +2383,26 @@ export class ZNSRegistry extends Contract {
     "isApprovedForAll(address,address)"(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lockablePropertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "lockablePropertiesOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lockablePropertiesRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "lockablePropertiesRuleOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2349,9 +2434,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    resolverOf(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    propertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "resolverOf(uint256)"(
+    "propertiesOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2436,13 +2524,13 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setChildImageRule(
+    setChildLockablePropertiesRule(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "setChildImageRule(uint256,uint8)"(
+    "setChildLockablePropertiesRule(uint256,uint8)"(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
@@ -2460,27 +2548,27 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setImage(
+    setLockableProperties(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "setImage(uint256,string)"(
+    "setLockableProperties(uint256,string)"(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setResolver(
+    setProperties(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "setResolver(uint256,string)"(
+    "setProperties(uint256,string)"(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -2619,12 +2707,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    childImageRuleOf(
+    childLockablePropertiesRuleOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "childImageRuleOf(uint256)"(
+    "childLockablePropertiesRuleOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2713,6 +2801,16 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    creatorOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "creatorOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     depthOf(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -2763,26 +2861,6 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    imageOf(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "imageOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    imageRuleOf(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "imageRuleOf(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     initialize(
       _owner: string,
       _controller: string,
@@ -2804,6 +2882,26 @@ export class ZNSRegistry extends Contract {
     "isApprovedForAll(address,address)"(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    lockablePropertiesOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "lockablePropertiesOf(uint256)"(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    lockablePropertiesRuleOf(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "lockablePropertiesRuleOf(uint256)"(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2841,12 +2939,12 @@ export class ZNSRegistry extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    resolverOf(
+    propertiesOf(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "resolverOf(uint256)"(
+    "propertiesOf(uint256)"(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -2934,13 +3032,13 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    setChildImageRule(
+    setChildLockablePropertiesRule(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "setChildImageRule(uint256,uint8)"(
+    "setChildLockablePropertiesRule(uint256,uint8)"(
       id: BigNumberish,
       rule: BigNumberish,
       overrides?: Overrides
@@ -2958,27 +3056,27 @@ export class ZNSRegistry extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    setImage(
+    setLockableProperties(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "setImage(uint256,string)"(
+    "setLockableProperties(uint256,string)"(
       id: BigNumberish,
-      image: string,
+      lockableProperties: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    setResolver(
+    setProperties(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "setResolver(uint256,string)"(
+    "setProperties(uint256,string)"(
       id: BigNumberish,
-      resolver: string,
+      properties: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

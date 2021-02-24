@@ -22,7 +22,7 @@ interface IBancorNetwork {
         uint256 _affiliateFee
       ) external payable returns (uint256);
 }
-/* ff*
+/**
  * @notice This is a ZNS controller that implements an auction system for domains, however instead
  * of there being a beneficiary, tokens are permanently locked. A bid includes also the controller
  * and the data which will be forwarded to the safe controller data in the domain creator on the.
@@ -45,6 +45,8 @@ interface IBancorNetwork {
  */
 contract StakingController is IZNSController, Initializable {
     using SafeERC20 for IERC20;
+
+    address constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     enum StakeStatus {NULL, BID, ACCEPTED, STAKED}
     /**
@@ -78,6 +80,11 @@ contract StakingController is IZNSController, Initializable {
         uint256 minOut;
     }
 
+    struct CreateData {
+        bytes controllerData;
+        string lockableProperties;
+    }
+
     event StakeTokenSet(
         uint256 indexed id,
         address stakeToken
@@ -102,8 +109,7 @@ contract StakingController is IZNSController, Initializable {
         address indexed controller,
         uint256 indexed parentId,
         string name,
-        address stakeToken,
-        bytes data,
+        CreateData createData,
         string proposal,
         uint256 amt
     );
@@ -114,7 +120,7 @@ contract StakingController is IZNSController, Initializable {
         return stakes[keccak256(abi.encode(staker, id))];
     }
 
-    function stateOf(uint256 id) external view returns (DomainConfig memory) {
+    function configOf(uint256 id) external view returns (DomainConfig memory) {
         return domainConfigs[id];
     }
 
@@ -146,16 +152,19 @@ contract StakingController is IZNSController, Initializable {
         string calldata name,
         address owner,
         address controller,
-        bytes calldata data
+        bytes calldata data,
+        string calldata lockableProperties
     ) external {
         require(data.length == 0 || Address.isContract(controller));
-        uint256 id = registry.createDomainSafeController(parentId, name, owner, controller, data);
+        uint256 id = registry.createDomainSafeController(parentId, name, address(this), controller, data);
         Stake storage stake =
             stakes[keccak256(abi.encode(msg.sender, id))];
         require(stake.status == StakeStatus.ACCEPTED);
         require(
-            stake.createHash == keccak256(abi.encode(controller, data))
+            stake.createHash == keccak256(abi.encode(controller, data, lockableProperties))
         );
+        registry.setLockableProperties(id, lockableProperties);
+        registry.transferFrom(address(this), owner, id);
         emit BidClaimed(msg.sender, owner, id, controller);
     }
 
@@ -165,26 +174,22 @@ contract StakingController is IZNSController, Initializable {
         address owner,
         address controller,
         bytes calldata controllerData,
-        bytes calldata mintData
+        string calldata lockableProperties,
+        bytes calldata transferData
     ) external {
         require(controllerData.length == 0 || Address.isContract(controller));
-        require(mintData.length == 0 || Address.isContract(owner));
-        uint256 id = registry.safeCreateDomain(
-            parentId,
-            name,
-            owner,
-            controller,
-            mintData,
-            controllerData
-        );
+        require(transferData.length == 0 || Address.isContract(owner));
+
+        uint256 id = registry.createDomainSafeController(parentId, name, address(this), controller, controllerData);
         Stake storage stake =
             stakes[keccak256(abi.encode(msg.sender, id))];
         require(stake.status == StakeStatus.ACCEPTED);
         require(
             stake.createHash ==
-                keccak256(abi.encode(controller, controllerData))
+                keccak256(abi.encode(controller, controllerData, lockableProperties))
         );
-
+        registry.setLockableProperties(id, lockableProperties);
+        registry.safeTransferFrom(address(this), owner, id, transferData);
         emit BidClaimed(
             msg.sender,
             owner,
@@ -192,24 +197,23 @@ contract StakingController is IZNSController, Initializable {
             controller
         );
     }
-
-    // @notice this swaps tokens prior
+    /// @notice this swaps tokens prior to staking
     function bidByPath(
         uint256 parentId,
         string calldata name,
         address controller,
-        bytes calldata data,
+        CreateData calldata createData,
         string calldata proposal,
         BancorSwapData calldata swapData
     ) external payable {
-        bidForByPath(parentId, name, controller, data, proposal, swapData, msg.sender);
+        bidForByPath(parentId, name, controller, createData, proposal, swapData, msg.sender);
     }
 
     function bidForByPath(
         uint256 parentId,
         string calldata name,
         address controller,
-        bytes calldata data,
+        CreateData calldata createData,
         string calldata proposal,
         BancorSwapData calldata swapData,
         address staker
@@ -230,9 +234,20 @@ contract StakingController is IZNSController, Initializable {
             require(domainConfig.minBid <= swapData.minOut);
             stake.status = StakeStatus.BID;
             stake.stakeToken = stakeToken;
-            stake.createHash = keccak256(abi.encode(controller, data));
+            stake.createHash = keccak256(abi.encode(controller, createData.controllerData, createData.lockableProperties));
             stake.parentId = parentId;
-            amt = bancorNetwork().convertByPath{value: address(this).balance}(swapData.path, swapData.amount, swapData.minOut, payable(address(this)), address(0), 0);
+            address firstToken = swapData.path[0];
+            if(firstToken == ETH_ADDRESS) {
+                require(msg.value == swapData.amount);
+                amt = bancorNetwork().convertByPath{value: msg.value}(swapData.path, swapData.amount, swapData.minOut, payable(address(this)), address(0), 0);
+            } else {
+                require(msg.value == 0);
+                uint swapAmt = swapData.amount;
+                IERC20(firstToken).safeTransferFrom(msg.sender, address(this), swapAmt);
+                IBancorNetwork _bancor = bancorNetwork();
+                IERC20(firstToken).approve(address(_bancor), swapAmt);
+                amt = _bancor.convertByPath(swapData.path, swapAmt, swapData.minOut, payable(address(0)), address(0), 0);
+            }
             require(address(this).balance == 0);
             stake.amount = amt;
        }
@@ -241,8 +256,7 @@ contract StakingController is IZNSController, Initializable {
             controller,
             parentId,
             name,
-            stakeToken,
-            data,
+            createData,
             proposal,
             amt
         );
@@ -252,23 +266,23 @@ contract StakingController is IZNSController, Initializable {
         uint256 parentId,
         string calldata name,
         address controller,
-        bytes calldata data,
+        CreateData calldata createData,
         string calldata proposal,
         uint256 amt
     ) external {
-       bidFor(parentId, name, controller, data, proposal, amt, msg.sender);
+       bidFor(parentId, name, controller, createData, proposal, amt, msg.sender);
     }
 
     function bidFor(
         uint256 parentId,
         string calldata name,
         address controller,
-        bytes calldata data,
+        CreateData calldata createData,
         string calldata proposal,
         uint256 amt,
         address staker
     ) public {
-        require(data.length == 0 || Address.isContract(controller));
+        require(createData.controllerData.length == 0 || Address.isContract(controller));
         address stakeToken;
         {
             uint256 id = registry.calcId(parentId, name);
@@ -284,7 +298,7 @@ contract StakingController is IZNSController, Initializable {
             stake.status = StakeStatus.BID;
             stake.amount = amt;
             stake.stakeToken = stakeToken;
-            stake.createHash = keccak256(abi.encode(controller, data));
+            stake.createHash = keccak256(abi.encode(controller, createData.controllerData, createData.lockableProperties));
             stake.parentId = parentId;
             IERC20(stakeToken).safeTransferFrom(staker, address(this), amt);
         }
@@ -293,8 +307,7 @@ contract StakingController is IZNSController, Initializable {
             controller,
             parentId,
             name,
-            stakeToken,
-            data,
+            createData,
             proposal,
             amt
         );

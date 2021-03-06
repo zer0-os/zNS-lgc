@@ -1,0 +1,6 @@
+{
+  "solidity.compileUsingRemoteVersion": "v0.7.0+commit.9e61f92b",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true
+}

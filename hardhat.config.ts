@@ -2,6 +2,7 @@ import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
 import "@openzeppelin/hardhat-upgrades";
+import "@eth-optimism/smock/build/src/plugins/hardhat-storagelayout";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html

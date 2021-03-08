@@ -1,4 +1,3 @@
-require("dotenv").config();
 import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
@@ -10,55 +9,26 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
-    console.log(await account.address);
+    console.log(account.address);
   }
 });
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
+
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [
-      {
-        version: "0.7.6",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
-      },
-      {
-        version: "0.6.12",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
-      },
-    ],
+    compilers: [{ version: "0.7.3", settings: {} }],
   },
-  networks: {
-    hardhat: {
-      forking: {
-        url:
-          "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
-        blockNumber: 11845661,
-      },
-    },
-    ropsten: {
-      accounts: { mnemonic: process.env.MNEMONIC },
-      url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
-    },
-    rinkeby: {
-      accounts: { mnemonic: process.env.MNEMONIC },
-      url: "https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
-    },
+  typechain: {
+    target: "ethers-v5",
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
   },
   mocha: {
-    timeout: 60 * 1000,
+    timeout: 50000,
   },
 };
-
 export default config;

@@ -7,14 +7,31 @@ contract Registry is Ownable {
   // Logged when the owner of a node assigns a new owner to a subnode.
   event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
 
+  // Logged when the owner of a node transfers ownership to a new account.
+  event Transfer(bytes32 indexed node, address owner);
+
   struct DomainRecord {
     address owner;
   }
 
   mapping(bytes32 => DomainRecord) public records;
 
+  modifier authorized(bytes32 node) {
+    address domainOwner = records[node].owner;
+    require(domainOwner == msg.sender, "Not Authorized.");
+    _;
+  }
+
   constructor() {
     records[0x0].owner = msg.sender;
+  }
+
+  function setSubnodeRecord(
+    bytes32 node,
+    bytes32 label,
+    address domainOwner
+  ) external {
+    setSubnodeOwner(node, label, domainOwner);
   }
 
   function owner(bytes32 node) public view returns (address) {
@@ -22,18 +39,15 @@ contract Registry is Ownable {
     return domainOwner;
   }
 
-  function setSubnodeRecord(
-    bytes32 node,
-    bytes32 label,
-    address domainOwner
-  ) public {
-    setSubnodeOwner(node, label, domainOwner);
-  }
-
-  function recordExists(bytes32 node) external view returns (bool) {
+  function recordExists(bytes32 node) public view returns (bool) {
     address domainOwner = records[node].owner;
     bool hasDomainOwner = domainOwner != address(0x0);
     return hasDomainOwner;
+  }
+
+  function setOwner(bytes32 node, address domainOwner) public authorized(node) {
+    _setOwner(node, domainOwner);
+    emit Transfer(node, domainOwner);
   }
 
   function setSubnodeOwner(

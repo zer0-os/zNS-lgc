@@ -73,7 +73,7 @@ describe("Registry", () => {
       .withArgs(rootNodeHash, subnodeLabelHash, user1.address);
   });
 
-  it("sets the new owner of a subnode record", async () => {
+  it("assigns ownership when setting a subnode record", async () => {
     const rootNodeHash = ethers.constants.HashZero;
     const subnodeLabel = "test";
     const subnodeLabelHash = ethers.utils.id(subnodeLabel);
@@ -90,7 +90,7 @@ describe("Registry", () => {
     );
   });
 
-  it("allows you to check if a domain exists", async () => {
+  it("allows you to check if a node record exists", async () => {
     const rootNodeHash = ethers.constants.HashZero;
     const subnodeLabel = "test";
     const subnodeLabelHash = ethers.utils.id(subnodeLabel);
@@ -105,12 +105,54 @@ describe("Registry", () => {
     expect(await registry.recordExists(expectedNodeHash)).to.eq(true);
   });
 
-  it("allows you to check if a domain does not exist", async () => {
+  it("allows you to check if a node record does not exist", async () => {
     const rootNodeHash = ethers.constants.HashZero;
     const subnodeLabel = "test";
     const subnodeLabelHash = ethers.utils.id(subnodeLabel);
     const expectedNodeHash = getSubnodeHash(rootNodeHash, subnodeLabelHash);
 
     expect(await registry.recordExists(expectedNodeHash)).to.eq(false);
+  });
+
+  it("allows a node owner to transfer their node to another owner", async () => {
+    const rootNodeHash = ethers.constants.HashZero;
+    const subnodeLabel = "test";
+    const subnodeLabelHash = ethers.utils.id(subnodeLabel);
+    const expectedNodeHash = getSubnodeHash(rootNodeHash, subnodeLabelHash);
+
+    await registry.setSubnodeRecord(
+      rootNodeHash,
+      subnodeLabelHash,
+      user1.address
+    );
+
+    const registryAsUser1 = registry.connect(user1);
+
+    await registryAsUser1.setOwner(expectedNodeHash, user2.address);
+
+    expect(await registry["owner(bytes32)"](expectedNodeHash)).to.eq(
+      user2.address
+    );
+  });
+
+  it("emits a Transfer event when a node owner to transfers their node", async () => {
+    const rootNodeHash = ethers.constants.HashZero;
+    const subnodeLabel = "test";
+    const subnodeLabelHash = ethers.utils.id(subnodeLabel);
+    const expectedNodeHash = getSubnodeHash(rootNodeHash, subnodeLabelHash);
+
+    await registry.setSubnodeRecord(
+      rootNodeHash,
+      subnodeLabelHash,
+      user1.address
+    );
+
+    const registryAsUser1 = registry.connect(user1);
+
+    const tx = await registryAsUser1.setOwner(expectedNodeHash, user2.address);
+
+    expect(tx)
+      .to.emit(registry, "Transfer")
+      .withArgs(expectedNodeHash, user2.address);
   });
 });

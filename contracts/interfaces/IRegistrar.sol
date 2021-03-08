@@ -3,7 +3,7 @@ pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IZNSRegistrar is IERC721 {
+interface IRegistrar is IERC721 {
   // Emitted when a controller is removed
   event ControllerAdded(address indexed controller);
 

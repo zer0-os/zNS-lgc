@@ -25,7 +25,8 @@
     "clean": "npx hardhat clean",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "coverage": "npm run build && hardhat coverage --temp artifacts --network coverage"
+    "coverage": "npm run build && hardhat coverage --temp artifacts --network coverage",
+    "prettier": "prettier --write ./contracts/**/*.sol"
   },
   "name": "starter",
   "version": "0.0.0",

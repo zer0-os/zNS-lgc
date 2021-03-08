@@ -2,14 +2,9 @@
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IRegistry.sol";
 
-contract Registry is Ownable {
-  // Logged when the owner of a node assigns a new owner to a subnode.
-  event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
-
-  // Logged when the owner of a node transfers ownership to a new account.
-  event Transfer(bytes32 indexed node, address owner);
-
+contract Registry is Ownable, IRegistry {
   struct DomainRecord {
     address owner;
   }
@@ -30,22 +25,26 @@ contract Registry is Ownable {
     bytes32 node,
     bytes32 label,
     address domainOwner
-  ) external {
+  ) external override {
     setSubnodeOwner(node, label, domainOwner);
   }
 
-  function owner(bytes32 node) public view returns (address) {
+  function owner(bytes32 node) public view override returns (address) {
     address domainOwner = records[node].owner;
     return domainOwner;
   }
 
-  function recordExists(bytes32 node) public view returns (bool) {
+  function recordExists(bytes32 node) public view override returns (bool) {
     address domainOwner = records[node].owner;
     bool hasDomainOwner = domainOwner != address(0x0);
     return hasDomainOwner;
   }
 
-  function setOwner(bytes32 node, address domainOwner) public authorized(node) {
+  function setOwner(bytes32 node, address domainOwner)
+    public
+    override
+    authorized(node)
+  {
     _setOwner(node, domainOwner);
     emit Transfer(node, domainOwner);
   }

@@ -16,8 +16,6 @@ interface IRegistry {
 
   function setOwner(bytes32 node, address owner) external;
 
-  function owner() external view returns (address);
-
   function owner(bytes32 node) external view returns (address);
 
   function recordExists(bytes32 node) external view returns (bool);

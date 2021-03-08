@@ -11,14 +11,10 @@ interface IRegistry {
   function setSubnodeRecord(
     bytes32 node,
     bytes32 label,
-    address owner,
-    address resolver,
-    uint64 ttl
+    address owner
   ) external;
 
   function setOwner(bytes32 node, address owner) external;
-
-  function owner() external view returns (address);
 
   function owner(bytes32 node) external view returns (address);
 

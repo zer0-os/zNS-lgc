@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
-contract Registry {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Registry is Ownable {
   constructor() {}
 }

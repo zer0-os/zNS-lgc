@@ -5,7 +5,10 @@ async function main() {
 
   const accounts = await ethers.getSigners();
 
-  console.log("Accounts:", accounts.map(a => a.address));
+  console.log(
+    "Accounts:",
+    accounts.map((a) => a.address)
+  );
 }
 
 main()

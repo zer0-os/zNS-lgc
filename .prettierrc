@@ -11,5 +11,6 @@
         "explicitTypes": "always"
       }
     }
-  ]
+  ],
+  "endOfLine": "lf"
 }

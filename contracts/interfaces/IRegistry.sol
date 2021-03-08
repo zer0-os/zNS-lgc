@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
 interface IRegistry {
@@ -13,13 +14,13 @@ interface IRegistry {
     address owner,
     address resolver,
     uint64 ttl
-  ) external virtual;
+  ) external;
 
-  function setOwner(bytes32 node, address owner) external virtual;
+  function setOwner(bytes32 node, address owner) external;
 
-  function owner() public view virtual returns (address);
+  function owner() external view returns (address);
 
-  function owner(bytes32 node) external view virtual returns (address);
+  function owner(bytes32 node) external view returns (address);
 
-  function recordExists(bytes32 node) external view virtual returns (bool);
+  function recordExists(bytes32 node) external view returns (bool);
 }

@@ -64,7 +64,7 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
     address domainOwner
   ) internal returns (uint256) {
     // Domain parents must exist
-    require(_exists(parent), "Non-existant Parent Domain");
+    require(_exists(parent), "No Parent");
 
     // Calculate what the new domain id is and mint it
     uint256 domainId = uint256(keccak256(abi.encodePacked(parent, label)));

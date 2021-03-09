@@ -231,4 +231,40 @@ describe("Registrar", () => {
 
     expect(await registry.available(expectedDomainHash)).to.be.true;
   });
+
+  it("prevents a domain from being registered if it's parent doesn't exist", async () => {
+    await registry.addController(user1.address);
+    const registryAsUser1 = registry.connect(user1);
+
+    const parentName = "myRoot";
+    const parentHash = hashDomainName(parentName);
+    const rootHash = calculateDomainHash(rootDomainHash, parentHash);
+    const domainName = "myDomain";
+
+    await expect(
+      registryAsUser1.registerDomain(rootHash, domainName, user2.address)
+    ).to.be.revertedWith("No Parent");
+  });
+
+  it("allows a child domain to be regiseted on an existing domain", async () => {
+    await registry.addController(user1.address);
+    const registryAsUser1 = registry.connect(user1);
+
+    const parentName = "myRoot";
+    await registryAsUser1.registerDomain(
+      rootDomainHash,
+      parentName,
+      user1.address
+    );
+
+    const parentHash = hashDomainName(parentName);
+    const rootHash = calculateDomainHash(rootDomainHash, parentHash);
+    const domainName = "myDomain";
+
+    await registryAsUser1.registerDomain(rootHash, domainName, user1.address);
+
+    const domainNameHash = hashDomainName(domainName);
+    const expectedDomainHash = calculateDomainHash(rootHash, domainNameHash);
+    expect(await registry.domainExists(expectedDomainHash)).to.be.true;
+  });
 });

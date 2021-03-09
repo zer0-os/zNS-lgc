@@ -9,9 +9,9 @@ contract Registry is Ownable, IRegistry {
     address owner;
   }
 
-  mapping(bytes32 => DomainRecord) public records;
+  mapping(uint256 => DomainRecord) public records;
 
-  modifier authorized(bytes32 node) {
+  modifier authorized(uint256 node) {
     address domainOwner = records[node].owner;
     require(domainOwner == msg.sender, "Not Authorized.");
     _;
@@ -22,25 +22,25 @@ contract Registry is Ownable, IRegistry {
   }
 
   function setSubnodeRecord(
-    bytes32 node,
-    bytes32 label,
+    uint256 node,
+    uint256 label,
     address domainOwner
   ) external override {
     setSubnodeOwner(node, label, domainOwner);
   }
 
-  function owner(bytes32 node) public view override returns (address) {
+  function owner(uint256 node) public view override returns (address) {
     address domainOwner = records[node].owner;
     return domainOwner;
   }
 
-  function recordExists(bytes32 node) public view override returns (bool) {
+  function recordExists(uint256 node) public view override returns (bool) {
     address domainOwner = records[node].owner;
     bool hasDomainOwner = domainOwner != address(0x0);
     return hasDomainOwner;
   }
 
-  function setOwner(bytes32 node, address domainOwner)
+  function setOwner(uint256 node, address domainOwner)
     public
     override
     authorized(node)
@@ -50,17 +50,17 @@ contract Registry is Ownable, IRegistry {
   }
 
   function setSubnodeOwner(
-    bytes32 node,
-    bytes32 label,
+    uint256 node,
+    uint256 label,
     address domainOwner
-  ) public onlyOwner returns (bytes32) {
-    bytes32 subnode = keccak256(abi.encodePacked(node, label));
+  ) public onlyOwner returns (uint256) {
+    uint256 subnode = uint256(keccak256(abi.encodePacked(node, label)));
     _setOwner(subnode, domainOwner);
     emit NewOwner(node, label, domainOwner);
     return subnode;
   }
 
-  function _setOwner(bytes32 node, address domainOwner) private {
+  function _setOwner(uint256 node, address domainOwner) private {
     records[node].owner = domainOwner;
   }
 }

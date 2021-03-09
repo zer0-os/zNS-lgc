@@ -3,20 +3,20 @@ pragma solidity ^0.7.3;
 
 interface IRegistry {
   // Logged when the owner of a node assigns a new owner to a subnode.
-  event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
+  event NewOwner(uint256 indexed node, uint256 indexed label, address owner);
 
   // Logged when the owner of a node transfers ownership to a new account.
-  event Transfer(bytes32 indexed node, address owner);
+  event Transfer(uint256 indexed node, address owner);
 
   function setSubnodeRecord(
-    bytes32 node,
-    bytes32 label,
+    uint256 node,
+    uint256 label,
     address owner
   ) external;
 
-  function setOwner(bytes32 node, address owner) external;
+  function setOwner(uint256 node, address owner) external;
 
-  function owner(bytes32 node) external view returns (address);
+  function owner(uint256 node) external view returns (address);
 
-  function recordExists(bytes32 node) external view returns (bool);
+  function recordExists(uint256 node) external view returns (bool);
 }

@@ -21,9 +21,6 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [{ version: "0.7.3", settings: {} }],
   },
-  typechain: {
-    target: "ethers-v5",
-  },
   paths: {
     sources: "./contracts",
     tests: "./test",

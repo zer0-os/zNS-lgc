@@ -13,3 +13,10 @@ export const getSubnodeHash = (
 
   return calculatedHash;
 };
+
+export const hashDomainName = (name: string) => {
+  const hash = ethers.utils.id(name);
+  return hash;
+};
+
+export const calculateDomainHash = getSubnodeHash;

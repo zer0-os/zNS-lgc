@@ -89,9 +89,7 @@ There are some architectural decisions which should be understood:
 
 A domain is reference by an `id`.
 
-A `domain id` is the same as a `domain hash`.
-
-The `domain hash` can be directly calculated from a `domain name`.
+The `domain id` can be directly calculated from a `domain name`.
 
 A `domain name` is the full domain path, for instance `dorg.members.zachary`.
 
@@ -103,7 +101,7 @@ A `domain name` is made up of labels, where for a domain of `dorg.members.zachar
 
 Where `members` is the sub domain label of `dorg`, and `zachary` is the sub domain label of `members`.
 
-To calculate a domain's hash you must use an algorithm as such:
+To calculate a domain's id you must use an algorithm as such:
 
 ```js
 // This is psuedo-code
@@ -128,15 +126,14 @@ function hashDomain(name) {
 ```
 
 Thus if you consider the domain name `dorg.members.zachary` and each element of the domain name delineated by a `'.'` to be a label (`dorg`, `members` `zachary`).
-You would find that the hash of `dorg.members.zachary` to be:
+You would find that the id of `dorg.members.zachary` to be:
 ```js
 let hash1 = hash('dorg');
 let hash2 = hash('members');
 let hash3 = hash('zachary');
 
 // hash of dorg.members.zachary
-let domainHash = hash(hash(hash1 + hash2) + hash3);
-let domainId = domainHash;
+let domainId = hash(hash(hash1 + hash2) + hash3);
 ```
 
 #### Why this matters
@@ -158,7 +155,7 @@ Given a domain `dorg.members.zachary`
 
 The corresponding `Domain` graphql object's fields would be:
 
-- The `id` is the complete domain hash
+- The `id` is the complete domain id
   - `hash(hash(hash('dorg') + hash('members')) + hash('zachary'))`
 - The `name` would be the plaintext complete domain name
   - `'dorg.members.zachary'`

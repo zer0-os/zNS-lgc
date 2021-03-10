@@ -31,8 +31,8 @@ The controller is responsible for
 
 - Allowing an end-user to create subdomains on a domain they own
 
-[Source](./ControllerV1Reference.sol)  
-[ABI](./ControllerV1Reference.json)
+[Source](./ControllerV0Reference.sol)  
+[ABI](./ControllerV0Reference.json)
 
 ## Subgraph Schema
 

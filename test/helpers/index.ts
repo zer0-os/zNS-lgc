@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { Contract, ContractTransaction, ethers, providers } from "ethers";
 
 export const getSubnodeHash = (
   parentHash: string,
@@ -20,3 +20,39 @@ export const hashDomainName = (name: string) => {
 };
 
 export const calculateDomainHash = getSubnodeHash;
+
+export function filterLogsWithTopics(
+  logs: providers.Log[],
+  topic: any,
+  contractAddress: string
+) {
+  return logs
+    .filter((log) => log.topics.includes(topic))
+    .filter(
+      (log) =>
+        log.address &&
+        log.address.toLowerCase() === contractAddress.toLowerCase()
+    );
+}
+
+export async function getEvents(
+  tx: ContractTransaction,
+  event: string,
+  contract: Contract
+) {
+  const receipt = await tx.wait();
+  const topic = contract.interface.getEventTopic(event);
+  const events = filterLogsWithTopics(receipt.logs, topic, contract.address);
+
+  return events;
+}
+
+export async function getEvent(
+  tx: ContractTransaction,
+  event: string,
+  contract: Contract
+) {
+  const events = await getEvents(tx, event, contract);
+  const firstEvent = events[0];
+  return firstEvent;
+}

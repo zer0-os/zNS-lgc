@@ -16,6 +16,15 @@ interface IRegistrar {
     uint256 indexed parent
   );
 
+  // Emitted whenever the metadata of a domain is locked
+  event MetadataLocked(uint256 indexed id, address locker);
+
+  // Emitted whenever the metadata of a domain is unlocked
+  event MetadataUnlocked(uint256 indexed id);
+
+  // Emitted whenever the metadata of a domain is changed
+  event MetadataChanged(uint256 indexed id, string uri);
+
   function domainExists(uint256 id) external view returns (bool);
 
   // Authorises a controller, who can register domains.
@@ -30,6 +39,25 @@ interface IRegistrar {
   function registerDomain(
     uint256 parent,
     string memory name,
-    address domainOwner
+    address domainOwner,
+    address creator
   ) external;
+
+  // Returns the original creator of a domain
+  function creatorOf(uint256 id) external view returns (address);
+
+  // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
+  function lockDomainMetadata(uint256 id) external;
+
+  // Unlocks a domains metadata, can only be called by the address that locked the metadata
+  function unlockDomainMetadata(uint256 id) external;
+
+  // Checks if a domains metadata is locked
+  function domainMetadataLocked(uint256 id) external view returns (bool);
+
+  // Returns the address which locked the domain metadata
+  function domainMetadataLockedBy(uint256 id) external view returns (address);
+
+  // Sets a domains metadata uri
+  function setDomainMetadataUri(uint256 id, string memory uri) external;
 }

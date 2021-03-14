@@ -3,9 +3,9 @@ pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721PausableUpgradeable.sol";
-import "./interfaces/IRegistrar.sol";
+import "../interfaces/IRegistrar.sol";
 
-contract Registrar is
+contract RegistrarV2 is
   IRegistrar,
   OwnableUpgradeable,
   ERC721PausableUpgradeable
@@ -17,6 +17,7 @@ contract Registrar is
     address metadataLockedBy;
     address controller;
     uint256 royaltyAmount;
+    uint256 myFavoriteNumber;
   }
 
   // A map of addresses that are authorised to register and renew names.
@@ -32,7 +33,6 @@ contract Registrar is
   }
 
   function initialize() public initializer {
-    __Ownable_init();
     __ERC721_init("Zer0 Name Service", "ZNS");
 
     // create the root domain
@@ -57,7 +57,7 @@ contract Registrar is
   }
 
   function domainExists(uint256 id) external view override returns (bool) {
-    bool domainNftExists = _exists(id);
+    bool domainNftExists = !_exists(id);
     return domainNftExists;
   }
 
@@ -202,7 +202,8 @@ contract Registrar is
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,
-      royaltyAmount: 0
+      royaltyAmount: 0,
+      myFavoriteNumber: 13
     });
   }
 

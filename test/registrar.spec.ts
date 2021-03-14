@@ -1,14 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import {
-  calculateDomainHash,
-  filterLogsWithTopics,
-  hashDomainName,
-} from "./helpers";
+import { calculateDomainHash, hashDomainName } from "./helpers";
+import { Signer } from "crypto";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -25,6 +22,14 @@ describe("Registrar", () => {
   const rootDomainHash = ethers.constants.HashZero;
   let rootDomainId = BigNumber.from(0);
 
+  const deployRegistry = async (creator: SignerWithAddress) => {
+    registryFactory = new Registrar__factory(creator);
+    registry = (await upgrades.deployProxy(registryFactory, [], {
+      initializer: "initialize",
+    })) as Registrar;
+    registry = await registry.deployed();
+  };
+
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
@@ -34,8 +39,7 @@ describe("Registrar", () => {
   });
 
   beforeEach("deploys", async () => {
-    registryFactory = new Registrar__factory(creator);
-    registry = await registryFactory.deploy();
+    await deployRegistry(creator);
   });
 
   describe("root domain", () => {
@@ -51,11 +55,17 @@ describe("Registrar", () => {
         "The owner is not the creator."
       );
     });
+
+    it("tracks the root domain controller as null", async () => {
+      expect(await registry.domainController(rootDomainId)).to.eq(
+        ethers.constants.AddressZero
+      );
+    });
   });
 
   describe("ownership", () => {
     it("allows the contract owner to be transferred", async () => {
-      await registry.transferOwnership(user1.address);
+      await registry["transferOwnership(address)"](user1.address);
       expect(await registry.owner()).to.be.eq(user1.address);
     });
   });
@@ -118,8 +128,7 @@ describe("Registrar", () => {
 
   describe("registering domains", () => {
     beforeEach("deploys", async () => {
-      registryFactory = new Registrar__factory(creator);
-      registry = await registryFactory.deploy();
+      await deployRegistry(creator);
     });
 
     it("prevents non controllers from registering domains", async () => {
@@ -213,8 +222,62 @@ describe("Registrar", () => {
           expectedDomainHash,
           domainName,
           domainNameHash,
-          expectedParentHash
+          expectedParentHash,
+          user2.address,
+          user1.address
         );
+    });
+
+    it("emits a Transfer event when a domain is registered (ERC721)", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      const tx = await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(tx)
+        .to.emit(registry, "Transfer")
+        .withArgs(
+          ethers.constants.AddressZero,
+          user2.address,
+          expectedDomainHash
+        );
+    });
+
+    it("properly tracks the controller that created a domain", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(await registryAsUser1.domainController(expectedDomainHash)).to.eq(
+        user1.address
+      );
     });
 
     it("prevents a domain from being registered if it already exists", async () => {
@@ -466,6 +529,61 @@ describe("Registrar", () => {
     it("updates state of when metadata is unlocked", async () => {
       expect(await registryAsUser1.domainMetadataLocked(testDomainId)).to.be
         .false;
+    });
+  });
+
+  describe("domain royalties", () => {
+    let registryAsUser1: Registrar;
+    let testDomainId: string;
+    let currentExpectedRoyaltyAmount = 0;
+
+    before(async () => {
+      await registry.addController(creator.address);
+
+      const domainName = "myDomain";
+      await registry.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user1.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      registryAsUser1 = registry.connect(user1);
+      testDomainId = expectedDomainHash;
+    });
+
+    it("emits a RoyaltiesAmountChanged event when a domain's royalty amount changes", async () => {
+      const royaltyAmount = 5 * 10 ** 5; // 5% (5 decimal places)
+      currentExpectedRoyaltyAmount = royaltyAmount;
+
+      const tx = await registryAsUser1.setDomainRoyaltyAmount(
+        testDomainId,
+        royaltyAmount
+      );
+
+      expect(tx)
+        .to.emit(registryAsUser1, "RoyaltiesAmountChanged")
+        .withArgs(testDomainId, currentExpectedRoyaltyAmount);
+    });
+
+    it("updates state when a domain's royalty amount changes", async () => {
+      expect(await registryAsUser1.domainRoyaltyAmount(testDomainId)).to.eq(
+        currentExpectedRoyaltyAmount
+      );
+    });
+
+    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
+      const registryAsUser2 = registryAsUser1.connect(user2);
+
+      await expect(
+        registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
+      ).to.be.revertedWith("Not Creator");
     });
   });
 });

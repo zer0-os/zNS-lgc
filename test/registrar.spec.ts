@@ -1,14 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import {
-  calculateDomainHash,
-  filterLogsWithTopics,
-  hashDomainName,
-} from "./helpers";
+import { calculateDomainHash, hashDomainName } from "./helpers";
+import { Signer } from "crypto";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -25,6 +22,14 @@ describe("Registrar", () => {
   const rootDomainHash = ethers.constants.HashZero;
   let rootDomainId = BigNumber.from(0);
 
+  const deployRegistry = async (creator: SignerWithAddress) => {
+    registryFactory = new Registrar__factory(creator);
+    registry = (await upgrades.deployProxy(registryFactory, [], {
+      initializer: "initialize",
+    })) as Registrar;
+    registry = await registry.deployed();
+  };
+
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
@@ -34,8 +39,7 @@ describe("Registrar", () => {
   });
 
   beforeEach("deploys", async () => {
-    registryFactory = new Registrar__factory(creator);
-    registry = await registryFactory.deploy();
+    await deployRegistry(creator);
   });
 
   describe("root domain", () => {
@@ -61,7 +65,7 @@ describe("Registrar", () => {
 
   describe("ownership", () => {
     it("allows the contract owner to be transferred", async () => {
-      await registry.transferOwnership(user1.address);
+      await registry["transferOwnership(address)"](user1.address);
       expect(await registry.owner()).to.be.eq(user1.address);
     });
   });
@@ -124,8 +128,7 @@ describe("Registrar", () => {
 
   describe("registering domains", () => {
     beforeEach("deploys", async () => {
-      registryFactory = new Registrar__factory(creator);
-      registry = await registryFactory.deploy();
+      await deployRegistry(creator);
     });
 
     it("prevents non controllers from registering domains", async () => {

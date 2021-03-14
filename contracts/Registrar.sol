@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721PausableUpgradeable.sol";
 import "./interfaces/IRegistrar.sol";
 
-contract Registrar is IRegistrar, Ownable, ERC721Pausable {
+contract Registrar is
+  IRegistrar,
+  OwnableUpgradeable,
+  ERC721PausableUpgradeable
+{
   // Data recorded for each domain
   struct DomainRecord {
     address creator;
@@ -27,7 +31,10 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
     _;
   }
 
-  constructor() ERC721("Zer0 Name Service", "ZNS") {
+  function initialize() public initializer {
+    __Ownable_init();
+    __ERC721_init("Zer0 Name Service", "ZNS");
+
     // create the root domain
     _createDomain(0, msg.sender, msg.sender, address(0));
   }

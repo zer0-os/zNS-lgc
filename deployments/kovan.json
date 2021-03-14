@@ -1,0 +1,8 @@
+{
+  "registrar": {
+    "name": "Registrar",
+    "address": "0x2eb8412723E2E81C239964A4859FcEA4Bd715b72",
+    "version": "18d64db7748bbc66524b565ab73b6005551d5fb3c115c29b5843a0d195b6dfd7",
+    "implementation": "0x35921570D157D6E9DA51e67B47d43bAF5da1e108"
+  }
+}

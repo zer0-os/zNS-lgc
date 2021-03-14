@@ -5,6 +5,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@openzeppelin/hardhat-upgrades";
 import "@eth-optimism/smock/build/src/plugins/hardhat-storagelayout";
+import "@nomiclabs/hardhat-etherscan";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -50,6 +51,9 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
       url: "https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
+  },
+  etherscan: {
+    apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
   },
 };
 export default config;

@@ -1,4 +1,4 @@
-import { ethers, upgrades, network } from "hardhat";
+import { ethers, upgrades, network, run } from "hardhat";
 import { Registrar__factory } from "../typechain";
 import * as fs from "fs";
 import {
@@ -16,6 +16,8 @@ import {
 const logger = getLogger("deploy-registrar");
 
 async function main() {
+  await run("compile");
+
   const accounts = await ethers.getSigners();
   const deploymentAccount = accounts[0];
 
@@ -71,6 +73,18 @@ async function main() {
 
   fs.mkdirSync(deploymentsFolder, { recursive: true });
   fs.writeFileSync(filepath, jsonToWrite);
+
+  if (implementationContract) {
+    logger.log(`Attempting to verify implementation contract with etherscan`);
+    try {
+      await run("verify:verify", {
+        address: implementationContract.address,
+        constructorArguments: [],
+      });
+    } catch (e) {
+      logger.error(`Failed to verify contract: ${e}`);
+    }
+  }
 }
 
 main();

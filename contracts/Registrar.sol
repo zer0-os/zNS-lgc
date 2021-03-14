@@ -11,6 +11,7 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
     address creator;
     bool metadataLocked;
     address metadataLockedBy;
+    address controller;
   }
 
   // A map of addresses that are authorised to register and renew names.
@@ -26,7 +27,8 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
   }
 
   constructor() ERC721("Zer0 Name Service", "ZNS") {
-    _safeMint(msg.sender, 0);
+    // create the root domain
+    _createDomain(0, msg.sender, msg.sender, address(0));
   }
 
   // Authorises a controller
@@ -66,9 +68,11 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
   ) external override onlyController {
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
-    uint256 domainId = _createDomain(parent, labelHash, domainOwner, creator);
+    address controller = msg.sender;
+    uint256 domainId =
+      _registerDomain(parent, labelHash, domainOwner, creator, controller);
 
-    emit DomainCreated(domainId, name, labelHash, parent);
+    emit DomainCreated(domainId, name, labelHash, parent, creator, controller);
   }
 
   // Returns the original creator of a domain
@@ -127,26 +131,44 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
     return lockedBy;
   }
 
-  function _createDomain(
+  function domainController(uint256 id) public view override returns (address) {
+    address controller = records[id].controller;
+    return controller;
+  }
+
+  // Register a new child domain
+  function _registerDomain(
     uint256 parent,
     uint256 label,
     address domainOwner,
-    address creator
+    address creator,
+    address controller
   ) internal returns (uint256) {
     // Domain parents must exist
     require(_exists(parent), "No Parent");
 
-    // Calculate what the new domain id is and mint it
+    // Calculate the new domain's id and create it
     uint256 domainId = uint256(keccak256(abi.encodePacked(parent, label)));
-    _safeMint(domainOwner, domainId);
+    _createDomain(domainId, domainOwner, creator, controller);
 
+    return domainId;
+  }
+
+  // Create a domain
+  function _createDomain(
+    uint256 domainId,
+    address domainOwner,
+    address creator,
+    address controller
+  ) internal {
+    // Create the NFT and register the domain data
+    _safeMint(domainOwner, domainId);
     records[domainId] = DomainRecord({
       creator: creator,
       metadataLocked: false,
-      metadataLockedBy: address(0)
+      metadataLockedBy: address(0),
+      controller: controller
     });
-
-    return domainId;
   }
 
   function _lockMetadata(uint256 id, address locker) internal {

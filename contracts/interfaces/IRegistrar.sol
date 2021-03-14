@@ -13,7 +13,9 @@ interface IRegistrar {
     uint256 indexed id,
     string name,
     uint256 indexed nameHash,
-    uint256 indexed parent
+    uint256 indexed parent,
+    address creator,
+    address controller
   );
 
   // Emitted whenever the metadata of a domain is locked
@@ -60,4 +62,7 @@ interface IRegistrar {
 
   // Sets a domains metadata uri
   function setDomainMetadataUri(uint256 id, string memory uri) external;
+
+  // Gets the controller that registered a domain
+  function domainController(uint256 id) external view returns (address);
 }

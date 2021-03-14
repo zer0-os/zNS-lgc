@@ -51,6 +51,12 @@ describe("Registrar", () => {
         "The owner is not the creator."
       );
     });
+
+    it("tracks the root domain controller as null", async () => {
+      expect(await registry.domainController(rootDomainId)).to.eq(
+        ethers.constants.AddressZero
+      );
+    });
   });
 
   describe("ownership", () => {
@@ -213,8 +219,62 @@ describe("Registrar", () => {
           expectedDomainHash,
           domainName,
           domainNameHash,
-          expectedParentHash
+          expectedParentHash,
+          user2.address,
+          user1.address
         );
+    });
+
+    it("emits a Transfer event when a domain is registered (ERC721)", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      const tx = await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(tx)
+        .to.emit(registry, "Transfer")
+        .withArgs(
+          ethers.constants.AddressZero,
+          user2.address,
+          expectedDomainHash
+        );
+    });
+
+    it("properly tracks the controller that created a domain", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(await registryAsUser1.domainController(expectedDomainHash)).to.eq(
+        user1.address
+      );
     });
 
     it("prevents a domain from being registered if it already exists", async () => {

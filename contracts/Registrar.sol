@@ -85,7 +85,7 @@ contract Registrar is IRegistrar, Ownable, ERC721Pausable {
 
     records[id].royaltyAmount = amount;
 
-    emit RoyaltyChanged(id, amount);
+    emit RoyaltiesAmountChanged(id, amount);
   }
 
   // View Methods

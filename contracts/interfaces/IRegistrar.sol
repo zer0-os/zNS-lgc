@@ -28,7 +28,7 @@ interface IRegistrar {
   event MetadataChanged(uint256 indexed id, string uri);
 
   // Emitted whenever the royalty amount is changed
-  event RoyaltyChanged(uint256 indexed id, uint256 amount);
+  event RoyaltiesAmountChanged(uint256 indexed id, uint256 amount);
 
   // Authorises a controller, who can register domains.
   function addController(address controller) external;

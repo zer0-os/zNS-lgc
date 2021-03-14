@@ -555,7 +555,7 @@ describe("Registrar", () => {
       testDomainId = expectedDomainHash;
     });
 
-    it("emits a RoyaltyChanged event when a domain's royalty amount changes", async () => {
+    it("emits a RoyaltiesAmountChanged event when a domain's royalty amount changes", async () => {
       const royaltyAmount = 5 * 10 ** 5; // 5% (5 decimal places)
       currentExpectedRoyaltyAmount = royaltyAmount;
 
@@ -565,7 +565,7 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(registryAsUser1, "RoyaltyChanged")
+        .to.emit(registryAsUser1, "RoyaltiesAmountChanged")
         .withArgs(testDomainId, currentExpectedRoyaltyAmount);
     });
 

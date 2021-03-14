@@ -528,4 +528,59 @@ describe("Registrar", () => {
         .false;
     });
   });
+
+  describe("domain royalties", () => {
+    let registryAsUser1: Registrar;
+    let testDomainId: string;
+    let currentExpectedRoyaltyAmount = 0;
+
+    before(async () => {
+      await registry.addController(creator.address);
+
+      const domainName = "myDomain";
+      await registry.registerDomain(
+        rootDomainId,
+        domainName,
+        user2.address,
+        user1.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      registryAsUser1 = registry.connect(user1);
+      testDomainId = expectedDomainHash;
+    });
+
+    it("emits a RoyaltyChanged event when a domain's royalty amount changes", async () => {
+      const royaltyAmount = 5 * 10 ** 5; // 5% (5 decimal places)
+      currentExpectedRoyaltyAmount = royaltyAmount;
+
+      const tx = await registryAsUser1.setDomainRoyaltyAmount(
+        testDomainId,
+        royaltyAmount
+      );
+
+      expect(tx)
+        .to.emit(registryAsUser1, "RoyaltyChanged")
+        .withArgs(testDomainId, currentExpectedRoyaltyAmount);
+    });
+
+    it("updates state when a domain's royalty amount changes", async () => {
+      expect(await registryAsUser1.domainRoyaltyAmount(testDomainId)).to.eq(
+        currentExpectedRoyaltyAmount
+      );
+    });
+
+    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
+      const registryAsUser2 = registryAsUser1.connect(user2);
+
+      await expect(
+        registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
+      ).to.be.revertedWith("Not Creator");
+    });
+  });
 });

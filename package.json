@@ -32,6 +32,7 @@
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
+    "hardhat": "hardhat",
     "test": "hardhat test --show-stack-traces",
     "coverage": "yarn run build && hardhat coverage --temp artifacts --network coverage",
     "fix": "yarn run fix:contracts && yarn run fix:ts",
@@ -45,6 +46,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "dependencies": {
-    "@eth-optimism/smock": "^0.2.1-alpha.0"
+    "@eth-optimism/smock": "^0.2.1-alpha.0",
+    "dotenv": "^8.2.0"
   }
 }

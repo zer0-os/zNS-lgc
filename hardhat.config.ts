@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
@@ -27,6 +29,27 @@ const config: HardhatUserConfig = {
   },
   mocha: {
     timeout: 50000,
+  },
+  networks: {
+    hardhat: {
+      forking: {
+        url:
+          "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
+        blockNumber: 11845661,
+      },
+    },
+    kovan: {
+      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
+      url: `https://kovan.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+    },
+    ropsten: {
+      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
+      url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
+    },
+    rinkeby: {
+      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
+      url: "https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
+    },
   },
 };
 export default config;

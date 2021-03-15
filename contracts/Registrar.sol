@@ -68,7 +68,7 @@ contract Registrar is
     string memory name,
     address domainOwner,
     address creator
-  ) external override onlyController {
+  ) external override onlyController returns (uint256) {
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
@@ -89,6 +89,8 @@ contract Registrar is
       creator,
       controller
     );
+
+    return domainId;
   }
 
   // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)

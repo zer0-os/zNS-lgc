@@ -194,8 +194,6 @@ describe("Registrar", () => {
       );
 
       expect(tx).to.emit(registry, "DomainCreated");
-
-      console.log(await getEvent(tx, "DomainCreated", registry));
     });
 
     it("emits a DomainCreated event when a domain is registered with the expected params", async () => {
@@ -324,7 +322,7 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      expect(await registry.available(expectedDomainHash)).to.be.false;
+      expect(await registry.isAvailable(expectedDomainHash)).to.be.false;
     });
 
     it("returns that an unregistered domain is available", async () => {
@@ -338,7 +336,7 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      expect(await registry.available(expectedDomainHash)).to.be.true;
+      expect(await registry.isAvailable(expectedDomainHash)).to.be.true;
     });
 
     it("prevents a domain from being registered if it's parent doesn't exist", async () => {
@@ -469,7 +467,7 @@ describe("Registrar", () => {
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.unlockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Already locked");
+      ).to.be.revertedWith("Not locked");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -489,7 +487,7 @@ describe("Registrar", () => {
     });
 
     it("updates state when the metadata is locked", async () => {
-      expect(await registryAsUser1.domainMetadataLocked(testDomainId)).to.be
+      expect(await registryAsUser1.isDomainMetadataLocked(testDomainId)).to.be
         .true;
     });
 
@@ -502,7 +500,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Already locked");
+      ).to.be.revertedWith("Metadata locked");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -529,7 +527,7 @@ describe("Registrar", () => {
     });
 
     it("updates state of when metadata is unlocked", async () => {
-      expect(await registryAsUser1.domainMetadataLocked(testDomainId)).to.be
+      expect(await registryAsUser1.isDomainMetadataLocked(testDomainId)).to.be
         .false;
     });
   });
@@ -580,7 +578,7 @@ describe("Registrar", () => {
       );
     });
 
-    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
+    it("prevents a user who is not the domain creator from setting the royalty amount", async () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(

@@ -38,7 +38,7 @@ interface IRegistrar {
 
   // Registers a new sub domain
   function registerDomain(
-    uint256 parent,
+    uint256 parentId,
     string memory name,
     address domainOwner,
     address creator
@@ -60,13 +60,13 @@ interface IRegistrar {
   function domainExists(uint256 id) external view returns (bool);
 
   // Whether or not a domain specific by an id is available.
-  function available(uint256 id) external view returns (bool);
+  function isAvailable(uint256 id) external view returns (bool);
 
   // Returns the original creator of a domain
   function creatorOf(uint256 id) external view returns (address);
 
   // Checks if a domains metadata is locked
-  function domainMetadataLocked(uint256 id) external view returns (bool);
+  function isDomainMetadataLocked(uint256 id) external view returns (bool);
 
   // Returns the address which locked the domain metadata
   function domainMetadataLockedBy(uint256 id) external view returns (address);

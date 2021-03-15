@@ -8,5 +8,6 @@
   "solidity.formatter": "prettier",
   "solidity.enableLocalNodeCompiler": true,
   "solidity.compileUsingRemoteVersion": "v0.7.3+commit.9bfce1f6",
-  "solidity.linter": "solhint"
+  "solidity.linter": "solhint",
+  "files.eol": "\n"
 }

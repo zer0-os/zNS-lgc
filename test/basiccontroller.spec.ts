@@ -18,6 +18,7 @@ describe("Basic Controller", () => {
   let registrarMock: MockContract;
   let controllerFactory: BasicController__factory;
   let controller: BasicController;
+  const rootDomainId = ethers.constants.HashZero;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -30,15 +31,36 @@ describe("Basic Controller", () => {
   beforeEach("deploys", async () => {
     registrarMock = await deployMockContract(creator, registrar.abi);
     controllerFactory = new BasicController__factory(creator);
-    controller = (await upgrades.deployProxy(controllerFactory, [], {
-      initializer: "initialize",
-    })) as BasicController;
-    await controller.deployed();
+    controller = (await upgrades.deployProxy(
+      controllerFactory,
+      [registrarMock.address],
+      {
+        initializer: "initialize",
+      }
+    )) as BasicController;
+    controller = await controller.deployed();
   });
 
-  describe("deploy", () => {
-    it("exists", () => {
-      expect(controller.address).to.be.not.null;
+  describe("register domains", () => {
+    it("calls 'registerDomain' on the registrar", async () => {
+      const domainName = "myDomain";
+      const returnedId = 1337;
+      await registrarMock.mock.domainExists.withArgs(0).returns(true);
+      await registrarMock.mock.ownerOf.withArgs(0).returns(user1.address);
+      await registrarMock.mock.registerDomain.returns(returnedId);
+
+      const controllerAsUser1 = await controller.connect(user1);
+      const tx = await controllerAsUser1.registerDomain(
+        domainName,
+        user1.address
+      );
+
+      expect("registerDomain").to.be.calledOnContractWith(registrarMock, [
+        ethers.constants.HashZero,
+        domainName,
+        user1.address,
+        user1.address,
+      ]);
     });
   });
 });

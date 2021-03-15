@@ -65,6 +65,7 @@ async function main() {
     name: string;
     fullName: string;
     parentDomain?: Domain;
+    creator: SignerWithAddress;
   }
   const createdDomains: Domain[] = [];
 
@@ -103,6 +104,7 @@ async function main() {
       name: domainToCreate.name,
       fullName: domainToCreate.name,
       depth: 0,
+      creator: domainToCreate.owner,
     });
   }
 
@@ -150,6 +152,7 @@ async function main() {
       depth: domainToCreate.parent.depth + 1,
       parentDomain: domainToCreate.parent,
       fullName: `${domainToCreate.parent.fullName}.${domainToCreate.name}`,
+      creator: domainToCreate.parent.owner,
     });
   }
 
@@ -197,6 +200,8 @@ async function main() {
     tx = await registrar.unlockDomainMetadata(domain.id);
     await tx.wait();
 
+    // use registrar the creator
+    registrar = registrar.connect(domain.creator);
     logger.log(`setting domain royalty amount on ${domain.fullName}`);
     tx = await registrar.setDomainRoyaltyAmount(domain.id, "10000");
     await tx.wait();

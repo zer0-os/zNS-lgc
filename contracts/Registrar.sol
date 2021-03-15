@@ -19,7 +19,7 @@ contract Registrar is
     uint256 royaltyAmount;
   }
 
-  // A map of addresses that are authorised to register and renew names.
+  // A map of addresses that are authorised to register domains.
   mapping(address => bool) public controllers;
 
   // A mapping of domain id's to domain data
@@ -28,6 +28,11 @@ contract Registrar is
 
   modifier onlyController {
     require(controllers[msg.sender], "Not controller");
+    _;
+  }
+
+  modifier onlyOwnerOf(uint256 id) {
+    require(ownerOf(id) == msg.sender, "Not owner");
     _;
   }
 
@@ -51,16 +56,6 @@ contract Registrar is
     emit ControllerRemoved(controller);
   }
 
-  function available(uint256 id) external view override returns (bool) {
-    bool notRegistered = !_exists(id);
-    return notRegistered;
-  }
-
-  function domainExists(uint256 id) external view override returns (bool) {
-    bool domainNftExists = _exists(id);
-    return domainNftExists;
-  }
-
   /**
     @notice Registers a new (sub) domain
     @param parent The parent domain
@@ -77,8 +72,13 @@ contract Registrar is
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
-    uint256 domainId =
-      _registerDomain(parent, labelHash, domainOwner, creator, controller);
+
+    // Domain parents must exist
+    require(_exists(parent), "No Parent");
+
+    // Calculate the new domain's id and create it
+    uint256 domainId = uint256(keccak256(abi.encodePacked(parent, labelHash)));
+    _createDomain(domainId, domainOwner, creator, controller);
 
     emit DomainCreated(domainId, name, labelHash, parent, creator, controller);
   }
@@ -95,44 +95,53 @@ contract Registrar is
     emit RoyaltiesAmountChanged(id, amount);
   }
 
-  // View Methods
-
-  // Returns the original creator of a domain
-  function creatorOf(uint256 id) external view override returns (address) {
-    address domainCreator = records[id].creator;
-    return domainCreator;
-  }
-
   // Sets a domains metadata uri
   function setDomainMetadataUri(uint256 id, string memory uri)
     external
     override
+    onlyOwnerOf(id)
   {
-    require(!records[id].metadataLocked, "Metadata locked");
-    require(ownerOf(id) == msg.sender, "Not owner");
+    require(!isDomainMetadataLocked(id), "Metadata locked");
 
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
   }
 
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
-  function lockDomainMetadata(uint256 id) public override {
-    require(!records[id].metadataLocked, "Already locked");
-    require(ownerOf(id) == msg.sender, "Not owner");
+  function lockDomainMetadata(uint256 id) public override onlyOwnerOf(id) {
+    require(!isDomainMetadataLocked(id), "Metadata locked");
 
     _lockMetadata(id, msg.sender);
   }
 
   // Unlocks a domains metadata, can only be called by the address that locked the metadata
   function unlockDomainMetadata(uint256 id) public override {
-    require(records[id].metadataLocked, "Already locked");
-    require(records[id].metadataLockedBy == msg.sender, "Not locker");
+    require(isDomainMetadataLocked(id), "Not locked");
+    require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
 
     _unlockMetadata(id);
   }
 
+  // View Methods
+
+  function isAvailable(uint256 id) public view override returns (bool) {
+    bool notRegistered = !_exists(id);
+    return notRegistered;
+  }
+
+  function domainExists(uint256 id) public view override returns (bool) {
+    bool domainNftExists = _exists(id);
+    return domainNftExists;
+  }
+
+  // Returns the original creator of a domain
+  function creatorOf(uint256 id) public view override returns (address) {
+    address domainCreator = records[id].creator;
+    return domainCreator;
+  }
+
   // Checks if a domains metadata is locked
-  function domainMetadataLocked(uint256 id)
+  function isDomainMetadataLocked(uint256 id)
     public
     view
     override
@@ -168,24 +177,6 @@ contract Registrar is
   {
     uint256 amount = records[id].royaltyAmount;
     return amount;
-  }
-
-  // Register a new child domain
-  function _registerDomain(
-    uint256 parent,
-    uint256 label,
-    address domainOwner,
-    address creator,
-    address controller
-  ) internal returns (uint256) {
-    // Domain parents must exist
-    require(_exists(parent), "No Parent");
-
-    // Calculate the new domain's id and create it
-    uint256 domainId = uint256(keccak256(abi.encodePacked(parent, label)));
-    _createDomain(domainId, domainOwner, creator, controller);
-
-    return domainId;
   }
 
   // Create a domain

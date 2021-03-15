@@ -13,7 +13,7 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("deploy-registrar");
+const logger = getLogger("scripts::deploy-registrar");
 
 async function main() {
   await run("compile");

@@ -578,7 +578,7 @@ describe("Registrar", () => {
       );
     });
 
-    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
+    it("prevents a user who is not the domain creator from setting the royalty amount", async () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(

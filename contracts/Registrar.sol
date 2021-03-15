@@ -58,13 +58,13 @@ contract Registrar is
 
   /**
     @notice Registers a new (sub) domain
-    @param parent The parent domain
+    @param parentId The parent domain
     @param name The name of the domain
     @param domainOwner the owner of the new domain
     @param creator the creator of the new domain
    */
   function registerDomain(
-    uint256 parent,
+    uint256 parentId,
     string memory name,
     address domainOwner,
     address creator
@@ -74,13 +74,21 @@ contract Registrar is
     address controller = msg.sender;
 
     // Domain parents must exist
-    require(_exists(parent), "No Parent");
+    require(_exists(parentId), "No Parent");
 
     // Calculate the new domain's id and create it
-    uint256 domainId = uint256(keccak256(abi.encodePacked(parent, labelHash)));
+    uint256 domainId =
+      uint256(keccak256(abi.encodePacked(parentId, labelHash)));
     _createDomain(domainId, domainOwner, creator, controller);
 
-    emit DomainCreated(domainId, name, labelHash, parent, creator, controller);
+    emit DomainCreated(
+      domainId,
+      name,
+      labelHash,
+      parentId,
+      creator,
+      controller
+    );
   }
 
   // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)

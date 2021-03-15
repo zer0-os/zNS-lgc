@@ -38,7 +38,7 @@ interface IRegistrar {
 
   // Registers a new sub domain
   function registerDomain(
-    uint256 parent,
+    uint256 parentId,
     string memory name,
     address domainOwner,
     address creator

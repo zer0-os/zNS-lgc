@@ -42,7 +42,8 @@ export async function getEvents(
 ) {
   const receipt = await tx.wait();
   const topic = contract.interface.getEventTopic(event);
-  const events = filterLogsWithTopics(receipt.logs, topic, contract.address);
+  const logs = filterLogsWithTopics(receipt.logs, topic, contract.address);
+  const events = logs.map((e) => contract.interface.parseLog(e));
 
   return events;
 }

@@ -4,7 +4,7 @@ import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import { calculateDomainHash, hashDomainName } from "./helpers";
+import { calculateDomainHash, getEvent, hashDomainName } from "./helpers";
 import { Signer } from "crypto";
 
 chai.use(solidity);
@@ -194,6 +194,8 @@ describe("Registrar", () => {
       );
 
       expect(tx).to.emit(registry, "DomainCreated");
+
+      console.log(await getEvent(tx, "DomainCreated", registry));
     });
 
     it("emits a DomainCreated event when a domain is registered with the expected params", async () => {

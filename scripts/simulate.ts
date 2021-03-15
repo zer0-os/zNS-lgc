@@ -5,7 +5,7 @@
 
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, network } from "hardhat";
-import { calculateDomainHash, getEvent, hashDomainName } from "../test/helpers";
+import { calculateDomainHash, hashDomainName } from "../test/helpers";
 import { Registrar, Registrar__factory } from "../typechain";
 import { getDeploymentData, getLogger, getWord } from "../utilities";
 

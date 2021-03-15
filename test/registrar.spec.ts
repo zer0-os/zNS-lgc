@@ -5,7 +5,6 @@ import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
 import { calculateDomainHash, getEvent, hashDomainName } from "./helpers";
-import { Signer } from "crypto";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -14,13 +13,13 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let creatorAccountIndex: number = 0;
+  const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
   let user3: SignerWithAddress;
   const rootDomainHash = ethers.constants.HashZero;
-  let rootDomainId = BigNumber.from(0);
+  const rootDomainId = BigNumber.from(0);
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);

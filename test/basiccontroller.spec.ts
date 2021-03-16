@@ -5,6 +5,8 @@ import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import { BasicController, BasicController__factory } from "../typechain";
+import { calculateDomainHash, hashDomainName } from "./helpers";
+import { BigNumber } from "ethers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -41,8 +43,8 @@ describe("Basic Controller", () => {
     controller = await controller.deployed();
   });
 
-  describe("register domains", () => {
-    it("calls 'registerDomain' on the registrar", async () => {
+  describe("register top level domains", () => {
+    it("emits a RegisteredDomain event with the created domain id", async () => {
       const domainName = "myDomain";
       const returnedId = 1337;
       await registrarMock.mock.domainExists.withArgs(0).returns(true);
@@ -55,12 +57,95 @@ describe("Basic Controller", () => {
         user1.address
       );
 
-      expect("registerDomain").to.be.calledOnContractWith(registrarMock, [
-        ethers.constants.HashZero,
+      expect(tx)
+        .to.emit(controller, "RegisteredDomain")
+        .withArgs(domainName, returnedId, user1.address, user1.address);
+    });
+
+    it("prevents a user who is not the root domain owner from making a domain", async () => {
+      const domainName = "myDomain";
+      const returnedId = 1337;
+      await registrarMock.mock.domainExists.withArgs(0).returns(true);
+      await registrarMock.mock.ownerOf.withArgs(0).returns(user1.address);
+      await registrarMock.mock.registerDomain.returns(returnedId);
+
+      const controllerAsUser2 = await controller.connect(user2);
+      const tx = controllerAsUser2.registerDomain(domainName, user1.address);
+
+      await expect(tx).to.be.revertedWith("Not Authorized");
+    });
+  });
+
+  describe("register sub domains", () => {
+    const topLevelDomainId = 80008;
+
+    it("emits a RegisteredSubdomain event with the created domain id", async () => {
+      const domainName = "mySubDomain";
+      const returnedId = 13361357;
+      await registrarMock.mock.domainExists
+        .withArgs(topLevelDomainId)
+        .returns(true);
+      await registrarMock.mock.ownerOf
+        .withArgs(topLevelDomainId)
+        .returns(user2.address);
+      await registrarMock.mock.registerDomain.returns(returnedId);
+
+      const controllerAsUser2 = await controller.connect(user2);
+      const tx = await controllerAsUser2.registerSubdomain(
+        topLevelDomainId,
         domainName,
-        user1.address,
-        user1.address,
-      ]);
+        user2.address
+      );
+
+      expect(tx)
+        .to.emit(controller, "RegisteredSubdomain")
+        .withArgs(
+          domainName,
+          returnedId,
+          topLevelDomainId,
+          user2.address,
+          user2.address
+        );
+    });
+
+    it("prevents a user who is not the owner of a domain from creating sub domains", async () => {
+      const domainName = "mySubDomain";
+      const returnedId = 13361357;
+
+      await registrarMock.mock.domainExists
+        .withArgs(topLevelDomainId)
+        .returns(true);
+      await registrarMock.mock.ownerOf
+        .withArgs(topLevelDomainId)
+        .returns(user2.address);
+      await registrarMock.mock.registerDomain.returns(returnedId);
+
+      const controllerAsUser3 = await controller.connect(user3);
+      const tx = controllerAsUser3.registerSubdomain(
+        topLevelDomainId,
+        domainName,
+        user3.address
+      );
+
+      await expect(tx).to.be.revertedWith("Not Authorized");
+    });
+
+    it("prevents creating subdomains on domains with no parent", async () => {
+      const parentId = 11111;
+      const domainName = "mySubDomain";
+      const returnedId = 13361357;
+
+      await registrarMock.mock.domainExists.withArgs(parentId).returns(false);
+      await registrarMock.mock.registerDomain.returns(returnedId);
+
+      const controllerAsUser2 = await controller.connect(user2);
+      const tx = controllerAsUser2.registerSubdomain(
+        parentId,
+        domainName,
+        user2.address
+      );
+
+      await expect(tx).to.be.revertedWith("Invalid Domain");
     });
   });
 });

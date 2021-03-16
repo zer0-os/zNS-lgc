@@ -55,13 +55,13 @@ contract BasicController is
   }
 
   function registerSubdomain(
-    uint256 parent,
+    uint256 parentId,
     string memory label,
     address owner
-  ) external authorized(parent) {
+  ) external authorized(parentId) {
     address creator = _msgSender();
-    uint256 id = registrar.registerDomain(parent, label, owner, creator);
+    uint256 id = registrar.registerDomain(parentId, label, owner, creator);
 
-    emit RegisteredSubdomain(label, id, parent, owner, creator);
+    emit RegisteredSubdomain(label, id, parentId, owner, creator);
   }
 }

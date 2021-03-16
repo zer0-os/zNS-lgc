@@ -16,7 +16,7 @@ export interface DeploymentOutput {
 
 const root = "zns";
 
-export const getLogger = (title: string) => {
+export const getLogger = (title: string): logdown.Logger => {
   const logger = logdown(`${root}::${title}`);
   logger.state.isEnabled = true;
   return logger;
@@ -38,7 +38,7 @@ export const getDeploymentData = (network: string): DeploymentOutput => {
 
 let wordsCache: string[] = [];
 
-const fetchWords = () => {
+const fetchWords = (): string[] => {
   if (wordsCache.length) {
     return wordsCache;
   }
@@ -52,12 +52,12 @@ const fetchWords = () => {
   return wordsCache;
 };
 
-export const getWords = () => {
+export const getWords = (): string[] => {
   const words = fetchWords();
   return words;
 };
 
-export const getWord = (index: number) => {
+export const getWord = (index: number): string => {
   const words = fetchWords();
   const chosenWord = words[index % words.length];
   return chosenWord;

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
-interface IRegistrar {
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721EnumerableUpgradeable.sol";
+
+interface IRegistrar is IERC721EnumerableUpgradeable {
   // Emitted when a controller is removed
   event ControllerAdded(address indexed controller);
 
@@ -42,7 +44,7 @@ interface IRegistrar {
     string memory name,
     address domainOwner,
     address creator
-  ) external;
+  ) external returns (uint256);
 
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
   function lockDomainMetadata(uint256 id) external;

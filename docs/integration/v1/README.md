@@ -1,85 +1,45 @@
-# v0 Integration
+# v1 Integration
 
-This folder contains the solidity source and interface ABI's for the *v0* version of the ZNS contracts.
+This folder contains the solidity source and interface ABI's for the *v1* version of the ZNS contracts.
 
 It should be presumed that these contracts may change in shape over time.
 
 ## Changes to take note of:
 
-The ZNS Core (Registry) has been combined inside of the Registrar.
-This means there are only two contracts to integrate with
+Take a look at v0 to know changes from v0.
 
-## Contracts
+In v1, there are new events:
 
-There are two contracts:
+```sol
+// Emitted whenever the metadata of a domain is locked
+event MetadataLocked(uint256 indexed id, address locker);
 
-### Registrar
+// Emitted whenever the metadata of a domain is unlocked
+event MetadataUnlocked(uint256 indexed id);
 
-The Registrar is responsible for:
+// Emitted whenever the metadata of a domain is changed
+event MetadataChanged(uint256 indexed id, string uri);
 
-- Domain Management
-- Domain NFT's
-- Delegation of domain control (controllers)
-- Domain Metadata locking
-
-[Source](./RegistrarV0Reference.sol)  
-[ABI](./RegistrarV0Reference.json)
-
-### Controller
-
-The controller is responsible for
-
-- Allowing an end-user to create subdomains on a domain they own
-
-[Source](./ControllerV0Reference.sol)  
-[ABI](./ControllerV0Reference.json)
-
-## Subgraph Schema
-
-We believe that this will be the current layout of the subgraph.
-
-### Domain
-
-```gql
-type Domain {
-  id: ID!
-  name: String
-  labelName: String
-  labelHash: Bytes
-  parent: Domain
-  subdomains: [Domain]!
-  owner: ID!
-  creator: ID!
-  events: [DomainEvent!]!
-}
+// Emitted whenever the royalty amount is changed
+event RoyaltiesAmountChanged(uint256 indexed id, uint256 amount);
 ```
 
-### DomainEvents
+and the `DomainCreated` event has changed:
 
-```gql
-interface DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionId: Bytes!
-}
-
-type Transfer implements DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionID: bytes!
-  owner: Account!
-}
-
-type NewOwner implements DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionID: bytes!
-  owner: Account!
-}
 ```
+  event DomainCreated(
+    uint256 indexed id,
+    string name,
+    uint256 indexed nameHash,
+    uint256 indexed parent,
+    address creator,
+    address controller
+  );
+```
+
+Take note of the two additional addresses at the end, creator and controller.
+
+There are also a handful of new view functions.
 
 ## Other Notes:
 

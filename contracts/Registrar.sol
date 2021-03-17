@@ -44,13 +44,19 @@ contract Registrar is
     _createDomain(0, msg.sender, msg.sender, address(0));
   }
 
-  // Authorises a controller
+  /**
+    @notice Authorizes a controller to control the registrar
+    @param controller The address of the controller
+   */
   function addController(address controller) external override onlyOwner {
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
 
-  // Revoke controller permission for an address.
+  /**
+    @notice Unauthorizes a controller to control the registrar
+    @param controller The address of the controller
+   */
   function removeController(address controller) external override onlyOwner {
     controllers[controller] = false;
     emit ControllerRemoved(controller);
@@ -93,19 +99,30 @@ contract Registrar is
     return domainId;
   }
 
-  // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)
+  /**
+    @notice Sets the domain royalty amount
+    @param id The domain to set on
+    @param amount The royalty amount
+   */
   function setDomainRoyaltyAmount(uint256 id, uint256 amount)
     external
     override
   {
-    require(records[id].creator == msg.sender, "Not Creator");
+    require(ownerOf(id) == msg.sender, "Not Owner");
+    if (isDomainMetadataLocked(id)) {
+      require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
+    }
 
     records[id].royaltyAmount = amount;
 
     emit RoyaltiesAmountChanged(id, amount);
   }
 
-  // Sets a domains metadata uri
+  /**
+    @notice Sets the domain metadata uri
+    @param id The domain to set on
+    @param uri The uri to set
+   */
   function setDomainMetadataUri(uint256 id, string memory uri)
     external
     override
@@ -117,14 +134,20 @@ contract Registrar is
     emit MetadataChanged(id, uri);
   }
 
-  // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
+  /**
+    @notice Locks a domains metadata uri
+    @param id The domain to lock
+   */
   function lockDomainMetadata(uint256 id) public override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "Metadata locked");
 
     _lockMetadata(id, msg.sender);
   }
 
-  // Unlocks a domains metadata, can only be called by the address that locked the metadata
+  /**
+    @notice Unlocks a domains metadata uri
+    @param id The domain to unlock
+   */
   function unlockDomainMetadata(uint256 id) public override {
     require(isDomainMetadataLocked(id), "Not locked");
     require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
@@ -134,23 +157,37 @@ contract Registrar is
 
   // View Methods
 
+  /**
+    @notice Returns whether or not a domain is available to be created
+    @param id The domain
+   */
   function isAvailable(uint256 id) public view override returns (bool) {
     bool notRegistered = !_exists(id);
     return notRegistered;
   }
 
+  /**
+    @notice Returns whether or not a domain is exists
+    @param id The domain
+   */
   function domainExists(uint256 id) public view override returns (bool) {
     bool domainNftExists = _exists(id);
     return domainNftExists;
   }
 
-  // Returns the original creator of a domain
+  /**
+    @notice Returns the original creator of a domain
+    @param id The domain
+   */
   function creatorOf(uint256 id) public view override returns (address) {
     address domainCreator = records[id].creator;
     return domainCreator;
   }
 
-  // Checks if a domains metadata is locked
+  /**
+    @notice Returns whether or not a domain's metadata is locked
+    @param id The domain
+   */
   function isDomainMetadataLocked(uint256 id)
     public
     view
@@ -161,7 +198,10 @@ contract Registrar is
     return isLocked;
   }
 
-  // Returns the address which locked the domain metadata
+  /**
+    @notice Returns who locked a domain's metadata
+    @param id The domain
+   */
   function domainMetadataLockedBy(uint256 id)
     public
     view
@@ -172,13 +212,19 @@ contract Registrar is
     return lockedBy;
   }
 
-  // Gets the controller that registered a domain
+  /**
+    @notice Returns the controller which created the domain on behalf of a user
+    @param id The domain
+   */
   function domainController(uint256 id) public view override returns (address) {
     address controller = records[id].controller;
     return controller;
   }
 
-  // Gets a domains current royalty amount
+  /**
+    @notice Returns the current royalty amount for a domain
+    @param id The domain
+   */
   function domainRoyaltyAmount(uint256 id)
     public
     view
@@ -189,7 +235,7 @@ contract Registrar is
     return amount;
   }
 
-  // Create a domain
+  // internal - creates a domain
   function _createDomain(
     uint256 domainId,
     address domainOwner,
@@ -207,6 +253,7 @@ contract Registrar is
     });
   }
 
+  // internal - locks a domains metadata
   function _lockMetadata(uint256 id, address locker) internal {
     records[id].metadataLocked = true;
     records[id].metadataLockedBy = locker;
@@ -214,6 +261,7 @@ contract Registrar is
     emit MetadataLocked(id, locker);
   }
 
+  // internal - unlocks a domains metadata
   function _unlockMetadata(uint256 id) internal {
     records[id].metadataLocked = false;
     records[id].metadataLockedBy = address(0);

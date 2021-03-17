@@ -8,6 +8,8 @@ It should be presumed that these contracts may change in shape over time.
 
 Take a look at v0 to know changes from v0.
 
+### Registrar
+
 In v1, there are new events:
 
 ```sol
@@ -39,7 +41,29 @@ and the `DomainCreated` event has changed:
 
 Take note of the two additional addresses at the end, creator and controller.
 
-There are also a handful of new view functions.
+There are also a handful of new view and mutation functions.
+
+### Controller
+
+There is a controller now, it exposes two functions:
+
+```
+function registerDomain(string memory domain, address owner) external;
+
+function registerSubdomain(
+    uint256 parentId,
+    string memory label,
+    address owner
+  ) external;
+```
+
+`registerDomain` is for top level domains (`chicken`, `dOrg`, `zer0`)
+
+and `registerSubdomain` is for sub domains (`dOrg.tech`, `zer0.art`)
+
+There are also two events on the controller, however they are trivial.
+
+
 
 ## Other Notes:
 

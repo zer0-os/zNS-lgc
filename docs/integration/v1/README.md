@@ -1,85 +1,69 @@
-# v0 Integration
+# v1 Integration
 
-This folder contains the solidity source and interface ABI's for the *v0* version of the ZNS contracts.
+This folder contains the solidity source and interface ABI's for the *v1* version of the ZNS contracts.
 
 It should be presumed that these contracts may change in shape over time.
 
 ## Changes to take note of:
 
-The ZNS Core (Registry) has been combined inside of the Registrar.
-This means there are only two contracts to integrate with
-
-## Contracts
-
-There are two contracts:
+Take a look at v0 to know changes from v0.
 
 ### Registrar
 
-The Registrar is responsible for:
+In v1, there are new events:
 
-- Domain Management
-- Domain NFT's
-- Delegation of domain control (controllers)
-- Domain Metadata locking
+```sol
+// Emitted whenever the metadata of a domain is locked
+event MetadataLocked(uint256 indexed id, address locker);
 
-[Source](./RegistrarV0Reference.sol)  
-[ABI](./RegistrarV0Reference.json)
+// Emitted whenever the metadata of a domain is unlocked
+event MetadataUnlocked(uint256 indexed id);
+
+// Emitted whenever the metadata of a domain is changed
+event MetadataChanged(uint256 indexed id, string uri);
+
+// Emitted whenever the royalty amount is changed
+event RoyaltiesAmountChanged(uint256 indexed id, uint256 amount);
+```
+
+and the `DomainCreated` event has changed:
+
+```
+  event DomainCreated(
+    uint256 indexed id,
+    string name,
+    uint256 indexed nameHash,
+    uint256 indexed parent,
+    address creator,
+    address controller
+  );
+```
+
+Take note of the two additional addresses at the end, creator and controller.
+
+There are also a handful of new view and mutation functions.
 
 ### Controller
 
-The controller is responsible for
+There is a controller now, it exposes two functions:
 
-- Allowing an end-user to create subdomains on a domain they own
+```
+function registerDomain(string memory domain, address owner) external;
 
-[Source](./ControllerV0Reference.sol)  
-[ABI](./ControllerV0Reference.json)
-
-## Subgraph Schema
-
-We believe that this will be the current layout of the subgraph.
-
-### Domain
-
-```gql
-type Domain {
-  id: ID!
-  name: String
-  labelName: String
-  labelHash: Bytes
-  parent: Domain
-  subdomains: [Domain]!
-  owner: ID!
-  creator: ID!
-  events: [DomainEvent!]!
-}
+function registerSubdomain(
+    uint256 parentId,
+    string memory label,
+    address owner
+  ) external;
 ```
 
-### DomainEvents
+`registerDomain` is for top level domains (`chicken`, `dOrg`, `zer0`)
 
-```gql
-interface DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionId: Bytes!
-}
+and `registerSubdomain` is for sub domains (`dOrg.tech`, `zer0.art`)
 
-type Transfer implements DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionID: bytes!
-  owner: Account!
-}
+There are also two events on the controller, however they are trivial.
 
-type NewOwner implements DomainEvent {
-  id: ID!
-  domain: Domain!
-  blockNumber: Int!
-  transactionID: bytes!
-  owner: Account!
-}
-```
+
 
 ## Other Notes:
 

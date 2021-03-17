@@ -2,8 +2,12 @@
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721MetadataUpgradeable.sol";
 
-interface IRegistrar is IERC721EnumerableUpgradeable {
+interface IRegistrar is
+  IERC721MetadataUpgradeable,
+  IERC721EnumerableUpgradeable
+{
   // Emitted when a controller is removed
   event ControllerAdded(address indexed controller);
 

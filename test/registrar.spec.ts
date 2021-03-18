@@ -354,7 +354,7 @@ describe("Registrar", () => {
           user2.address,
           user2.address
         )
-      ).to.be.revertedWith("No Parent");
+      ).to.be.revertedWith("No parent");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
@@ -582,7 +582,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWith("Not Owner");
+      ).to.be.revertedWith("Not owner");
     });
   });
 });

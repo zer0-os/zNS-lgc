@@ -154,7 +154,7 @@ describe("End 2 End Tests", () => {
       await expect(tx).to.be.revertedWith("Metadata locked");
 
       tx = registrarAsUser1.setDomainRoyaltyAmount(domain1Id, 0);
-      await expect(tx).to.be.revertedWith("Not locker");
+      await expect(tx).to.be.revertedWith("Metadata locked");
     });
   });
 });

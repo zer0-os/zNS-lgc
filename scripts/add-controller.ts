@@ -8,7 +8,7 @@ import {
 import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 
-const logger = getLogger("scripts::deploy-registrar");
+const logger = getLogger("scripts::add-controller");
 
 async function main() {
   await run("compile");

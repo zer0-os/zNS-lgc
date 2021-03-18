@@ -543,8 +543,8 @@ describe("Registrar", () => {
       await registry.registerDomain(
         rootDomainId,
         domainName,
-        user2.address,
-        user1.address
+        user1.address,
+        user2.address
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -577,12 +577,12 @@ describe("Registrar", () => {
       );
     });
 
-    it("prevents a user who is not the domain creator from setting the royalty amount", async () => {
+    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWith("Not Creator");
+      ).to.be.revertedWith("Not Owner");
     });
   });
 });

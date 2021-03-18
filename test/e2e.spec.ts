@@ -88,7 +88,7 @@ describe("End 2 End Tests", () => {
     });
   });
 
-  describe("scenario 1", () => {
+  describe("scenario 1 - domain operations", () => {
     const domain1Name = "user1";
     let domain1Id: string;
 
@@ -155,6 +155,66 @@ describe("End 2 End Tests", () => {
 
       tx = registrarAsUser1.setDomainRoyaltyAmount(domain1Id, 0);
       await expect(tx).to.be.revertedWith("Metadata locked");
+    });
+  });
+
+  describe("scenario 2 - sub domains", () => {
+    const domain1Name = "user2";
+    let domain1Id: string;
+
+    const subdomain1Name = "smalldomain";
+    let subdomain1Id: string;
+
+    const subdomain2Name = "user2";
+    let subdomain2Id: string;
+
+    it("admin creates user1 a domain through controller (A)", async () => {
+      const tx = await controllerAsAdmin.registerDomain(
+        domain1Name,
+        user1.address
+      );
+
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsAdmin);
+
+      domain1Id = event.args["id"];
+
+      expect(await registrar.ownerOf(domain1Id)).to.eq(user1.address);
+    });
+
+    it("user1 creates user2 a subdomain (A.B)", async () => {
+      const tx = await controllerAsUser1.registerSubdomain(
+        domain1Id,
+        subdomain1Name,
+        user2.address
+      );
+
+      const event = await getEvent(
+        tx,
+        "RegisteredSubdomain",
+        controllerAsUser1
+      );
+
+      subdomain1Id = event.args["id"];
+
+      expect(await registrar.ownerOf(subdomain1Id)).to.eq(user2.address);
+    });
+
+    it("user2 creates user3 a subdomain (A.B.C)", async () => {
+      const tx = await controllerAsUser2.registerSubdomain(
+        subdomain1Id,
+        subdomain2Name,
+        user3.address
+      );
+
+      const event = await getEvent(
+        tx,
+        "RegisteredSubdomain",
+        controllerAsUser2
+      );
+
+      subdomain2Id = event.args["id"];
+
+      expect(await registrar.ownerOf(subdomain2Id)).to.eq(user3.address);
     });
   });
 });

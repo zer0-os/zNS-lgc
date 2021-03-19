@@ -8,10 +8,12 @@ export interface DeployedContract {
   address: string;
   version: string;
   implementation?: string;
+  date?: string;
 }
 
 export interface DeploymentOutput {
   registrar?: DeployedContract;
+  basicController?: DeployedContract;
 }
 
 const root = "zns";

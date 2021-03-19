@@ -80,7 +80,7 @@ contract Registrar is
     address controller = msg.sender;
 
     // Domain parents must exist
-    require(_exists(parentId), "No Parent");
+    require(_exists(parentId), "No parent");
 
     // Calculate the new domain's id and create it
     uint256 domainId =
@@ -107,14 +107,11 @@ contract Registrar is
   function setDomainRoyaltyAmount(uint256 id, uint256 amount)
     external
     override
+    onlyOwnerOf(id)
   {
-    require(ownerOf(id) == msg.sender, "Not Owner");
-    if (isDomainMetadataLocked(id)) {
-      require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
-    }
+    require(!isDomainMetadataLocked(id), "Metadata locked");
 
     records[id].royaltyAmount = amount;
-
     emit RoyaltiesAmountChanged(id, amount);
   }
 

@@ -11,3 +11,5 @@ typechain/
 .openzeppelin/dev-*.json
 .openzeppelin/unknown-*.json
 .openzeppelin/.session
+coverage/
+coverage.json

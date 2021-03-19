@@ -255,6 +255,30 @@ describe("Registrar", () => {
         );
     });
 
+    it("properly tracks who the creator of a domain was", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user3.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(await registryAsUser1.creatorOf(expectedDomainHash)).to.eq(
+        user2.address
+      );
+    });
+
     it("properly tracks the controller that created a domain", async () => {
       await registry.addController(user1.address);
       const registryAsUser1 = registry.connect(user1);

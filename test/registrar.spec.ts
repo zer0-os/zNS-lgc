@@ -4,7 +4,7 @@ import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import { calculateDomainHash, getEvent, hashDomainName } from "./helpers";
+import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
 const { expect } = chai;

@@ -5,8 +5,6 @@ import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import { BasicController, BasicController__factory } from "../typechain";
-import { calculateDomainHash, hashDomainName } from "./helpers";
-import { BigNumber } from "ethers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -20,7 +18,6 @@ describe("Basic Controller", () => {
   let registrarMock: MockContract;
   let controllerFactory: BasicController__factory;
   let controller: BasicController;
-  const rootDomainId = ethers.constants.HashZero;
 
   before(async () => {
     accounts = await ethers.getSigners();

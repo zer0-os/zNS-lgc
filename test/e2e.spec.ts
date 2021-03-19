@@ -217,4 +217,58 @@ describe("End 2 End Tests", () => {
       expect(await registrar.ownerOf(subdomain2Id)).to.eq(user3.address);
     });
   });
+
+  describe("scenario 3 - multiple controllers", () => {
+    let basicController2: BasicController;
+    let domain1Name = "somedomainname2";
+    let domain1Id: string;
+    let subdomain1Name = domain1Name;
+    let subdomain1Id: string;
+
+    it("deploy 2nd basic controller", async () => {
+      const controllerFactory = new BasicController__factory(controllerCreator);
+      basicController2 = await controllerFactory.deploy();
+      await basicController2.initialize(registrar.address);
+    });
+
+    it("owner of registrar adds second controller", async () => {
+      await registrar.addController(basicController2.address);
+
+      expect(await registrar["controllers(address)"](basicController2.address))
+        .to.be.true;
+    });
+
+    it("admin creates user1 a domain through controller (A)", async () => {
+      const tx = await controllerAsAdmin.registerDomain(
+        domain1Name,
+        user1.address
+      );
+
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsAdmin);
+
+      domain1Id = event.args["id"];
+
+      expect(await registrar.ownerOf(domain1Id)).to.eq(user1.address);
+    });
+
+    it("user1 creates user2 a subdomain through the second controller (A.B)", async () => {
+      const controller2AsUser1 = basicController2.connect(user1);
+
+      const tx = await controller2AsUser1.registerSubdomain(
+        domain1Id,
+        subdomain1Name,
+        user2.address
+      );
+
+      const event = await getEvent(
+        tx,
+        "RegisteredSubdomain",
+        controller2AsUser1
+      );
+
+      subdomain1Id = event.args["id"];
+
+      expect(await registrar.ownerOf(subdomain1Id)).to.eq(user2.address);
+    });
+  });
 });

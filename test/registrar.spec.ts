@@ -4,7 +4,7 @@ import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import { calculateDomainHash, getEvent, hashDomainName } from "./helpers";
+import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -253,6 +253,30 @@ describe("Registrar", () => {
           user2.address,
           expectedDomainHash
         );
+    });
+
+    it("properly tracks who the creator of a domain was", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user3.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(await registryAsUser1.creatorOf(expectedDomainHash)).to.eq(
+        user2.address
+      );
     });
 
     it("properly tracks the controller that created a domain", async () => {

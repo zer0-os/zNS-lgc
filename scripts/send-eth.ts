@@ -22,7 +22,7 @@ async function main() {
   for (let i = 1; i < numTestAccounts; ++i) {
     let amountToGive = ethers.utils.parseEther("1");
     if (i === i) {
-      amountToGive = ethers.utils.parseEther("5");
+      amountToGive = ethers.utils.parseEther("3");
     }
 
     logger.log(`Sending ${amountToGive} eth to ${accounts[i].address}`);

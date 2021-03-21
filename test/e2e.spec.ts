@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
@@ -26,18 +26,15 @@ describe("End 2 End Tests", () => {
   let user3: SignerWithAddress;
 
   let registrar: Registrar;
-  let registrarAsAdmin: Registrar;
 
   let registrarAsUser1: Registrar;
   let registrarAsUser2: Registrar;
-  let registrarAsUser3: Registrar;
 
   let controller: BasicController;
   let controllerAsAdmin: BasicController;
 
   let controllerAsUser1: BasicController;
   let controllerAsUser2: BasicController;
-  let controllerAsUser3: BasicController;
 
   const rootDomain = ethers.constants.HashZero;
 
@@ -59,8 +56,6 @@ describe("End 2 End Tests", () => {
 
       registrarAsUser1 = registrar.connect(user1);
       registrarAsUser2 = registrar.connect(user2);
-      registrarAsUser3 = registrar.connect(user3);
-      registrarAsAdmin = registrar.connect(admin);
     });
 
     it("transfers root domain to admin", async () => {
@@ -77,7 +72,6 @@ describe("End 2 End Tests", () => {
       controllerAsAdmin = controller.connect(admin);
       controllerAsUser1 = controller.connect(user1);
       controllerAsUser2 = controller.connect(user2);
-      controllerAsUser3 = controller.connect(user3);
     });
 
     it("owner of registrar adds controller", async () => {
@@ -220,9 +214,9 @@ describe("End 2 End Tests", () => {
 
   describe("scenario 3 - multiple controllers", () => {
     let basicController2: BasicController;
-    let domain1Name = "somedomainname2";
+    const domain1Name = "somedomainname2";
     let domain1Id: string;
-    let subdomain1Name = domain1Name;
+    const subdomain1Name = domain1Name;
     let subdomain1Id: string;
 
     it("deploy 2nd basic controller", async () => {

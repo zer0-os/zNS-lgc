@@ -76,6 +76,9 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
+    logger.log(`Waiting for 5 confirmations`);
+    await instance.deployTransaction.wait(5);
+
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {
       await run("verify:verify", {

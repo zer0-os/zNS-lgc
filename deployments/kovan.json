@@ -1,8 +1,16 @@
 {
   "registrar": {
     "name": "Registrar",
-    "address": "0x909d371C8898dcA48Ec65c72015388c1Cb11f4A8",
-    "version": "18d64db7748bbc66524b565ab73b6005551d5fb3c115c29b5843a0d195b6dfd7",
-    "implementation": "0x35921570D157D6E9DA51e67B47d43bAF5da1e108"
+    "address": "0x0e46c45f8aca3f89Ad06F4a20E2BED1A12e4658C",
+    "version": "283c9e92ae231d94fc84cf5cd2c188af8137e16e5ee40d0c94acda70707cbcc2",
+    "date": "2021-03-21T22:14:23.002Z",
+    "implementation": "0xC811E38d5114692BdBAF24A8fD5a25Aa2130a071"
+  },
+  "basicController": {
+    "name": "BasicController",
+    "address": "0x80628Dd446c21f8D93b6b6970861760F54C3B5dA",
+    "version": "1a1512536c92dda598529b71fd6f5f2c81230e67efd971447d08dde6bef9de99",
+    "date": "2021-03-21T22:20:21.384Z",
+    "implementation": "0x06145b23d828faC8a7e1F3755857f8CC00179DE1"
   }
 }

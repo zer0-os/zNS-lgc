@@ -4,6 +4,7 @@ pragma solidity ^0.7.3;
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
 import "./interfaces/IBasicController.sol";
 import "./interfaces/IRegistrar.sol";
@@ -11,7 +12,8 @@ import "./interfaces/IRegistrar.sol";
 contract BasicController is
   IBasicController,
   ContextUpgradeable,
-  ERC165Upgradeable
+  ERC165Upgradeable,
+  ERC721HolderUpgradeable
 {
   IRegistrar private registrar;
   uint256 private rootDomain;

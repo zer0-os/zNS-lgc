@@ -182,11 +182,7 @@ describe("End 2 End Tests", () => {
         user2.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controllerAsUser1
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsUser1);
 
       subdomain1Id = event.args["id"];
 
@@ -200,11 +196,7 @@ describe("End 2 End Tests", () => {
         user3.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controllerAsUser2
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsUser2);
 
       subdomain2Id = event.args["id"];
 
@@ -254,11 +246,7 @@ describe("End 2 End Tests", () => {
         user2.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controller2AsUser1
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controller2AsUser1);
 
       subdomain1Id = event.args["id"];
 

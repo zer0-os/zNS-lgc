@@ -7,13 +7,6 @@ interface IBasicController is IERC165Upgradeable {
   event RegisteredDomain(
     string name,
     uint256 indexed id,
-    address indexed owner,
-    address indexed creator
-  );
-
-  event RegisteredSubdomain(
-    string name,
-    uint256 indexed id,
     uint256 indexed parent,
     address indexed owner,
     address creator

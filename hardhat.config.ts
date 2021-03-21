@@ -48,6 +48,16 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
       url: "https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
+    localhost: {
+      gas: "auto",
+      gasPrice: "auto",
+      gasMultiplier: 1,
+      url: "http://127.0.0.1:8545",
+      chainId: 1776,
+      accounts: {
+        mnemonic: "test test test test test test test test test test test test",
+      },
+    },
   },
   etherscan: {
     apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",

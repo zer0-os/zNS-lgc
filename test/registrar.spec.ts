@@ -282,7 +282,7 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      expect(await registryAsUser1.creatorOf(expectedDomainHash)).to.eq(
+      expect(await registryAsUser1.minterOf(expectedDomainHash)).to.eq(
         user2.address
       );
     });

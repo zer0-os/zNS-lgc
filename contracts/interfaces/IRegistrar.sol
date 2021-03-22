@@ -20,7 +20,7 @@ interface IRegistrar is
     string name,
     uint256 indexed nameHash,
     uint256 indexed parent,
-    address creator,
+    address minter,
     address controller
   );
 
@@ -47,7 +47,7 @@ interface IRegistrar is
     uint256 parentId,
     string memory name,
     address domainOwner,
-    address creator
+    address minter
   ) external returns (uint256);
 
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
@@ -71,8 +71,8 @@ interface IRegistrar is
   // Whether or not a domain specific by an id is available.
   function isAvailable(uint256 id) external view returns (bool);
 
-  // Returns the original creator of a domain
-  function creatorOf(uint256 id) external view returns (address);
+  // Returns the original minter of a domain
+  function minterOf(uint256 id) external view returns (address);
 
   // Checks if a domains metadata is locked
   function isDomainMetadataLocked(uint256 id) external view returns (bool);

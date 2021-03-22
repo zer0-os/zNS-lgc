@@ -12,7 +12,7 @@ contract Registrar is
 {
   // Data recorded for each domain
   struct DomainRecord {
-    address creator;
+    address minter;
     bool metadataLocked;
     address metadataLockedBy;
     address controller;
@@ -67,13 +67,13 @@ contract Registrar is
     @param parentId The parent domain
     @param name The name of the domain
     @param domainOwner the owner of the new domain
-    @param creator the creator of the new domain
+    @param minter the minter of the new domain
    */
   function registerDomain(
     uint256 parentId,
     string memory name,
     address domainOwner,
-    address creator
+    address minter
   ) external override onlyController returns (uint256) {
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
@@ -85,16 +85,9 @@ contract Registrar is
     // Calculate the new domain's id and create it
     uint256 domainId =
       uint256(keccak256(abi.encodePacked(parentId, labelHash)));
-    _createDomain(domainId, domainOwner, creator, controller);
+    _createDomain(domainId, domainOwner, minter, controller);
 
-    emit DomainCreated(
-      domainId,
-      name,
-      labelHash,
-      parentId,
-      creator,
-      controller
-    );
+    emit DomainCreated(domainId, name, labelHash, parentId, minter, controller);
 
     return domainId;
   }
@@ -188,11 +181,11 @@ contract Registrar is
   }
 
   /**
-    @notice Returns the original creator of a domain
+    @notice Returns the original minter of a domain
     @param id The domain
    */
-  function creatorOf(uint256 id) public view override returns (address) {
-    address domainCreator = records[id].creator;
+  function minterOf(uint256 id) public view override returns (address) {
+    address domainCreator = records[id].minter;
     return domainCreator;
   }
 
@@ -251,13 +244,13 @@ contract Registrar is
   function _createDomain(
     uint256 domainId,
     address domainOwner,
-    address creator,
+    address minter,
     address controller
   ) internal {
     // Create the NFT and register the domain data
     _safeMint(domainOwner, domainId);
     records[domainId] = DomainRecord({
-      creator: creator,
+      minter: minter,
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,

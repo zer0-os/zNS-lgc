@@ -185,8 +185,8 @@ contract Registrar is
     @param id The domain
    */
   function minterOf(uint256 id) public view override returns (address) {
-    address domainCreator = records[id].minter;
-    return domainCreator;
+    address minter = records[id].minter;
+    return minter;
   }
 
   /**

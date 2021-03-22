@@ -53,6 +53,9 @@ interface IRegistrar is
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
   function lockDomainMetadata(uint256 id) external;
 
+  // Utility function to lock a domains metadata, used by controllers instead of a user.
+  function lockDomainMetadataForOwner(uint256 id) external;
+
   // Unlocks a domains metadata, can only be called by the address that locked the metadata
   function unlockDomainMetadata(uint256 id) external;
 

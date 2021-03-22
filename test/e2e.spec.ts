@@ -182,11 +182,7 @@ describe("End 2 End Tests", () => {
         user2.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controllerAsUser1
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsUser1);
 
       subdomain1Id = event.args["id"];
 
@@ -200,11 +196,7 @@ describe("End 2 End Tests", () => {
         user3.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controllerAsUser2
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsUser2);
 
       subdomain2Id = event.args["id"];
 
@@ -254,15 +246,75 @@ describe("End 2 End Tests", () => {
         user2.address
       );
 
-      const event = await getEvent(
-        tx,
-        "RegisteredSubdomain",
-        controller2AsUser1
-      );
+      const event = await getEvent(tx, "RegisteredDomain", controller2AsUser1);
 
       subdomain1Id = event.args["id"];
 
       expect(await registrar.ownerOf(subdomain1Id)).to.eq(user2.address);
+    });
+  });
+
+  describe("all-in-one creation", () => {
+    const rootDomainId = ethers.constants.HashZero;
+    const testDomain1Name = "germany";
+    const testDomain1Metadata = "metadatauri123";
+    const testDomain1RoyaltyAmount = 100;
+    let testDomain1Id: string;
+
+    const testDomain2Name = "france";
+    let testDomain2Id: string;
+
+    it("allows creation of domain with all-in-one function", async () => {
+      const tx = await controllerAsAdmin.registerSubdomainExtended(
+        rootDomainId,
+        testDomain1Name,
+        user1.address,
+        testDomain1Metadata,
+        testDomain1RoyaltyAmount,
+        false
+      );
+
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsAdmin);
+
+      testDomain1Id = event.args["id"];
+
+      expect(await registrar.ownerOf(testDomain1Id)).to.eq(user1.address);
+    });
+
+    it("sets the proper metadata", async () => {
+      expect(await registrar.tokenURI(testDomain1Id)).to.eq(
+        testDomain1Metadata
+      );
+    });
+
+    it("sets the proper royalty amount", async () => {
+      expect(await registrar.domainRoyaltyAmount(testDomain1Id)).to.eq(
+        testDomain1RoyaltyAmount
+      );
+    });
+
+    it("allows for domains to be locked on creation", async () => {
+      const tx = await controllerAsAdmin.registerSubdomainExtended(
+        rootDomainId,
+        testDomain2Name,
+        user2.address,
+        testDomain1Metadata,
+        testDomain1RoyaltyAmount,
+        true
+      );
+
+      const event = await getEvent(tx, "RegisteredDomain", controllerAsAdmin);
+
+      testDomain2Id = event.args["id"];
+
+      expect(await registrar.ownerOf(testDomain2Id)).to.eq(user2.address);
+      expect(await registrar.isDomainMetadataLocked(testDomain2Id)).to.be.true;
+    });
+
+    it("says the owner locked the metadata", async () => {
+      expect(await registrar.domainMetadataLockedBy(testDomain2Id)).to.eq(
+        user2.address
+      );
     });
   });
 });

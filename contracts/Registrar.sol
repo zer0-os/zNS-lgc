@@ -142,6 +142,21 @@ contract Registrar is
   }
 
   /**
+    @notice Locks a domains metadata uri on behalf the owner
+    @param id The domain to lock
+   */
+  function lockDomainMetadataForOwner(uint256 id)
+    public
+    override
+    onlyController
+  {
+    require(!isDomainMetadataLocked(id), "Metadata locked");
+
+    address domainOwner = ownerOf(id);
+    _lockMetadata(id, domainOwner);
+  }
+
+  /**
     @notice Unlocks a domains metadata uri
     @param id The domain to unlock
    */

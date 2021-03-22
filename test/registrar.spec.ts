@@ -37,11 +37,11 @@ describe("Registrar", () => {
     user3 = accounts[3];
   });
 
-  beforeEach("deploys", async () => {
-    await deployRegistry(creator);
-  });
-
   describe("root domain", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+
     it("has a root domain on creation", async () => {
       const doesRootExist = await registry.domainExists(rootDomainId);
       expect(doesRootExist).to.be.true;
@@ -70,14 +70,8 @@ describe("Registrar", () => {
   });
 
   describe("transferring domains", () => {
-    it("allows for a domain to be transferred with 'safeTransferFrom'", async () => {
-      await registry["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user1.address,
-        rootDomainId
-      );
-      const domainOwner = await registry.ownerOf(rootDomainId);
-      expect(domainOwner).to.be.eq(user1.address);
+    before(async () => {
+      await deployRegistry(creator);
     });
 
     // Redundant ERC721 test which is tested by OpenZeppelin
@@ -94,9 +88,23 @@ describe("Registrar", () => {
         "ERC721: transfer caller is not owner nor approved"
       );
     });
+
+    it("allows for a domain to be transferred with 'safeTransferFrom'", async () => {
+      await registry["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user1.address,
+        rootDomainId
+      );
+      const domainOwner = await registry.ownerOf(rootDomainId);
+      expect(domainOwner).to.be.eq(user1.address);
+    });
   });
 
   describe("controllers", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+
     it("adds controllers to the controller list", async () => {
       await registry.addController(user1.address);
       expect(await registry.controllers(user1.address)).to.be.true;
@@ -416,6 +424,10 @@ describe("Registrar", () => {
     let currentExpectedMetadataUri: string;
 
     before(async () => {
+      await deployRegistry(creator);
+    });
+
+    before(async () => {
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
@@ -467,6 +479,7 @@ describe("Registrar", () => {
     let testDomainId: string;
 
     before(async () => {
+      await deployRegistry(creator);
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
@@ -553,6 +566,30 @@ describe("Registrar", () => {
       expect(await registryAsUser1.isDomainMetadataLocked(testDomainId)).to.be
         .false;
     });
+
+    it("prevents a non controller from locking metadata on behalf of a user", async () => {
+      const tx = registryAsUser1.lockDomainMetadataForOwner(testDomainId);
+
+      await expect(tx).to.be.revertedWith("Not controller");
+    });
+
+    it("allows a controller to lock metadata on behalf of a user", async () => {
+      await registry.lockDomainMetadataForOwner(testDomainId);
+
+      expect(await registry.isDomainMetadataLocked(testDomainId)).to.be.true;
+    });
+
+    it("records that the owner locked metadata if a controller does it", async () => {
+      expect(await registry.domainMetadataLockedBy(testDomainId)).to.eq(
+        user1.address
+      );
+    });
+
+    it("prevents a controller from locking metadata if it is already locked", async () => {
+      const tx = registry.lockDomainMetadataForOwner(testDomainId);
+
+      await expect(tx).to.be.revertedWith("Metadata locked");
+    });
   });
 
   describe("domain royalties", () => {
@@ -561,6 +598,7 @@ describe("Registrar", () => {
     let currentExpectedRoyaltyAmount = 0;
 
     before(async () => {
+      await deployRegistry(creator);
       await registry.addController(creator.address);
 
       const domainName = "myDomain";

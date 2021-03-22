@@ -44,6 +44,10 @@ contract Registrar is
     _createDomain(0, msg.sender, msg.sender, address(0));
   }
 
+  /*
+    External Methods
+  */
+
   /**
     @notice Authorizes a controller to control the registrar
     @param controller The address of the controller
@@ -128,7 +132,7 @@ contract Registrar is
     @notice Locks a domains metadata uri
     @param id The domain to lock
    */
-  function lockDomainMetadata(uint256 id) public override onlyOwnerOf(id) {
+  function lockDomainMetadata(uint256 id) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "Metadata locked");
 
     _lockMetadata(id, msg.sender);
@@ -139,7 +143,7 @@ contract Registrar is
     @param id The domain to lock
    */
   function lockDomainMetadataForOwner(uint256 id)
-    public
+    external
     override
     onlyController
   {
@@ -153,14 +157,16 @@ contract Registrar is
     @notice Unlocks a domains metadata uri
     @param id The domain to unlock
    */
-  function unlockDomainMetadata(uint256 id) public override {
+  function unlockDomainMetadata(uint256 id) external override {
     require(isDomainMetadataLocked(id), "Not locked");
     require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
 
     _unlockMetadata(id);
   }
 
-  // View Methods
+  /*
+    Public View
+  */
 
   /**
     @notice Returns whether or not a domain is available to be created
@@ -239,6 +245,10 @@ contract Registrar is
     uint256 amount = records[id].royaltyAmount;
     return amount;
   }
+
+  /*
+    Internal Methods
+  */
 
   // internal - creates a domain
   function _createDomain(

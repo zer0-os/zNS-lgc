@@ -27,12 +27,12 @@ contract Registrar is
   mapping(uint256 => DomainRecord) public records;
 
   modifier onlyController {
-    require(controllers[msg.sender], "Not controller");
+    require(controllers[msg.sender], "Zer0 Registrar: Not controller");
     _;
   }
 
   modifier onlyOwnerOf(uint256 id) {
-    require(ownerOf(id) == msg.sender, "Not owner");
+    require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
     _;
   }
 
@@ -84,7 +84,7 @@ contract Registrar is
     address controller = msg.sender;
 
     // Domain parents must exist
-    require(_exists(parentId), "No parent");
+    require(_exists(parentId), "Zer0 Registrar: No parent");
 
     // Calculate the new domain's id and create it
     uint256 domainId =
@@ -106,7 +106,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
@@ -122,7 +122,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
@@ -133,7 +133,7 @@ contract Registrar is
     @param id The domain to lock
    */
   function lockDomainMetadata(uint256 id) external override onlyOwnerOf(id) {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     _lockMetadata(id, msg.sender);
   }
@@ -147,7 +147,7 @@ contract Registrar is
     override
     onlyController
   {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     address domainOwner = ownerOf(id);
     _lockMetadata(id, domainOwner);
@@ -158,8 +158,11 @@ contract Registrar is
     @param id The domain to unlock
    */
   function unlockDomainMetadata(uint256 id) external override {
-    require(isDomainMetadataLocked(id), "Not locked");
-    require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
+    require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
+    require(
+      domainMetadataLockedBy(id) == msg.sender,
+      "Zer0 Registrar: Not locker"
+    );
 
     _unlockMetadata(id);
   }

@@ -19,8 +19,11 @@ contract BasicController is
   uint256 private rootDomain;
 
   modifier authorized(uint256 domain) {
-    require(registrar.domainExists(domain), "Invalid Domain");
-    require(registrar.ownerOf(domain) == _msgSender(), "Not Authorized");
+    require(registrar.domainExists(domain), "Zer0 Controller: Invalid Domain");
+    require(
+      registrar.ownerOf(domain) == _msgSender(),
+      "Zer0 Controller: Not Authorized"
+    );
     _;
   }
 

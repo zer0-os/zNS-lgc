@@ -145,10 +145,10 @@ describe("End 2 End Tests", () => {
 
     it("user1 is unable to set metadata or royalty", async () => {
       let tx = registrarAsUser1.setDomainMetadataUri(domain1Id, "blah");
-      await expect(tx).to.be.revertedWith("Metadata locked");
+      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
 
       tx = registrarAsUser1.setDomainRoyaltyAmount(domain1Id, 0);
-      await expect(tx).to.be.revertedWith("Metadata locked");
+      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
     });
   });
 

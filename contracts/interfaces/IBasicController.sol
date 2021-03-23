@@ -10,7 +10,7 @@ interface IBasicController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 indexed id,
     uint256 indexed parent,
     address indexed owner,
-    address creator
+    address minter
   );
 
   /**

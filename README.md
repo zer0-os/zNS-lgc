@@ -1,4 +1,4 @@
-# Zer0 Naming Service Contracts
+# Zer0 Name Service Contracts
 
 This repository contains the smart contracts for the Zer0 Naming Service (ZNS) from the Zer0 Network.
 

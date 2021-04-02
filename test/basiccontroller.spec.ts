@@ -5,8 +5,6 @@ import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import { BasicController, BasicController__factory } from "../typechain";
-import { calculateDomainHash, hashDomainName } from "./helpers";
-import { BigNumber } from "ethers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -20,7 +18,6 @@ describe("Basic Controller", () => {
   let registrarMock: MockContract;
   let controllerFactory: BasicController__factory;
   let controller: BasicController;
-  const rootDomainId = ethers.constants.HashZero;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -30,20 +27,20 @@ describe("Basic Controller", () => {
     user3 = accounts[3];
   });
 
-  beforeEach("deploys", async () => {
-    registrarMock = await deployMockContract(creator, registrar.abi);
-    controllerFactory = new BasicController__factory(creator);
-    controller = (await upgrades.deployProxy(
-      controllerFactory,
-      [registrarMock.address],
-      {
-        initializer: "initialize",
-      }
-    )) as BasicController;
-    controller = await controller.deployed();
-  });
-
   describe("register top level domains", () => {
+    before("deploys", async () => {
+      registrarMock = await deployMockContract(creator, registrar.abi);
+      controllerFactory = new BasicController__factory(creator);
+      controller = (await upgrades.deployProxy(
+        controllerFactory,
+        [registrarMock.address],
+        {
+          initializer: "initialize",
+        }
+      )) as BasicController;
+      controller = await controller.deployed();
+    });
+
     it("emits a RegisteredDomain event with the created domain id", async () => {
       const domainName = "myDomain";
       const returnedId = 1337;
@@ -59,7 +56,7 @@ describe("Basic Controller", () => {
 
       expect(tx)
         .to.emit(controller, "RegisteredDomain")
-        .withArgs(domainName, returnedId, user1.address, user1.address);
+        .withArgs(domainName, returnedId, 0, user1.address, user1.address);
     });
 
     it("prevents a user who is not the root domain owner from making a domain", async () => {
@@ -72,12 +69,25 @@ describe("Basic Controller", () => {
       const controllerAsUser2 = await controller.connect(user2);
       const tx = controllerAsUser2.registerDomain(domainName, user1.address);
 
-      await expect(tx).to.be.revertedWith("Not Authorized");
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
     });
   });
 
   describe("register sub domains", () => {
     const topLevelDomainId = 80008;
+
+    before("deploys", async () => {
+      registrarMock = await deployMockContract(creator, registrar.abi);
+      controllerFactory = new BasicController__factory(creator);
+      controller = (await upgrades.deployProxy(
+        controllerFactory,
+        [registrarMock.address],
+        {
+          initializer: "initialize",
+        }
+      )) as BasicController;
+      controller = await controller.deployed();
+    });
 
     it("emits a RegisteredSubdomain event with the created domain id", async () => {
       const domainName = "mySubDomain";
@@ -98,7 +108,7 @@ describe("Basic Controller", () => {
       );
 
       expect(tx)
-        .to.emit(controller, "RegisteredSubdomain")
+        .to.emit(controller, "RegisteredDomain")
         .withArgs(
           domainName,
           returnedId,
@@ -127,7 +137,7 @@ describe("Basic Controller", () => {
         user3.address
       );
 
-      await expect(tx).to.be.revertedWith("Not Authorized");
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
     });
 
     it("prevents creating subdomains on domains with no parent", async () => {
@@ -145,7 +155,7 @@ describe("Basic Controller", () => {
         user2.address
       );
 
-      await expect(tx).to.be.revertedWith("Invalid Domain");
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Invalid Domain");
     });
   });
 });

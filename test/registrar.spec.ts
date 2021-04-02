@@ -4,7 +4,7 @@ import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import { calculateDomainHash, getEvent, hashDomainName } from "./helpers";
+import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -37,11 +37,11 @@ describe("Registrar", () => {
     user3 = accounts[3];
   });
 
-  beforeEach("deploys", async () => {
-    await deployRegistry(creator);
-  });
-
   describe("root domain", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+
     it("has a root domain on creation", async () => {
       const doesRootExist = await registry.domainExists(rootDomainId);
       expect(doesRootExist).to.be.true;
@@ -70,14 +70,8 @@ describe("Registrar", () => {
   });
 
   describe("transferring domains", () => {
-    it("allows for a domain to be transferred with 'safeTransferFrom'", async () => {
-      await registry["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user1.address,
-        rootDomainId
-      );
-      const domainOwner = await registry.ownerOf(rootDomainId);
-      expect(domainOwner).to.be.eq(user1.address);
+    before(async () => {
+      await deployRegistry(creator);
     });
 
     // Redundant ERC721 test which is tested by OpenZeppelin
@@ -94,9 +88,23 @@ describe("Registrar", () => {
         "ERC721: transfer caller is not owner nor approved"
       );
     });
+
+    it("allows for a domain to be transferred with 'safeTransferFrom'", async () => {
+      await registry["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user1.address,
+        rootDomainId
+      );
+      const domainOwner = await registry.ownerOf(rootDomainId);
+      expect(domainOwner).to.be.eq(user1.address);
+    });
   });
 
   describe("controllers", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+
     it("adds controllers to the controller list", async () => {
       await registry.addController(user1.address);
       expect(await registry.controllers(user1.address)).to.be.true;
@@ -255,6 +263,30 @@ describe("Registrar", () => {
         );
     });
 
+    it("properly tracks who the creator of a domain was", async () => {
+      await registry.addController(user1.address);
+      const registryAsUser1 = registry.connect(user1);
+
+      const domainName = "myDomain";
+
+      await registryAsUser1.registerDomain(
+        rootDomainId,
+        domainName,
+        user3.address,
+        user2.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      expect(await registryAsUser1.minterOf(expectedDomainHash)).to.eq(
+        user2.address
+      );
+    });
+
     it("properly tracks the controller that created a domain", async () => {
       await registry.addController(user1.address);
       const registryAsUser1 = registry.connect(user1);
@@ -354,7 +386,7 @@ describe("Registrar", () => {
           user2.address,
           user2.address
         )
-      ).to.be.revertedWith("No Parent");
+      ).to.be.revertedWith("Zer0 Registrar: No parent");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
@@ -390,6 +422,10 @@ describe("Registrar", () => {
     let registryAsUser1: Registrar;
     let testDomainId: string;
     let currentExpectedMetadataUri: string;
+
+    before(async () => {
+      await deployRegistry(creator);
+    });
 
     before(async () => {
       await registry.addController(creator.address);
@@ -434,7 +470,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainMetadataUri(testDomainId, newMetadataUri)
-      ).to.be.revertedWith("Not owner");
+      ).to.be.revertedWith("Zer0 Registrar: Not owner");
     });
   });
 
@@ -443,6 +479,7 @@ describe("Registrar", () => {
     let testDomainId: string;
 
     before(async () => {
+      await deployRegistry(creator);
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
@@ -466,7 +503,7 @@ describe("Registrar", () => {
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.unlockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Not locked");
+      ).to.be.revertedWith("Zer0 Registrar: Not locked");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -474,7 +511,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Not owner");
+      ).to.be.revertedWith("Zer0 Registrar: Not owner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
@@ -499,7 +536,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Metadata locked");
+      ).to.be.revertedWith("Zer0 Registrar: Metadata locked");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -507,7 +544,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.unlockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Not locker");
+      ).to.be.revertedWith("Zer0 Registrar: Not locker");
     });
 
     it("prevents metadata from being set if it is locked", async () => {
@@ -516,7 +553,7 @@ describe("Registrar", () => {
           testDomainId,
           "https://www.chuckecheese.com/"
         )
-      ).to.be.revertedWith("Metadata locked");
+      ).to.be.revertedWith("Zer0 Registrar: Metadata locked");
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
@@ -529,6 +566,30 @@ describe("Registrar", () => {
       expect(await registryAsUser1.isDomainMetadataLocked(testDomainId)).to.be
         .false;
     });
+
+    it("prevents a non controller from locking metadata on behalf of a user", async () => {
+      const tx = registryAsUser1.lockDomainMetadataForOwner(testDomainId);
+
+      await expect(tx).to.be.revertedWith("Zer0 Registrar: Not controller");
+    });
+
+    it("allows a controller to lock metadata on behalf of a user", async () => {
+      await registry.lockDomainMetadataForOwner(testDomainId);
+
+      expect(await registry.isDomainMetadataLocked(testDomainId)).to.be.true;
+    });
+
+    it("records that the owner locked metadata if a controller does it", async () => {
+      expect(await registry.domainMetadataLockedBy(testDomainId)).to.eq(
+        user1.address
+      );
+    });
+
+    it("prevents a controller from locking metadata if it is already locked", async () => {
+      const tx = registry.lockDomainMetadataForOwner(testDomainId);
+
+      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+    });
   });
 
   describe("domain royalties", () => {
@@ -537,14 +598,15 @@ describe("Registrar", () => {
     let currentExpectedRoyaltyAmount = 0;
 
     before(async () => {
+      await deployRegistry(creator);
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
       await registry.registerDomain(
         rootDomainId,
         domainName,
-        user2.address,
-        user1.address
+        user1.address,
+        user2.address
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -577,12 +639,12 @@ describe("Registrar", () => {
       );
     });
 
-    it("prevents a user who is not the domain creator from setting the royalty amount", async () => {
+    it("prevents a user who is not the domain owner from setting the royalty amount", async () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWith("Not Creator");
+      ).to.be.revertedWith("Zer0 Registrar: Not owner");
     });
   });
 });

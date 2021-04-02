@@ -12,7 +12,7 @@ contract Registrar is
 {
   // Data recorded for each domain
   struct DomainRecord {
-    address creator;
+    address minter;
     bool metadataLocked;
     address metadataLockedBy;
     address controller;
@@ -27,12 +27,12 @@ contract Registrar is
   mapping(uint256 => DomainRecord) public records;
 
   modifier onlyController {
-    require(controllers[msg.sender], "Not controller");
+    require(controllers[msg.sender], "Zer0 Registrar: Not controller");
     _;
   }
 
   modifier onlyOwnerOf(uint256 id) {
-    require(ownerOf(id) == msg.sender, "Not owner");
+    require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
     _;
   }
 
@@ -43,6 +43,10 @@ contract Registrar is
     // create the root domain
     _createDomain(0, msg.sender, msg.sender, address(0));
   }
+
+  /*
+    External Methods
+  */
 
   /**
     @notice Authorizes a controller to control the registrar
@@ -67,34 +71,27 @@ contract Registrar is
     @param parentId The parent domain
     @param name The name of the domain
     @param domainOwner the owner of the new domain
-    @param creator the creator of the new domain
+    @param minter the minter of the new domain
    */
   function registerDomain(
     uint256 parentId,
     string memory name,
     address domainOwner,
-    address creator
+    address minter
   ) external override onlyController returns (uint256) {
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
 
     // Domain parents must exist
-    require(_exists(parentId), "No Parent");
+    require(_exists(parentId), "Zer0 Registrar: No parent");
 
     // Calculate the new domain's id and create it
     uint256 domainId =
       uint256(keccak256(abi.encodePacked(parentId, labelHash)));
-    _createDomain(domainId, domainOwner, creator, controller);
+    _createDomain(domainId, domainOwner, minter, controller);
 
-    emit DomainCreated(
-      domainId,
-      name,
-      labelHash,
-      parentId,
-      creator,
-      controller
-    );
+    emit DomainCreated(domainId, name, labelHash, parentId, minter, controller);
 
     return domainId;
   }
@@ -107,14 +104,11 @@ contract Registrar is
   function setDomainRoyaltyAmount(uint256 id, uint256 amount)
     external
     override
+    onlyOwnerOf(id)
   {
-    require(ownerOf(id) == msg.sender, "Not Owner");
-    if (isDomainMetadataLocked(id)) {
-      require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
-    }
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     records[id].royaltyAmount = amount;
-
     emit RoyaltiesAmountChanged(id, amount);
   }
 
@@ -128,7 +122,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
@@ -138,24 +132,44 @@ contract Registrar is
     @notice Locks a domains metadata uri
     @param id The domain to lock
    */
-  function lockDomainMetadata(uint256 id) public override onlyOwnerOf(id) {
-    require(!isDomainMetadataLocked(id), "Metadata locked");
+  function lockDomainMetadata(uint256 id) external override onlyOwnerOf(id) {
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
     _lockMetadata(id, msg.sender);
+  }
+
+  /**
+    @notice Locks a domains metadata uri on behalf the owner
+    @param id The domain to lock
+   */
+  function lockDomainMetadataForOwner(uint256 id)
+    external
+    override
+    onlyController
+  {
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+
+    address domainOwner = ownerOf(id);
+    _lockMetadata(id, domainOwner);
   }
 
   /**
     @notice Unlocks a domains metadata uri
     @param id The domain to unlock
    */
-  function unlockDomainMetadata(uint256 id) public override {
-    require(isDomainMetadataLocked(id), "Not locked");
-    require(domainMetadataLockedBy(id) == msg.sender, "Not locker");
+  function unlockDomainMetadata(uint256 id) external override {
+    require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
+    require(
+      domainMetadataLockedBy(id) == msg.sender,
+      "Zer0 Registrar: Not locker"
+    );
 
     _unlockMetadata(id);
   }
 
-  // View Methods
+  /*
+    Public View
+  */
 
   /**
     @notice Returns whether or not a domain is available to be created
@@ -176,12 +190,12 @@ contract Registrar is
   }
 
   /**
-    @notice Returns the original creator of a domain
+    @notice Returns the original minter of a domain
     @param id The domain
    */
-  function creatorOf(uint256 id) public view override returns (address) {
-    address domainCreator = records[id].creator;
-    return domainCreator;
+  function minterOf(uint256 id) public view override returns (address) {
+    address minter = records[id].minter;
+    return minter;
   }
 
   /**
@@ -235,17 +249,21 @@ contract Registrar is
     return amount;
   }
 
+  /*
+    Internal Methods
+  */
+
   // internal - creates a domain
   function _createDomain(
     uint256 domainId,
     address domainOwner,
-    address creator,
+    address minter,
     address controller
   ) internal {
     // Create the NFT and register the domain data
     _safeMint(domainOwner, domainId);
     records[domainId] = DomainRecord({
-      creator: creator,
+      minter: minter,
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,

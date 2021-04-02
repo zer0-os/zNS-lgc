@@ -201,7 +201,6 @@ async function main() {
     await tx.wait();
 
     // use registrar the creator
-    registrar = registrar.connect(domain.creator);
     logger.log(`setting domain royalty amount on ${domain.fullName}`);
     tx = await registrar.setDomainRoyaltyAmount(domain.id, "10000");
     await tx.wait();

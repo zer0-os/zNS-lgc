@@ -7,9 +7,8 @@ import "@typechain/hardhat";
 import "@openzeppelin/hardhat-upgrades";
 import "@eth-optimism/smock/build/src/plugins/hardhat-storagelayout";
 import "@nomiclabs/hardhat-etherscan";
+import "solidity-coverage";
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
 
@@ -17,9 +16,6 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
     console.log(account.address);
   }
 });
-
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -51,6 +47,16 @@ const config: HardhatUserConfig = {
     rinkeby: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
       url: "https://rinkeby.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
+    },
+    localhost: {
+      gas: "auto",
+      gasPrice: "auto",
+      gasMultiplier: 1,
+      url: "http://127.0.0.1:8545",
+      chainId: 1776,
+      accounts: {
+        mnemonic: "test test test test test test test test test test test test",
+      },
     },
   },
   etherscan: {

@@ -2,74 +2,61 @@
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
-interface IStakingController is IERC165Upgradeable {
-
-
-  event DomainRequest(
+interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
+  event DomainBidPlaced(
     bytes32 indexed requestHash,
     address indexed requester,
-    address indexed domainOwner
+    address indexed domainOwner,
+    string ipfsHash
   );
 
-  event RequestAccepted(
-    string name,
-    uint256 indexed Id,
-    uint256 indexed parentId,
-    uint256 indexed bid,
-    address indexed bidder,
-    address indexed dToken,
-    bool isLocked
-  );
+  event DomainBidAccepted(string bidIdentifier);
 
-  event BaseBidSet(
-    string name,
-    uint256 indexed parentId,
-    uint256 indexed baseBid,
-    address indexed dToken
-  );
+  event DomainBidFulfilled(string bidIdentifier);
 
   /**
     @notice requestDomain allows a user to send a request for a new sub domain to a domains owner
     @param requestHash is the hashed data for a domain request
     @param domainOwner is the address of the domain parent's owner
+    @param ipfsHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
   **/
-  function requestDomain(
+  function placeDomainBid(
     bytes32 requestHash,
-    address domainOwner
+    address domainOwner,
+    string memory ipfsHash
   ) external;
 
   /**
-    @notice acceptSubRequest allows a domain owner to accept bids for sub domains
+    @notice Approves a domain bid, allowing the domain to be created.
+      Will emit a DomainBidAccepted event.
     @param parentId is the id number of the parent domain to the sub domain being requested
-    @param bidAmount is the uint value of the amount of dTokens bid
-    @param metadata is the uri of the domains metadata
-    @param name is the name of the new domain being created
-    @param signature is the signature of the bidder
-    @param owner is the address of the account whos bid is being acceted
-    @param isLocked is a bool representing whether or not the metadata for the sub domain is locked
+    @param ipfsHash is the IPFS hash of the bids information
+    @param bidder is the address of the account that placed the bid being accepted
   **/
   function acceptSubRequest(
-      uint256 parentId,
-      uint256 bidAmount,
-      string memory metadata,
-      string memory name,
-      bytes memory signature,
-      address bidder,
-      address dToken,
-      bool isLocked
+    uint256 parentId,
+    string memory ipfsHash,
+    address bidder
   ) external;
 
   /**
-    @notice setBaseBid allows a domain owner to set the base bid information for their domain
+    @notice Fulfills a domain bid, creating the domain.
+      Transfers tokens from bidders wallet into controller.
+      Will emit a DomainBidFulfilled event.
     @param parentId is the id number of the parent domain to the sub domain being requested
-    @param baseAmount is the minimum amount of dToken acceptable as a bid for sub domains
-    @param dToken is the dToken address the domain will accept bids for sub domains in
+    @param bidAmount is the uint value of the amount of infinity bid
+    @param ipfsHash is the IPFS hash of the bids information
+    @param name is the name of the new domain being created
+    @param signature is the signature of the bidder
   **/
-  function setBaseBid(
+  function fulfillDomainBid(
     uint256 parentId,
-    uint256 baseAmount,
-    address dToken
+    uint256 bidAmount,
+    string memory ipfsHash,
+    string memory name,
+    bytes memory signature
   ) external;
 
   /**
@@ -77,18 +64,17 @@ interface IStakingController is IERC165Upgradeable {
     @notice requestHash is the hash of the request being recovered
     @notice signature is the signature the hash was created with
   **/
-  function recover(
-    bytes32 requestHash,
-    bytes memory signature
-  )
-  public
-  pure
-  returns (address);
+  function recover(bytes32 requestHash, bytes memory signature)
+    public
+    pure
+    returns (address);
 
   /**
     @notice toEthSignedMessageHash takens in a message hash and signs it for the message sender
     @param requestHash is the hash of the request message being signed
   **/
-  function toEthSignedMessageHash(bytes32 requestHash) public pure returns (bytes32);
-
+  function toEthSignedMessageHash(bytes32 requestHash)
+    public
+    pure
+    returns (bytes32);
 }

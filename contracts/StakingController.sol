@@ -6,128 +6,113 @@ import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+
 
 import "./interfaces/IRegistrar.sol";
 
 contract StakingController is
   Initializable,
   ContextUpgradeable,
-  ERC165Upgradeable
+  ERC165Upgradeable,
+  IERC721ReceiverUpgradeable
 {
 
   using ECDSA for bytes32;
 
+  IERC20Upgradeable private infinity;
   IRegistrar private registrar;
   uint256 private rootDomain;
 
-  mapping(uint => address) public domainToken;
-  mapping(uint => uint) public baseBidAmounts;
+  mapping(string => address) public approvedBids;
 
-      event DomainRequest(
-        bytes32 indexed requestHash,
-        address indexed requester,
-        address indexed domainOwner
-      );
+  event DomainBidPlaced(
+    bytes32 indexed requestHash,
+    address indexed requester,
+    address indexed domainOwner
+  );
 
-      event RequestAccepted(
-        string name,
-        uint256 indexed Id,
-        uint256 indexed parentId,
-        uint256 indexed bid,
-        address indexed bidder,
-        address indexed dToken,
-        bool isLocked
-      );
+  event DomainBidAccepted(uint256 bidIdentifier);
 
-      event BaseBidSet(
-        string name,
-        uint256 indexed parentId,
-        uint256 indexed baseBid,
-        address indexed dToken
-      );
+  event DomainBidFulfilled(uint256 bidIdentifier);
 
-  modifier authorized(uint256 domain) {
+  modifier authorizedOwner(uint256 domain) {
     require(registrar.domainExists(domain), "Invalid Domain");
-    require(registrar.ownerOf(domain) == _msgSender(), "Not Authorized");
+    require(registrar.ownerOf(domain) == _msgSender(), "Not Authorized Owner");
     _;
   }
 
-  function initialize(IRegistrar _registrar) public initializer {
+  modifier authorizedRecipient(string memory ipfsHash) {
+    require(approvedBids[ipfsHash] == _msgSender(), "Not Authorized Recipient")
+    _;
+  }
+
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _Infinity) public initializer {
     __ERC165_init();
     __Context_init();
 
+    infinity = _Infinity;
     registrar = _registrar;
     rootDomain = 0x0;
   }
 
     /**
-      @notice requestDomain allows a user to send a request for a new sub domain to a domains owner
+      @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
       @param requestHash is the hashed data for a domain request
       @param domainOwner is the address of the domain parent's owner
+      @param ipfsHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
     **/
-    function requestDomain(
+    function placeDomainBid(
       bytes32 requestHash,
-      address domainOwner
+      address domainOwner,
+      string memory ipfsHash
     ) external {
-      DomainRequest(
+      DomainBidPlaced(
         requestHash,
         msg.sender,
-        domainOwner
+        domainOwner,
+        ipfsHash
       );
     }
 
     /**
-      @notice acceptSubRequest allows a domain owner to accept bids for sub domains
+      @notice Approves a domain bid, allowing the domain to be created.
       @param parentId is the id number of the parent domain to the sub domain being requested
-      @param bidAmount is the uint value of the amount of dTokens bid
-      @param metadata is the uri of the domains metadata
-      @param name is the name of the new domain being created
-      @param bidder is the address of the account whos bid is being acceted
-      @dev this function transfers the dToken bid amount to the domain owner so this function will require
-            that the user placing the bid has approved this contract to transfer the parent domains dToken
-            prior to calli8ng this function
+      @param ipfsHash is the IPFS hash of the bids information
+      @param bidder is the address of the account that placed the bid being accepted
     **/
     function acceptSubRequest(
         uint256 parentId,
-        uint256 bidAmount,
-        string memory metadata,
-        string memory name,
-        bytes memory signature,
-        address bidder,
-        address dToken
-    ) external authorized(parentId) {
-      address recoveredbidder = recover(keccak256(abi.encode(bidAmount, name, parentId, metadata, dToken)), signature);
-      require(bidder == recoveredbidder, 'StakingController: incorrect bidder');
-      IERC20Upgradeable token = IERC20Upgradeable(domainToken[parentId]);
-      require(token.balanceOf(bidder) >= bidAmount);
-      token.transferFrom(bidder, address(this), bidAmount);
-      uint256 id = registrar.registerDomain(parentId, name, bidder, msg.sender);
-      domainToken[id] = dToken;
-      emit RequestAccepted(
-        name,
-        id,
-        parentId,
-        bidAmount,
-        bidder,
-        dToken,
-        isLocked
-      );
+        string memory ipfsHash,
+        address bidder
+    ) external authorizedOwner(parentId) {
+      approvedBids[ipfsHash] = bidder;
+      emit DomainBidAccepted(ipfsHash);
     }
 
     /**
-      @notice setBaseBid allows a domain owner to set the base bid information for their domain
-      @param id is the id number of the domain whos base bid information is being set
-      @param baseAmount is the minimum amount of dToken acceptable as a bid for sub domains
-      @param dToken is the dToken address the domain will accept bids for sub domains in
+      @notice Fulfills a domain bid, creating the domain.
+        Transfers tokens from bidders wallet into controller.
+        Will emit a DomainBidFulfilled event.
+      @param parentId is the id number of the parent domain to the sub domain being requested
+      @param bidAmount is the uint value of the amount of infinity bid
+      @param ipfsHash is the IPFS hash of the bids information
+      @param name is the name of the new domain being created
+      @param signature is the signature of the bidder
     **/
-    function setBaseBid(
-      uint256 id,
-      uint256 baseAmount,
-      address dToken
-    ) external {
-      domainToken[id] = dToken;
-      baseBidAmounts[id] = baseAmount;
-    }
+      function fulfillDomainBid(
+        uint256 parentId,
+        uint256 bidAmount,
+        string memory ipfsHash,
+        string memory name,
+        bytes memory signature
+      ) external authorizedRecipient(ipfsHash) {
+        address recoveredbidder = recover(keccak256(abi.encode(bidAmount, name, parentId, ipfsHash)), signature);
+        require(bidder == recoveredbidder, 'StakingController: incorrect bid info');
+        infinity.transferFrom(bidder, address(this), bidAmount);
+        uint256 id = registrar.registerDomain(parentId, name, msg.sender, registrar.ownerOf(id));
+        emit DomainBidFulfilled(ipfsHash);
+      }
 
     /**
       @notice recover allows the hashed data of a domain request to be recovered
@@ -153,8 +138,3 @@ contract StakingController is
     }
 
   }
-
-
-
-
-}

@@ -83,6 +83,9 @@ contract StakingController is
       @param metadata is the uri of the domains metadata
       @param name is the name of the new domain being created
       @param bidder is the address of the account whos bid is being acceted
+      @dev this function transfers the dToken bid amount to the domain owner so this function will require
+            that the user placing the bid has approved this contract to transfer the parent domains dToken
+            prior to calli8ng this function
     **/
     function acceptSubRequest(
         uint256 parentId,
@@ -97,7 +100,7 @@ contract StakingController is
       require(bidder == recoveredbidder, 'StakingController: incorrect bidder');
       IERC20Upgradeable token = IERC20Upgradeable(domainToken[parentId]);
       require(token.balanceOf(bidder) >= bidAmount);
-      token.transferFrom(bidder, msg.sender, bidAmount);
+      token.transferFrom(bidder, address(this), bidAmount);
       uint256 id = registrar.registerDomain(parentId, name, bidder, msg.sender);
       domainToken[id] = dToken;
       emit RequestAccepted(

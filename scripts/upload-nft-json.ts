@@ -39,6 +39,7 @@ interface NFTMetadata {
 }
 
 async function main() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const createClient = require("ipfs-http-client");
   const client = createClient("https://ipfs.infura.io:5001");
   const nftMetadata: NFTMetadata[] = [];

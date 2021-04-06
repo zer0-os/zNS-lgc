@@ -28,7 +28,7 @@ contract StakingController is
 
   event DomainBidPlaced(
     bytes32 indexed requestHash,
-    string indexed domainOwner
+    string indexed ipfsHash
   );
 
   event DomainBidAccepted(string indexed bidIdentifier);
@@ -128,7 +128,6 @@ contract StakingController is
       @notice recover allows the hashed data of a domain request to be recovered
       @notice requestHash is the hash of the request being recovered
       @notice signature is the signature the hash was created with
-      @dev recover is marked as public because it is used by the fulfillDomainBid function
     **/
     function recover(
       bytes32 requestHash,

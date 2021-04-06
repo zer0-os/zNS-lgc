@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradea
 interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event DomainBidPlaced(
     bytes32 indexed requestHash,
-    bytes32 indexed domainOwner
+    bytes32 indexed ipfsHash
   );
 
   event DomainBidAccepted(string bidIdentifier);

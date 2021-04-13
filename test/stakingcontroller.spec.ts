@@ -66,9 +66,9 @@ describe("Staking Controller", () => {
       const payloadHash = await ethers.utils.keccak256(payload);
       const bidSignature = await user1.signMessage(await ethers.utils.arrayify(payloadHash))
       // //verifyMessage works here
-      // const ethersRecoveredAddress = await ethers.utils.verifyMessage( payloadHash, bidSignature);
-      // //this works
-      // expect(ethersRecoveredAddress).to.eq(user1.address);
+      const ethersRecoveredAddress = await ethers.utils.verifyMessage( payloadHash, bidSignature);
+      //this works
+      expect(ethersRecoveredAddress).to.eq(user1.address);
       ////trying this exact same recovery process on chain here fails tho
       const controllerAsUser1 = await controller.connect(user1);
       const recoveredAddress = await controllerAsUser1.recover(

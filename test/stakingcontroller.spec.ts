@@ -52,17 +52,27 @@ describe("Staking Controller", () => {
       const royaltyAmount = 10;
       const bidIPFSHash = "IPFS Hash For Bid";
       const name = "name";
-      //const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.solidityPack(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
-      const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.id("tacos"))
-      const bidSignature = await user1.signMessage(bidRequestHash)
-      //verifyMessage works here
-      const ethersRecoveredAddress = await ethers.utils.verifyMessage( bidRequestHash, bidSignature);
-      //this works
-      expect(ethersRecoveredAddress).to.eq(user1.address);
+      const msg = "tacos";
+      const msgHash = ethers.utils.id(msg);
+      const payload = await ethers.utils.defaultAbiCoder.encode(
+        ["bytes32"],
+        [msgHash]
+      );
+
+      // const payload = await ethers.utils.defaultAbiCoder.encode(
+      //   ["uint256","string","uint256","string"],
+      //   [bidAmount,name,parentID,bidIPFSHash]
+      // );
+      const payloadHash = await ethers.utils.keccak256(payload);
+      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(payloadHash))
+      // //verifyMessage works here
+      // const ethersRecoveredAddress = await ethers.utils.verifyMessage( payloadHash, bidSignature);
+      // //this works
+      // expect(ethersRecoveredAddress).to.eq(user1.address);
       ////trying this exact same recovery process on chain here fails tho
       const controllerAsUser1 = await controller.connect(user1);
       const recoveredAddress = await controllerAsUser1.recover(
-        bidRequestHash,
+        payloadHash,
         bidSignature
       );
       expect(recoveredAddress).to.eq(user1.address);

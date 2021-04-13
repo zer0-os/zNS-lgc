@@ -137,8 +137,7 @@ contract StakingController is
     public
     pure
     returns (address) {
-      bytes32 hashed = unsignedRequestHash.toEthSignedMessageHash();
-        return unsignedRequestHash.recover(signature);
+      return unsignedRequestHash.toEthSignedMessageHash().recover(signature);
     }
 
 

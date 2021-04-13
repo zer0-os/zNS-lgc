@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers, upgrades } from "hardhat";
 import chai from "chai";
 import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
-import Web3 from "web3";
+
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import * as infinity from "../artifacts/contracts/mocks/Infinity.sol/Infinity.json";
@@ -11,8 +11,7 @@ import { StakingController, StakingController__factory } from "../typechain";
 
 chai.use(solidity);
 const { expect } = chai;
-var currentProvider = new Web3.providers.HttpProvider('http://localhost:8545');
-const web3 = new Web3(currentProvider);
+
 
 describe("Staking Controller", () => {
   let accounts: SignerWithAddress[];
@@ -54,7 +53,7 @@ describe("Staking Controller", () => {
       const bidIPFSHash = "IPFS Hash For Bid";
       const name = "name";
       //const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.solidityPack(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
-      const bidSignature = await web3.eth.sign( await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")), user1.address)
+      const bidSignature = await user1.signMessage( await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")))
 
       const controllerAsUser1 = await controller.connect(user1);
       const recoveredAddress = await controllerAsUser1.recover(

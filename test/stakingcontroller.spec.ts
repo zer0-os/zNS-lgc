@@ -53,8 +53,15 @@ describe("Staking Controller", () => {
       const bidIPFSHash = "IPFS Hash For Bid";
       const name = "name";
       //const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.solidityPack(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
-      const bidSignature = await user1.signMessage( await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")))
+      const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.id("tacos"))
+      const bidSignature = await user1.signMessage(bidRequestHash)
+      //verifyMessage works here
+      const ethersRecoveredAddress = await ethers.utils.verifyMessage( bidRequestHash, bidSignature);
+      //recoverAddress fails with the exact same inputs
+      const ethersRecoveredAddress = await ethers.utils.recoverAddress( bidRequestHash, bidSignature);
 
+      expect(ethersRecoveredAddress).to.eq(user1.address);
+      ////trying this exact same recovery process on chain here fails tho
       const controllerAsUser1 = await controller.connect(user1);
       const recoveredAddress = await controllerAsUser1.recover(
         await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")),
@@ -130,7 +137,7 @@ describe("Staking Controller", () => {
           await registrarMock.mock.registerDomain.returns(returnedId);
           await registrarMock.mock.setDomainMetadataUri.reverts();
           // cant figure out how to get function without a return on it
-          // probably need to move this test into the e2e test script 
+          // probably need to move this test into the e2e test script
           // await registrarMock.mock.setDomainRoyaltyAmount.returns(true);
           // await registrarMock.mock.registerDomain.returns(true);
           // await infinityMock.mock.transferFrom.returns(true);

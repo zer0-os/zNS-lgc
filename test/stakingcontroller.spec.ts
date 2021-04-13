@@ -1,0 +1,154 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { ethers, upgrades } from "hardhat";
+import chai from "chai";
+import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
+import Web3 from "web3";
+
+import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
+import * as infinity from "../artifacts/contracts/mocks/Infinity.sol/Infinity.json";
+
+import { StakingController, StakingController__factory } from "../typechain";
+
+chai.use(solidity);
+const { expect } = chai;
+var currentProvider = new Web3.providers.HttpProvider('http://localhost:8545');
+const web3 = new Web3(currentProvider);
+
+describe("Staking Controller", () => {
+  let accounts: SignerWithAddress[];
+  let creator: SignerWithAddress;
+  let user1: SignerWithAddress;
+  let user2: SignerWithAddress;
+  let user3: SignerWithAddress;
+  let registrarMock: MockContract;
+  let controllerFactory: StakingController__factory;
+  let controller: StakingController;
+  let infinityMock: MockContract;
+
+
+  before(async () => {
+    accounts = await ethers.getSigners();
+    creator = accounts[0];
+    user1 = accounts[1];
+    user2 = accounts[2];
+    user3 = accounts[3];
+    registrarMock = await deployMockContract(creator, registrar.abi);
+    infinityMock = await deployMockContract(creator, infinity.abi);
+
+    controllerFactory = new StakingController__factory(creator);
+    controller = (await upgrades.deployProxy(
+      controllerFactory,
+      [registrarMock.address, infinityMock.address],
+      {
+        initializer: "initialize",
+      }
+    )) as StakingController;
+    controller = await controller.deployed();
+  });
+
+  describe("tests recovery", () => {
+    it("checks that the recovered address matches the message signers address", async () => {
+      const parentID = 36;
+      const bidAmount = 5000;
+      const royaltyAmount = 10;
+      const bidIPFSHash = "IPFS Hash For Bid";
+      const name = "name";
+      //const bidRequestHash = await ethers.utils.keccak256(await ethers.utils.solidityPack(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
+      const bidSignature = await web3.eth.sign( await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")), user1.address)
+
+      const controllerAsUser1 = await controller.connect(user1);
+      const recoveredAddress = await controllerAsUser1.recover(
+        await ethers.utils.keccak256(await ethers.utils.hashMessage("tacos")),
+        bidSignature
+      );
+      expect(recoveredAddress).to.eq(user1.address);
+    });
+  });
+
+  describe("Places a bid", () => {
+    it("emits a DomainBidPlaced event with the correct bid info", async () => {
+      const parentID = 36;
+      const bidAmount = 5000;
+      const royaltyAmount = 10;
+      const bidIPFSHash = "IPFS Hash For Bid";
+      const name = "name";
+      const bidRequestHash = await ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
+      const bidSignature = await user1.signMessage(bidRequestHash);
+
+      const controllerAsUser1 = await controller.connect(user1);
+      const tx = await controllerAsUser1.placeDomainBid(
+        bidRequestHash,
+        bidSignature,
+        bidIPFSHash
+      );
+
+      expect(tx)
+        .to.emit(controller, "DomainBidPlaced")
+        .withArgs(bidRequestHash, bidIPFSHash, bidSignature);
+      });
+    });
+
+    describe("Accepts a bid", () => {
+      it("emits a DomainBidApproved event with the correct bid id", async () => {
+        const parentID = 36;
+        const bidAmount = 5000;
+        const royaltyAmount = 10;
+        const bidIPFSHash = "IPFS Hash For Bid";
+        const name = "name";
+        const bidRequestHash = await ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
+        await registrarMock.mock.domainExists.withArgs(parentID).returns(true);
+        await registrarMock.mock.ownerOf.withArgs(parentID).returns(user1.address);
+
+
+        const controllerAsUser1 = await controller.connect(user1);
+        const tx = await controllerAsUser1.approveDomainBid(
+          parentID,
+          bidIPFSHash,
+          bidRequestHash
+        );
+
+        expect(tx)
+          .to.emit(controller, "DomainBidApproved")
+          .withArgs(bidIPFSHash);
+        });
+      });
+
+      describe("FullFills a bid", () => {
+        it("emits a DomainBidFulfilled event with the correct bid id", async () => {
+          const parentID = 36;
+          const bidAmount = 5000;
+          const royaltyAmount = 10;
+          const bidIPFSHash = "IPFS Hash For Bid";
+          const name = "name";
+          const bidRequestHash = await ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["uint256","string","uint256","string"], [bidAmount,name,parentID,bidIPFSHash]));
+          const bidSignature = await user1.signMessage(bidRequestHash);
+          const lock = true;
+
+          const returnedId = 3636;
+
+          await registrarMock.mock.domainExists.withArgs(parentID).returns(true);
+          await registrarMock.mock.ownerOf.withArgs(parentID).returns(user1.address);
+          await registrarMock.mock.registerDomain.returns(returnedId);
+          await registrarMock.mock.setDomainMetadataUri.reverts();
+          // await registrarMock.mock.setDomainRoyaltyAmount.returns(true);
+          // await registrarMock.mock.registerDomain.returns(true);
+          // await infinityMock.mock.transferFrom.returns(true);
+
+          const controllerAsUser1 = await controller.connect(user1);
+          const tx = await controllerAsUser1.fulfillDomainBid(
+            parentID,
+            bidAmount,
+            royaltyAmount,
+            bidIPFSHash,
+            name,
+            bidSignature,
+            lock
+          );
+
+          expect(tx)
+            .to.emit(controller, "DomainBidFulfilled")
+            .withArgs(bidIPFSHash);
+          });
+        });
+
+  });

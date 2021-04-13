@@ -24,14 +24,15 @@ contract StakingController is
   IRegistrar private registrar;
   uint256 private rootDomain;
 
-  mapping(bytes32 => address) public approvedBids;
+  mapping(bytes32 => bytes32) public approvedBids;
 
   event DomainBidPlaced(
-    bytes32 indexed requestHash,
-    string indexed ipfsHash
+    bytes32 indexed unsignedRequestHash,
+    string bidIPFSHash,
+    bytes indexed signature
   );
 
-  event DomainBidAccepted(string indexed bidIdentifier);
+  event DomainBidApproved(string indexed bidIdentifier);
 
   event DomainBidFulfilled(string indexed bidIdentifier);
 
@@ -41,10 +42,6 @@ contract StakingController is
     _;
   }
 
-  modifier authorizedRecipient(string memory ipfsHash) {
-    require(approvedBids[keccak256(abi.encode(ipfsHash))] == _msgSender(), "Not Authorized Recipient");
-    _;
-  }
 
   function initialize(IRegistrar _registrar, IERC20Upgradeable _Infinity) public initializer {
     __ERC165_init();
@@ -52,38 +49,42 @@ contract StakingController is
 
     infinity = _Infinity;
     registrar = _registrar;
-    rootDomain = 0x0;
   }
 
     /**
       @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
-      @param requestHash is the hashed data for a domain request
-      @param ipfsHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
+      @param unsignedRequestHash is the un-signed hashed data for a domain bid request
+      @param signature is the signature used to sign the request hash
+      @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
       @dev the IPFS hash must be emitted as a string here for the front end to be able to recover the bid info
+      @dev signature is emitted here so that the domain owner approving the bid can use the recover function to check that
+            the bid information in the IPFS hash matches the bid information used to create the signed message
     **/
     function placeDomainBid(
-      bytes32 requestHash,
-      string memory ipfsHash
+      bytes32 unsignedRequestHash,
+      bytes memory signature,
+      string memory bidIPFSHash
     ) external {
       emit DomainBidPlaced(
-        requestHash,
-        ipfsHash
+        unsignedRequestHash,
+        bidIPFSHash,
+        signature
       );
     }
 
     /**
       @notice approveDomainBid approves a domain bid, allowing the domain to be created.
       @param parentId is the id number of the parent domain to the sub domain being requested
-      @param ipfsHash is the IPFS hash of the bids information
-      @param bidder is the address of the account that placed the bid being accepted
+      @param bidIPFSHash is the IPFS hash of the bids information
+      @param unsignedRequestHash is the signed hashed data for a domain bid request
     **/
     function approveDomainBid(
         uint256 parentId,
-        string memory ipfsHash,
-        address bidder
+        string memory bidIPFSHash,
+        bytes32 unsignedRequestHash
     ) external authorizedOwner(parentId) {
-      approvedBids[keccak256(abi.encode(ipfsHash))] = bidder;
-      emit DomainBidAccepted(ipfsHash);
+      approvedBids[keccak256(abi.encode(bidIPFSHash))] = unsignedRequestHash;
+      emit DomainBidApproved(bidIPFSHash);
     }
 
     /**
@@ -106,37 +107,40 @@ contract StakingController is
         string memory name,
         bytes memory signature,
         bool lockOnCreation
-      ) external authorizedRecipient(metadata) {
+      ) external {
+        bytes32 unsignedRequestHash  = approvedBids[keccak256(abi.encode(metadata))];
         address recoveredbidder = recover(keccak256(abi.encode(bidAmount, name, parentId, metadata)), signature);
-        address bidder = _msgSender();
         address controller = address(this);
-        require(bidder == recoveredbidder, 'StakingController: incorrect bid info');
-        infinity.transferFrom(bidder, controller, bidAmount);
+        require(unsignedRequestHash == keccak256(abi.encode(bidAmount, name, parentId, metadata)), 'StakingController: incorrect bid params');
+        infinity.transferFrom(recoveredbidder, controller, bidAmount);
         address parentOwner = registrar.ownerOf(parentId);
         uint256 id = registrar.registerDomain(parentId, name, controller, parentOwner);
-        registrar.setDomainMetadataUri(id, metadata);
-        registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-        registrar.transferFrom(controller, bidder, id);
-
-        if (lockOnCreation) {
-          registrar.lockDomainMetadataForOwner(id);
-        }
+        // registrar.setDomainMetadataUri(id, metadata);
+        // registrar.setDomainRoyaltyAmount(id, royaltyAmount);
+        // registrar.transferFrom(controller, recoveredbidder, id);
+        //
+        // if (lockOnCreation) {
+        //   registrar.lockDomainMetadataForOwner(id);
+        // }
         emit DomainBidFulfilled(metadata);
       }
 
     /**
-      @notice recover allows the hashed data of a domain request to be recovered
-      @notice requestHash is the hash of the request being recovered
-      @notice signature is the signature the hash was created with
+      @notice recover allows the un-signed hashed data of a domain request to be recovered
+      @notice unsignedRequestHash is the un-signed hash of the request being recovered
+      @notice signature is the signature the hash was signed with
     **/
     function recover(
-      bytes32 requestHash,
+      bytes32 unsignedRequestHash,
       bytes memory signature
     )
     public
     pure
     returns (address) {
-        return requestHash.recover(signature);
+        return unsignedRequestHash.recover(signature);
     }
+
+
+
 
   }

@@ -6,36 +6,40 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradea
 
 interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event DomainBidPlaced(
-    bytes32 indexed requestHash,
-    bytes32 indexed ipfsHash
+    bytes32 indexed signedRequestHash,
+    string bidIPFSHash,
+    bytes indexed signature
   );
 
-  event DomainBidAccepted(string bidIdentifier);
+  event DomainBidApproved(string bidIdentifier);
 
   event DomainBidFulfilled(string bidIdentifier);
 
   /**
     @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
-    @param requestHash is the hashed data for a domain request
-    @param ipfsHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
+    @param signedRequestHash is the hashed data for a domain request
+    @param signature is the signature used to sign the request hash
+    @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
     @dev the IPFS hash must be emitted as a string here for the front end to be able to recover the bid info
+    @dev signature is emitted here so that the domain owner approving the bid can use the recover function to check that
+          the bid information in the IPFS hash matches the bid information used to create the signed message
   **/
   function placeDomainBid(
-    bytes32 requestHash,
-    string memory ipfsHash
+    bytes32 signedRequestHash,
+    bytes memory signature,
+    string memory bidIPFSHash
   ) external;
 
   /**
-    @notice approveDomainBid Approves a domain bid, allowing the domain to be created.
-      Will emit a DomainBidAccepted event.
+    @notice approveDomainBid approves a domain bid, allowing the domain to be created.
     @param parentId is the id number of the parent domain to the sub domain being requested
-    @param ipfsHash is the IPFS hash of the bids information
-    @param bidder is the address of the account that placed the bid being accepted
+    @param bidIPFSHash is the IPFS hash of the bids information
+    @param signedRequestHash is the signed hashed data for a domain bid request
   **/
   function approveDomainBid(
-    uint256 parentId,
-    string memory ipfsHash,
-    address bidder
+      uint256 parentId,
+      string memory bidIPFSHash,
+      bytes32 signedRequestHash
   ) external;
 
   /**
@@ -61,7 +65,7 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     ) external;
 
   /**
-    @notice recover allows the hashed data of a domain request to be recovered
+    @notice recover allows the un-signed hashed data of a domain request to be recovered
     @notice requestHash is the hash of the request being recovered
     @notice signature is the signature the hash was created with
   **/

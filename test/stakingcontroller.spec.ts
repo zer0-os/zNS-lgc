@@ -129,6 +129,8 @@ describe("Staking Controller", () => {
           await registrarMock.mock.ownerOf.withArgs(parentID).returns(user1.address);
           await registrarMock.mock.registerDomain.returns(returnedId);
           await registrarMock.mock.setDomainMetadataUri.reverts();
+          // cant figure out how to get function without a return on it
+          // probably need to move this test into the e2e test script 
           // await registrarMock.mock.setDomainRoyaltyAmount.returns(true);
           // await registrarMock.mock.registerDomain.returns(true);
           // await infinityMock.mock.transferFrom.returns(true);

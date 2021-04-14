@@ -5,7 +5,6 @@ import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@openzeppelin/hardhat-upgrades";
-import "@eth-optimism/smock/build/src/plugins/hardhat-storagelayout";
 import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
 
@@ -19,7 +18,18 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.7.3", settings: {} }],
+    compilers: [
+      {
+        version: "0.7.3",
+      settings: {
+        outputSelection: {
+        "*": {
+            "*": ["storageLayout"],
+        },
+      },
+    }
+  }
+],
   },
   paths: {
     sources: "./contracts",

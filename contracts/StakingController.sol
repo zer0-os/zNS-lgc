@@ -115,13 +115,13 @@ contract StakingController is
         infinity.transferFrom(recoveredbidder, controller, bidAmount);
         address parentOwner = registrar.ownerOf(parentId);
         uint256 id = registrar.registerDomain(parentId, name, controller, parentOwner);
-        // registrar.setDomainMetadataUri(id, metadata);
-        // registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-        // registrar.transferFrom(controller, recoveredbidder, id);
-        //
-        // if (lockOnCreation) {
-        //   registrar.lockDomainMetadataForOwner(id);
-        // }
+        registrar.setDomainMetadataUri(id, metadata);
+        registrar.setDomainRoyaltyAmount(id, royaltyAmount);
+        registrar.transferFrom(controller, recoveredbidder, id);
+
+        if (lockOnCreation) {
+          registrar.lockDomainMetadataForOwner(id);
+        }
         emit DomainBidFulfilled(metadata);
       }
 
@@ -130,15 +130,15 @@ contract StakingController is
       @notice unsignedRequestHash is the un-signed hash of the request being recovered
       @notice signature is the signature the hash was signed with
     **/
-    function recover(
-      bytes32 unsignedRequestHash,
-      bytes memory signature
-    )
-    public
-    pure
-    returns (address) {
-      return unsignedRequestHash.toEthSignedMessageHash().recover(signature);
-    }
+      function recover(
+        bytes32 unsignedRequestHash,
+        bytes memory signature
+      )
+      public
+      pure
+      returns (address) {
+        return unsignedRequestHash.toEthSignedMessageHash().recover(signature);
+      }
 
 
 

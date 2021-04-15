@@ -147,10 +147,12 @@ describe("Staking Controller", () => {
           bidIPFSHash,
           name
         );
+        const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+
         const tx = await controllerAsUser1.approveDomainBid(
           parentID,
           bidIPFSHash,
-          bidRequestHash
+          bidSignature
         );
         expect(tx)
           .to.emit(controller, "DomainBidApproved")
@@ -167,11 +169,13 @@ describe("Staking Controller", () => {
             bidIPFSHash,
             name
           );
+          const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+
           await expect(
             controllerAsUser1.approveDomainBid(
               parentID,
               bidIPFSHash,
-              bidRequestHash
+              bidSignature
             )).to.be.revertedWith(
             "Zer0 Naming Service: Not Authorized Owner"
           );
@@ -208,8 +212,7 @@ describe("Staking Controller", () => {
               lock,
               user1.address
             )).to.be.revertedWith(
-              "Zer0 Naming Service: recovered address doesnt match recipient"
-            );
+                "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"            );
         });
 
         it("fails when the bid amount in the message doesnt match IPFS bid amount", async () => {
@@ -233,7 +236,7 @@ describe("Staking Controller", () => {
             lock,
             user1.address
           )).to.be.revertedWith(
-            "Zer0 Naming Service: recovered address doesnt match recipient"
+            "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
           );
       });
 
@@ -258,7 +261,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )).to.be.revertedWith(
-          "Zer0 Naming Service: recovered address doesnt match recipient"
+          "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
         );
     });
 
@@ -283,7 +286,7 @@ describe("Staking Controller", () => {
         lock,
         user1.address
       )).to.be.revertedWith(
-        "Zer0 Naming Service: recovered address doesnt match recipient"
+        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
       );
   });
 
@@ -308,7 +311,7 @@ describe("Staking Controller", () => {
       lock,
       user1.address
     )).to.be.revertedWith(
-      "Zer0 Naming Service: recovered address doesnt match recipient"
+      "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
       );
     });
 
@@ -333,7 +336,7 @@ describe("Staking Controller", () => {
         lock,
         user1.address
       )).to.be.revertedWith(
-        "Zer0 Naming Service: bid doesnt exist or has been fullfilled"
+         "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
         );
       });
 
@@ -389,7 +392,7 @@ describe("Staking Controller", () => {
             lock,
             user1.address
           )).to.be.revertedWith(
-            "Zer0 Naming Service: bid doesnt exist or has been fullfilled"
+            "Zer0 Naming Service: has been fullfilled"
             );
           });
   });

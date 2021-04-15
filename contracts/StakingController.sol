@@ -47,7 +47,7 @@ contract StakingController is
       string name;
   }
 
-  mapping(bytes32 => bytes32) public approvedBids;
+  mapping(bytes32 => bool) public approvedBids;
 
   event DomainBidPlaced(
     bytes32 indexed unsignedRequestHash,
@@ -116,14 +116,15 @@ contract StakingController is
       @notice approveDomainBid approves a domain bid, allowing the domain to be created.
       @param parentId is the id number of the parent domain to the sub domain being requested
       @param bidIPFSHash is the IPFS hash of the bids information
-      @param unsignedRequestHash is the signed hashed data for a domain bid request
+      @param signature is the signed hashed data for a domain bid request
     **/
     function approveDomainBid(
         uint256 parentId,
         string memory bidIPFSHash,
-        bytes32 unsignedRequestHash
+        bytes memory signature
     ) external authorizedOwner(parentId) {
-      approvedBids[keccak256(abi.encode(bidIPFSHash))] = unsignedRequestHash;
+      bytes32 hashOfSig = keccak256(abi.encode(signature));
+      approvedBids[hashOfSig] = true;
       emit DomainBidApproved(bidIPFSHash);
     }
 
@@ -149,28 +150,26 @@ contract StakingController is
         bool lockOnCreation,
         address recipient
       ) external {
-        require(approvedBids[keccak256(abi.encode(metadata))] != "", "Zer0 Naming Service: bid doesnt exist or has been fullfilled");
-        bytes32 unsignedRequestHash  = approvedBids[keccak256(abi.encode(metadata))];
         bytes32 recoveredBidHash = createBid(parentId, bidAmount, metadata, name);
-        address recoveredbidder = recover(recoveredBidHash, signature);
-        require(recipient == recoveredbidder, "Zer0 Naming Service: recovered address doesnt match recipient");
+        address recoveredBidder = recover(recoveredBidHash, signature);
+        require(recipient == recoveredBidder, "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist");
+        bytes32 hashOfSig = keccak256(abi.encode(signature));
+        require(approvedBids[hashOfSig] == true, "Zer0 Naming Service: has been fullfilled");
         address controller = address(this);
-        require(unsignedRequestHash == recoveredBidHash, 'Zer0 Naming Service: incorrect bid params');
-        infinity.safeTransferFrom(recoveredbidder, controller, bidAmount);
-        address parentOwner = registrar.ownerOf(parentId);
-        uint256 id = registrar.registerDomain(parentId, name, controller, parentOwner);
+        infinity.safeTransferFrom(recoveredBidder, controller, bidAmount);
+        uint256 id = registrar.registerDomain(parentId, name, controller, recoveredBidder);
         registrar.setDomainMetadataUri(id, metadata);
         registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-        registrar.transferFrom(controller, recoveredbidder, id);
+        registrar.transferFrom(controller, recoveredBidder, id);
 
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(id);
         }
-        approvedBids[keccak256(abi.encode(metadata))] = "";
+        approvedBids[hashOfSig] = false;
         emit DomainBidFulfilled(
           metadata,
           name,
-          recoveredbidder,
+          recoveredBidder,
           id,
           parentId
         );

@@ -1,12 +1,12 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
 import chai from "chai";
-import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
-import { smockit } from '@eth-optimism/smock'
+import { solidity } from "ethereum-waffle";
+import { smockit,  MockContract } from '@eth-optimism/smock'
 
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
-import * as infinity from "../artifacts/contracts/mocks/Infinity.sol/Infinity.json";
+import * as MockToken from "../artifacts/contracts/mocks/MockToken.sol/MockToken.json";
 
 import { StakingController, StakingController__factory, Registrar } from "../typechain";
 
@@ -20,15 +20,16 @@ describe("Staking Controller", () => {
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
   let user3: SignerWithAddress;
-  let registrarMock: MockContract;
   let controllerFactory: StakingController__factory;
   let controller: StakingController;
-  let infinityMock: MockContract;
+  let MockTokenSmock: MockContract;
+  let registrarSmock: MockContract;
   const parentID = 36;
   const bidAmount = 5000;
   const royaltyAmount = 10;
   const bidIPFSHash = "IPFS Hash For Bid";
   const name = "name";
+  const returnedId = 3636;
 
 
   before(async () => {
@@ -37,129 +38,359 @@ describe("Staking Controller", () => {
     user1 = accounts[1];
     user2 = accounts[2];
     user3 = accounts[3];
-    infinityMock = await deployMockContract(creator, infinity.abi);
     const ContractFactory = await ethers.getContractFactory('Registrar');
     const Reg = await ContractFactory.deploy();
     await Reg.deployed();
-
-    const registrarSmock = await smockit(Reg);
-
+    registrarSmock = await smockit(Reg);
+    const ContractFactory2 = await ethers.getContractFactory('MockToken');
+    const INF = await ContractFactory2.deploy();
+    await INF.deployed();
+    MockTokenSmock = await smockit(INF);
     controllerFactory = new StakingController__factory(creator);
     controller = (await upgrades.deployProxy(
       controllerFactory,
-      [registrarSmock.address, infinityMock.address],
+      [registrarSmock.address, MockTokenSmock.address],
       {
         initializer: "initialize",
       }
     )) as StakingController;
     controller = await controller.deployed();
-    await infinityMock.mock.transferFrom.returns(true);
-
-    await registrarSmock.smocked.domainExists.will.return.with(true);
-    await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
-    await registrarSmock.smocked.registerDomain.will.return.with(user1.address);
-    await registrarSmock.smocked.setDomainMetadataUri.will.return();
-    await registrarSmock.smocked.setDomainRoyaltyAmount.will.return();
-    await registrarSmock.smocked.lockDomainMetadataForOwner.will.return();
-    await registrarSmock.smocked.transferFrom.will.return();
-
   });
 
   describe("tests recovery", () => {
     it("checks that the recovered address matches the message signers address", async () => {
-
-      const bidRequestHash = await ethers.utils.keccak256(
-        await ethers.utils.defaultAbiCoder.encode(
-        ["uint256","string","uint256","string"],
-        [bidAmount,name,parentID,bidIPFSHash]
-      )
-    );
-      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
-
       const controllerAsUser1 = await controller.connect(user1);
+      const bidRequestHash =  await controllerAsUser1.createBid(
+        parentID,
+        bidAmount,
+        bidIPFSHash,
+        name
+      );
+      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
       const recoveredAddress = await controllerAsUser1.recover(
         bidRequestHash,
         bidSignature
       );
       expect(recoveredAddress).to.eq(user1.address);
     });
+
+    it("checks that the recovered address does not the message signers address", async () => {
+      const controllerAsUser1 = await controller.connect(user1);
+      const bidRequestHash =  await controllerAsUser1.createBid(
+        parentID,
+        bidAmount,
+        bidIPFSHash,
+        name
+      );
+      const bidSignature = await user2.signMessage(await ethers.utils.arrayify(bidRequestHash))
+      const recoveredAddress = await controllerAsUser1.recover(
+        bidRequestHash,
+        bidSignature
+      );
+      expect(recoveredAddress).to.not.equal(user1.address);
+    });
   });
 
-  describe("Places a bid", () => {
+  describe("Placing a bid", () => {
     it("emits a DomainBidPlaced event with the correct bid info", async () => {
-
-      const bidRequestHash = await ethers.utils.keccak256(
-        await ethers.utils.defaultAbiCoder.encode(
-        ["uint256","string","uint256","string"],
-        [bidAmount,name,parentID,bidIPFSHash]
-      )
-    );
-      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
-
       const controllerAsUser1 = await controller.connect(user1);
+      const bidRequestHash =  await controllerAsUser1.createBid(
+        parentID,
+        bidAmount,
+        bidIPFSHash,
+        name
+      );
+      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+      await registrarSmock.smocked.domainExists.will.return.with(true);
+      await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const tx = await controllerAsUser1.placeDomainBid(
+        parentID,
         bidRequestHash,
         bidSignature,
         bidIPFSHash
       );
-
       expect(tx)
         .to.emit(controller, "DomainBidPlaced")
         .withArgs(bidRequestHash, bidIPFSHash, bidSignature);
+      });
+
+      it("fails when a user places a bid for a subdomain on a domain that doesnt exist", async () => {
+        await registrarSmock.smocked.domainExists.will.return.with(false);
+        const controllerAsUser1 = await controller.connect(user1);
+        const bidRequestHash =  await controllerAsUser1.createBid(
+          parentID,
+          bidAmount,
+          bidIPFSHash,
+          name
+        );
+        const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+        await expect(
+          controllerAsUser1.placeDomainBid(
+          parentID,
+          bidRequestHash,
+          bidSignature,
+          bidIPFSHash
+        )).to.be.revertedWith(
+          "Zer0 Naming Service: Invalid Domain"
+        );
       });
     });
 
     describe("Accepts a bid", () => {
       it("emits a DomainBidApproved event with the correct bid id", async () => {
-
-        const bidRequestHash = await ethers.utils.keccak256(
-          await ethers.utils.defaultAbiCoder.encode(
-          ["uint256","string","uint256","string"],
-          [bidAmount,name,parentID,bidIPFSHash]
-        )
-      );
-
+        await registrarSmock.smocked.domainExists.will.return.with(true);
+        await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
         const controllerAsUser1 = await controller.connect(user1);
+        const bidRequestHash =  await controllerAsUser1.createBid(
+          parentID,
+          bidAmount,
+          bidIPFSHash,
+          name
+        );
         const tx = await controllerAsUser1.approveDomainBid(
           parentID,
           bidIPFSHash,
           bidRequestHash
         );
-
         expect(tx)
           .to.emit(controller, "DomainBidApproved")
           .withArgs(bidIPFSHash);
         });
+
+        it("Fails to allow a user to approve a bid for a domain they do not own", async () => {
+          await registrarSmock.smocked.domainExists.will.return.with(true);
+          await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
+          const controllerAsUser1 = await controller.connect(user1);
+          const bidRequestHash =  await controllerAsUser1.createBid(
+            parentID,
+            bidAmount,
+            bidIPFSHash,
+            name
+          );
+          await expect(
+            controllerAsUser1.approveDomainBid(
+              parentID,
+              bidIPFSHash,
+              bidRequestHash
+            )).to.be.revertedWith(
+            "Zer0 Naming Service: Not Authorized Owner"
+          );
       });
+    });
 
       describe("FullFills a bid", () => {
-        it("emits a DomainBidFulfilled event with the correct bid id", async () => {
-          const bidRequestHash = await ethers.utils.keccak256(
-            await ethers.utils.defaultAbiCoder.encode(
-            ["uint256","string","uint256","string"],
-            [bidAmount,name,parentID,bidIPFSHash]
-          )
-        );
+          it("fails when recipient doesnt match recovered address", async () => {
+            await MockTokenSmock.smocked.transferFrom.will.return.with(true);
+            await registrarSmock.smocked.domainExists.will.return.with(true);
+            await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
+            await registrarSmock.smocked.registerDomain.will.return.with(returnedId);
+            await registrarSmock.smocked.setDomainMetadataUri.will.return();
+            await registrarSmock.smocked.setDomainRoyaltyAmount.will.return();
+            await registrarSmock.smocked.lockDomainMetadataForOwner.will.return();
+            await registrarSmock.smocked.transferFrom.will.return();
+            const controllerAsUser1 = await controller.connect(user1);
+            const bidRequestHash =  await controllerAsUser1.createBid(
+              parentID,
+              bidAmount,
+              bidIPFSHash,
+              name
+            );
+            const bidSignature = await user2.signMessage(await ethers.utils.arrayify(bidRequestHash))
+            const lock = true;
+            await expect(
+              controllerAsUser1.fulfillDomainBid(
+              parentID,
+              bidAmount,
+              royaltyAmount,
+              bidIPFSHash,
+              name,
+              bidSignature,
+              lock,
+              user1.address
+            )).to.be.revertedWith(
+              "Zer0 Naming Service: recovered address doesnt match recipient"
+            );
+        });
+
+        it("fails when the bid amount in the message doesnt match IPFS bid amount", async () => {
+          const controllerAsUser1 = await controller.connect(user1);
+          const bidRequestHash =  await controllerAsUser1.createBid(
+            parentID,
+            10,
+            bidIPFSHash,
+            name
+          );
           const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
           const lock = true;
-          const returnedId = 3636;
-
-
-          const controllerAsUser1 = await controller.connect(user1);
-          const tx = await controllerAsUser1.fulfillDomainBid(
+          await expect(
+            controllerAsUser1.fulfillDomainBid(
             parentID,
             bidAmount,
             royaltyAmount,
             bidIPFSHash,
             name,
             bidSignature,
-            lock
+            lock,
+            user1.address
+          )).to.be.revertedWith(
+            "Zer0 Naming Service: recovered address doesnt match recipient"
           );
+      });
 
-          expect(tx)
-            .to.emit(controller, "DomainBidFulfilled")
-            .withArgs(bidIPFSHash);
-          });
+      it("fails when the name in the message doesnt match the IPFS name", async () => {
+        const controllerAsUser1 = await controller.connect(user1);
+        const bidRequestHash =  await controllerAsUser1.createBid(
+          parentID,
+          bidAmount,
+          bidIPFSHash,
+          "Wrong Name"
+        );
+        const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+        const lock = true;
+        await expect(
+          controllerAsUser1.fulfillDomainBid(
+          parentID,
+          bidAmount,
+          royaltyAmount,
+          bidIPFSHash,
+          name,
+          bidSignature,
+          lock,
+          user1.address
+        )).to.be.revertedWith(
+          "Zer0 Naming Service: recovered address doesnt match recipient"
+        );
+    });
+
+    it("fails when the parent id in the message doesnt match the IPFS parent ID", async () => {
+      const controllerAsUser1 = await controller.connect(user1);
+      const bidRequestHash =  await controllerAsUser1.createBid(
+        50,
+        bidAmount,
+        bidIPFSHash,
+        name
+      );
+      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+      const lock = true;
+      await expect(
+        controllerAsUser1.fulfillDomainBid(
+        parentID,
+        bidAmount,
+        royaltyAmount,
+        bidIPFSHash,
+        name,
+        bidSignature,
+        lock,
+        user1.address
+      )).to.be.revertedWith(
+        "Zer0 Naming Service: recovered address doesnt match recipient"
+      );
+  });
+
+  it("fails when the encodeded IPFS hash in the message doesnt match the input IPFS ", async () => {
+    const controllerAsUser1 = await controller.connect(user1);
+    const bidRequestHash =  await controllerAsUser1.createBid(
+      parentID,
+      bidAmount,
+      "Wrong IPFS Hash",
+      name
+    );
+    const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+    const lock = true;
+    await expect(
+      controllerAsUser1.fulfillDomainBid(
+      parentID,
+      bidAmount,
+      royaltyAmount,
+      bidIPFSHash,
+      name,
+      bidSignature,
+      lock,
+      user1.address
+    )).to.be.revertedWith(
+      "Zer0 Naming Service: recovered address doesnt match recipient"
+      );
+    });
+
+    it("fails when a bid doesnt exist", async () => {
+      const controllerAsUser1 = await controller.connect(user1);
+      const bidRequestHash =  await controllerAsUser1.createBid(
+        parentID,
+        bidAmount,
+        bidIPFSHash,
+        name
+      );
+      const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+      const lock = true;
+      await expect(
+        controllerAsUser1.fulfillDomainBid(
+        parentID,
+        bidAmount,
+        royaltyAmount,
+        "Nonexistent bid",
+        name,
+        bidSignature,
+        lock,
+        user1.address
+      )).to.be.revertedWith(
+        "Zer0 Naming Service: bid doesnt exist or has been fullfilled"
+        );
+      });
+
+      it("emits a DomainBidFulfilled event with the correct bid id", async () => {
+        const controllerAsUser1 = await controller.connect(user1);
+        const bidRequestHash =  await controllerAsUser1.createBid(
+          parentID,
+          bidAmount,
+          bidIPFSHash,
+          name
+        );
+        const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+        const lock = true;
+        const tx = await controllerAsUser1.fulfillDomainBid(
+          parentID,
+          bidAmount,
+          royaltyAmount,
+          bidIPFSHash,
+          name,
+          bidSignature,
+          lock,
+          user1.address
+        );
+        expect(tx)
+          .to.emit(controller, "DomainBidFulfilled")
+          .withArgs(
+            bidIPFSHash,
+            name,
+            user1.address,
+            returnedId,
+            parentID
+          );
         });
 
+        it("fails when a bid has already been fulfilled", async () => {
+          const controllerAsUser1 = await controller.connect(user1);
+          const bidRequestHash =  await controllerAsUser1.createBid(
+            parentID,
+            bidAmount,
+            bidIPFSHash,
+            name
+          );
+          const bidSignature = await user1.signMessage(await ethers.utils.arrayify(bidRequestHash))
+          const lock = true;
+          await expect(
+            controllerAsUser1.fulfillDomainBid(
+            parentID,
+            bidAmount,
+            royaltyAmount,
+            bidIPFSHash,
+            name,
+            bidSignature,
+            lock,
+            user1.address
+          )).to.be.revertedWith(
+            "Zer0 Naming Service: bid doesnt exist or has been fullfilled"
+            );
+          });
   });
+});

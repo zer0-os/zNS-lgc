@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 
-contract Infinity is Initializable, ERC20Upgradeable {
+contract MockToken is Initializable, ERC20Upgradeable {
 
   function initialize() public initializer {
   __ERC20_init("Infinity", "IFY");

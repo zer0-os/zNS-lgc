@@ -51,10 +51,8 @@
   },
   "name": "zns-contracts",
   "version": "0.0.0",
-  "license": "MIT",
   "dependencies": {
     "@eth-optimism/plugins": "^1.0.0-alpha.3",
-    "@nomiclabs/ethereumjs-vm": "^4",
-    "web3": "^1.2.9"
+    "@nomiclabs/ethereumjs-vm": "^4"
   }
 }

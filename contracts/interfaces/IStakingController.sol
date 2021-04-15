@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
@@ -13,8 +12,13 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
 
   event DomainBidApproved(string bidIdentifier);
 
-  event DomainBidFulfilled(string bidIdentifier);
-
+  event DomainBidFulfilled(
+    string indexed bidIdentifier,
+    string  name,
+    address recoveredbidder,
+    uint256 indexed id,
+    uint256 indexed parentID
+  );
   /**
     @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
     @param signedRequestHash is the hashed data for a domain request

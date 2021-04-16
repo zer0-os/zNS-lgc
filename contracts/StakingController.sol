@@ -52,11 +52,11 @@ contract StakingController is
   }
 
 
-  function initialize(IRegistrar _registrar, IERC20Upgradeable _Infinity) public initializer {
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
     __ERC165_init();
     __Context_init();
 
-    infinity = _Infinity;
+    infinity = _infinity;
     registrar = _registrar;
     controller = address(this);
   }

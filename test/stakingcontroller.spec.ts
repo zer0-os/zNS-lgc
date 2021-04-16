@@ -212,9 +212,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("fails when the bid amount in the message doesnt match IPFS bid amount", async () => {
@@ -241,9 +239,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("fails when the name in the message doesnt match the IPFS name", async () => {
@@ -270,9 +266,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("fails when the parent id in the message doesnt match the IPFS parent ID", async () => {
@@ -299,9 +293,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("fails when the encodeded IPFS hash in the message doesnt match the input IPFS ", async () => {
@@ -328,9 +320,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("fails when a bid doesnt exist", async () => {
@@ -357,9 +347,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith(
-        "ZNS: bid info doesnt match/exist"
-      );
+      ).to.be.revertedWith("ZNS: bid info doesnt match/exist");
     });
 
     it("emits a DomainBidFulfilled event with the correct bid id", async () => {

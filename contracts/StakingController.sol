@@ -46,8 +46,8 @@ contract StakingController is
   );
 
   modifier authorizedOwner(uint256 domain) {
-    require(registrar.domainExists(domain), "Zer0 Naming Service: Invalid Domain");
-    require(registrar.ownerOf(domain) == _msgSender(), "Zer0 Naming Service: Not Authorized Owner");
+    require(registrar.domainExists(domain), "ZNS: Invalid Domain");
+    require(registrar.ownerOf(domain) == _msgSender(), "ZNS: Not Authorized Owner");
     _;
   }
 
@@ -78,7 +78,7 @@ contract StakingController is
       bytes memory signature,
       string memory bidIPFSHash
     ) external {
-      require(registrar.domainExists(parentId), "Zer0 Naming Service: Invalid Domain");
+      require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
       emit DomainBidPlaced(
         unsignedRequestHash,
         bidIPFSHash,
@@ -130,9 +130,9 @@ contract StakingController is
       ) external {
         bytes32 recoveredBidHash = createBid(parentId, bidAmount, bidIPFSHash, name);
         address recoveredBidder = recover(recoveredBidHash, signature);
-        require(recipient == recoveredBidder, "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist");
+        require(recipient == recoveredBidder, "ZNS: bid info doesnt match/exist");
         bytes32 hashOfSig = keccak256(abi.encode(signature));
-        require(approvedBids[hashOfSig] == true, "Zer0 Naming Service: has been fullfilled");
+        require(approvedBids[hashOfSig] == true, "ZNS: has been fullfilled");
         infinity.safeTransferFrom(recoveredBidder, controller, bidAmount);
         uint256 id = registrar.registerDomain(parentId, name, controller, recoveredBidder);
         registrar.setDomainMetadataUri(id, metadata);

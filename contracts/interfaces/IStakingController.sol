@@ -57,17 +57,21 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     @param metadata is the IPFS hash of the new domains information
     @dev this is the same IPFS hash that contains the bids information as this is just stored on its own feild in the metadata
     @param name is the name of the new domain being created
+    @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
     @param signature is the signature of the bidder
     @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
+    @param recipient is the address receiving the new domain
   **/
   function fulfillDomainBid(
     uint256 parentId,
     uint256 bidAmount,
     uint256 royaltyAmount,
-    string memory metadata,
+    string memory bidIPFSHash,
     string memory name,
+    string memory metadata,
     bytes memory signature,
-    bool lockOnCreation
+    bool lockOnCreation,
+    address recipient
   ) external;
 
   /**
@@ -79,4 +83,19 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     external
     pure
     returns (address);
+
+
+    /**
+    @notice createBid is a pure function  that creates a bid hash for the end user
+    @param parentId is the ID of the domain where the sub domain is being requested
+    @param bidAmount is the amount being bid for the domain
+    @param bidIPFSHash is the IPFS hash that contains the bids information
+    @param name is the name of the sub domain being requested
+    **/
+    function createBid(
+      uint256 parentId,
+      uint256 bidAmount,
+      string memory bidIPFSHash,
+      string memory name
+    ) public pure returns(bytes32);
 }

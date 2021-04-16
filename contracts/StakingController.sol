@@ -115,6 +115,7 @@ contract StakingController is
       @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
       @param signature is the signature of the bidder
       @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
+      @param recipient is the address receiving the new domain
     **/
         function fulfillDomainBid(
         uint256 parentId,

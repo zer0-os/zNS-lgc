@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
@@ -14,11 +15,12 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
 
   event DomainBidFulfilled(
     string indexed bidIdentifier,
-    string  name,
+    string name,
     address recoveredbidder,
     uint256 indexed id,
     uint256 indexed parentID
   );
+
   /**
     @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
     @param signedRequestHash is the hashed data for a domain request
@@ -41,9 +43,9 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     @param signedRequestHash is the signed hashed data for a domain bid request
   **/
   function approveDomainBid(
-      uint256 parentId,
-      string memory bidIPFSHash,
-      bytes32 signedRequestHash
+    uint256 parentId,
+    string memory bidIPFSHash,
+    bytes32 signedRequestHash
   ) external;
 
   /**
@@ -58,15 +60,15 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     @param signature is the signature of the bidder
     @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
   **/
-    function fulfillDomainBid(
-      uint256 parentId,
-      uint256 bidAmount,
-      uint256 royaltyAmount,
-      string memory metadata,
-      string memory name,
-      bytes memory signature,
-      bool lockOnCreation
-    ) external;
+  function fulfillDomainBid(
+    uint256 parentId,
+    uint256 bidAmount,
+    uint256 royaltyAmount,
+    string memory metadata,
+    string memory name,
+    bytes memory signature,
+    bool lockOnCreation
+  ) external;
 
   /**
     @notice recover allows the un-signed hashed data of a domain request to be recovered
@@ -77,5 +79,4 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     external
     pure
     returns (address);
-
 }

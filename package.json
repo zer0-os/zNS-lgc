@@ -51,8 +51,4 @@
   },
   "name": "zns-contracts",
   "version": "0.0.0",
-  "dependencies": {
-    "@eth-optimism/plugins": "^1.0.0-alpha.3",
-    "@nomiclabs/ethereumjs-vm": "^4"
-  }
 }

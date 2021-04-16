@@ -21,15 +21,15 @@ const config: HardhatUserConfig = {
     compilers: [
       {
         version: "0.7.3",
-      settings: {
-        outputSelection: {
-        "*": {
-            "*": ["storageLayout"],
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
         },
       },
-    }
-  }
-],
+    ],
   },
   paths: {
     sources: "./contracts",

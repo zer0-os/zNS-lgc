@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
 import "@openzeppelin/contracts-upgradeable/cryptography/ECDSAUpgradeable.sol";
@@ -21,33 +22,12 @@ contract StakingController is
   using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  IERC20Upgradeable public infinity;
+  IERC20Upgradeable private infinity;
   IRegistrar private registrar;
-  bytes32 DOMAIN_SEPARATOR;
+  address private controller;
 
-  bytes32 constant EIP712DOMAIN_TYPEHASH = keccak256(
-      "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-  );
+  mapping(bytes32 => bool) private approvedBids;
 
-  bytes32 constant BID_TYPEHASH = keccak256(
-      "Bid(uint256 amount,uint256 parentId,string bidIPFSHash,string name)"
-  );
-
-  struct EIP712Domain {
-      string  name;
-      string  version;
-      uint256 chainId;
-      address verifyingContract;
-  }
-
-  struct Bid {
-      uint256 amount;
-      uint256 parentId;
-      string bidIPFSHash;
-      string name;
-  }
-
-  mapping(bytes32 => bool) public approvedBids;
 
   event DomainBidPlaced(
     bytes32 indexed unsignedRequestHash,
@@ -78,13 +58,7 @@ contract StakingController is
 
     infinity = _Infinity;
     registrar = _registrar;
-
-    DOMAIN_SEPARATOR = hash(EIP712Domain({
-        name: "Staking Controller",
-        version: '0',
-        chainId: 42,
-        verifyingContract: address(this)
-    }));
+    controller = address(this);
   }
 
 
@@ -128,6 +102,7 @@ contract StakingController is
       emit DomainBidApproved(bidIPFSHash);
     }
 
+
     /**
       @notice Fulfills a domain bid, creating the domain.
         Transfers tokens from bidders wallet into controller.
@@ -137,31 +112,31 @@ contract StakingController is
       @param metadata is the IPFS hash of the new domains information
       @dev this is the same IPFS hash that contains the bids information as this is just stored on its own feild in the metadata
       @param name is the name of the new domain being created
+      @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
       @param signature is the signature of the bidder
       @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
     **/
-      function fulfillDomainBid(
+        function fulfillDomainBid(
         uint256 parentId,
         uint256 bidAmount,
         uint256 royaltyAmount,
-        string memory metadata,
+        string memory bidIPFSHash,
         string memory name,
+        string memory metadata,
         bytes memory signature,
         bool lockOnCreation,
         address recipient
       ) external {
-        bytes32 recoveredBidHash = createBid(parentId, bidAmount, metadata, name);
+        bytes32 recoveredBidHash = createBid(parentId, bidAmount, bidIPFSHash, name);
         address recoveredBidder = recover(recoveredBidHash, signature);
         require(recipient == recoveredBidder, "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist");
         bytes32 hashOfSig = keccak256(abi.encode(signature));
         require(approvedBids[hashOfSig] == true, "Zer0 Naming Service: has been fullfilled");
-        address controller = address(this);
         infinity.safeTransferFrom(recoveredBidder, controller, bidAmount);
         uint256 id = registrar.registerDomain(parentId, name, controller, recoveredBidder);
         registrar.setDomainMetadataUri(id, metadata);
         registrar.setDomainRoyaltyAmount(id, royaltyAmount);
         registrar.transferFrom(controller, recoveredBidder, id);
-
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(id);
         }
@@ -203,37 +178,8 @@ contract StakingController is
         string memory bidIPFSHash,
         string memory name
       ) public pure returns(bytes32) {
-        return keccak256(abi.encode(bidAmount, name, parentId, bidIPFSHash));
+        return keccak256(abi.encode(parentId, bidAmount, bidIPFSHash, name));
       }
 
 
-      function hash(EIP712Domain memory eip712Domain) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-          EIP712DOMAIN_TYPEHASH,
-          keccak256(bytes(eip712Domain.name)),
-          keccak256(bytes(eip712Domain.version)),
-          eip712Domain.chainId,
-          eip712Domain.verifyingContract
-        ));
-      }
-
-      function hash(Bid memory bid) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-          BID_TYPEHASH,
-          bid.amount,
-          bid.parentId,
-          bid.bidIPFSHash,
-          bid.name
-        ));
-      }
-
-      function verify(Bid memory bid, uint8 v, bytes32 r, bytes32 s) internal view returns (address) {
-        // Note: we need to use `encodePacked` here instead of `encode`.
-        bytes32 digest = keccak256(abi.encodePacked(
-          "\x19\x01",
-          DOMAIN_SEPARATOR,
-          hash(bid)
-        ));
-        return ecrecover(digest, v, r, s);
-      }
   }

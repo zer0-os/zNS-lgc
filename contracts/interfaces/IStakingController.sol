@@ -96,5 +96,5 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 bidAmount,
     string memory bidIPFSHash,
     string memory name
-  ) public pure returns (bytes32);
+  ) external pure returns (bytes32);
 }

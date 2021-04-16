@@ -76,13 +76,6 @@
     lodash "^4.17.21"
     pino "^6.11.1"
 
-"@eth-optimism/plugins@^1.0.0-alpha.3":
-  version "1.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@eth-optimism/plugins/-/plugins-1.0.0-alpha.3.tgz#acda356e1422ed919a21770c3bb03a5576be2e72"
-  integrity sha512-PWogmjeV3ofH8yx7DV4ZcY6QiRFeWwrLFp0HLlgo5g7k3y/TL/oMjDTDrjuQ0DWQC7iaIQErML70KmBT/mdfLw==
-  dependencies:
-    node-fetch "^2.6.1"
-
 "@eth-optimism/smock@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@eth-optimism/smock/-/smock-1.0.1.tgz#d19bf4e1f0553b78a19d50334903783d5081cbe6"
@@ -775,7 +768,7 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
-"@nomiclabs/ethereumjs-vm@4.2.2", "@nomiclabs/ethereumjs-vm@^4":
+"@nomiclabs/ethereumjs-vm@4.2.2":
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@nomiclabs/ethereumjs-vm/-/ethereumjs-vm-4.2.2.tgz"
   integrity sha512-8WmX94mMcJaZ7/m7yBbyuS6B+wuOul+eF+RY9fBpGhNaUpyMR/vFIcDojqcWQ4Yafe1tMKY5LDu2yfT4NZgV4Q==
@@ -10142,7 +10135,7 @@ web3@1.2.11:
     web3-shh "1.2.11"
     web3-utils "1.2.11"
 
-web3@1.2.9, web3@^1.2.9:
+web3@1.2.9:
   version "1.2.9"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.9.tgz"
   integrity sha512-Mo5aBRm0JrcNpN/g4VOrDzudymfOnHRC3s2VarhYxRA8aWgF5rnhQ0ziySaugpic1gksbXPe105pUWyRqw8HUA==

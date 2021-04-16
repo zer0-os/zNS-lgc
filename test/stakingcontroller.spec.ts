@@ -4,14 +4,7 @@ import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { smockit, MockContract } from "@eth-optimism/smock";
 
-import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
-import * as MockToken from "../artifacts/contracts/mocks/MockToken.sol/MockToken.json";
-
-import {
-  StakingController,
-  StakingController__factory,
-  Registrar,
-} from "../typechain";
+import { StakingController, StakingController__factory } from "../typechain";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -21,7 +14,6 @@ describe("Staking Controller", () => {
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
-  let user3: SignerWithAddress;
   let controllerFactory: StakingController__factory;
   let controller: StakingController;
   let MockTokenSmock: MockContract;
@@ -413,19 +405,17 @@ describe("Staking Controller", () => {
       const lock = true;
       await expect(
         controllerAsUser1.fulfillDomainBid(
-        parentID,
-        bidAmount,
-        royaltyAmount,
-        bidIPFSHash,
-        name,
-        metadata,
-        bidSignature,
-        lock,
-        user1.address
-      )).to.be.revertedWith(
-        "Zer0 Naming Service: has been fullfilled"
-      );
+          parentID,
+          bidAmount,
+          royaltyAmount,
+          bidIPFSHash,
+          name,
+          metadata,
+          bidSignature,
+          lock,
+          user1.address
+        )
+      ).to.be.revertedWith("Zer0 Naming Service: has been fullfilled");
     });
-
   });
 });

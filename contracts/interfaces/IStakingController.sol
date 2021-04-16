@@ -84,18 +84,17 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     pure
     returns (address);
 
-
-    /**
+  /**
     @notice createBid is a pure function  that creates a bid hash for the end user
     @param parentId is the ID of the domain where the sub domain is being requested
     @param bidAmount is the amount being bid for the domain
     @param bidIPFSHash is the IPFS hash that contains the bids information
     @param name is the name of the sub domain being requested
     **/
-    function createBid(
-      uint256 parentId,
-      uint256 bidAmount,
-      string memory bidIPFSHash,
-      string memory name
-    ) public pure returns(bytes32);
+  function createBid(
+    uint256 parentId,
+    uint256 bidAmount,
+    string memory bidIPFSHash,
+    string memory name
+  ) public pure returns (bytes32);
 }

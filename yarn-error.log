@@ -1,5 +1,5 @@
 Arguments: 
-  /home/stan36/.nvm/versions/node/v15.4.0/bin/node /home/stan36/.nvm/versions/node/v15.4.0/bin/yarn add @hardhat-storagelayout
+  /home/stan36/.nvm/versions/node/v15.4.0/bin/node /home/stan36/.nvm/versions/node/v15.4.0/bin/yarn fix
 
 PATH: 
   /home/stan36/.nvm/versions/node/v15.4.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
@@ -14,17 +14,12 @@ Platform:
   linux x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@hardhat-storagelayout: Request "https://registry.yarnpkg.com/@hardhat-storagelayout" returned a 405
-      at Request.params.callback [as _callback] (/home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:66997:18)
-      at Request.self.callback (/home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:140662:22)
-      at Request.emit (node:events:376:20)
-      at Request.<anonymous> (/home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:141634:10)
-      at Request.emit (node:events:376:20)
-      at IncomingMessage.<anonymous> (/home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:141556:12)
-      at Object.onceWrapper (node:events:482:28)
-      at IncomingMessage.emit (node:events:388:22)
-      at endReadableNT (node:internal/streams/readable:1295:12)
-      at processTicksAndRejections (node:internal/process/task_queues:80:21)
+  SyntaxError: /home/stan36/repos/zer0/ZNS/package.json: Unexpected token } in JSON at position 1908
+      at JSON.parse (<anonymous>)
+      at /home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /home/stan36/.nvm/versions/node/v15.4.0/lib/node_modules/yarn/lib/cli.js:321:13
 
 npm manifest: 
   {
@@ -80,11 +75,6 @@ npm manifest:
     },
     "name": "zns-contracts",
     "version": "0.0.0",
-    "license": "MIT",
-    "dependencies": {
-      "@eth-optimism/plugins": "^1.0.0-alpha.3",
-      "web3": "^1.2.9"
-    }
   }
 
 yarn manifest: 
@@ -868,7 +858,7 @@ Lockfile:
       "@nodelib/fs.scandir" "2.1.4"
       fastq "^1.6.0"
   
-  "@nomiclabs/ethereumjs-vm@4.2.2":
+  "@nomiclabs/ethereumjs-vm@4.2.2", "@nomiclabs/ethereumjs-vm@^4":
     version "4.2.2"
     resolved "https://registry.yarnpkg.com/@nomiclabs/ethereumjs-vm/-/ethereumjs-vm-4.2.2.tgz"
     integrity sha512-8WmX94mMcJaZ7/m7yBbyuS6B+wuOul+eF+RY9fBpGhNaUpyMR/vFIcDojqcWQ4Yafe1tMKY5LDu2yfT4NZgV4Q==

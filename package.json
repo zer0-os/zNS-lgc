@@ -50,5 +50,5 @@
     "lint:ts": "eslint . --ext .ts"
   },
   "name": "zns-contracts",
-  "version": "0.0.0",
+  "version": "0.0.0"
 }

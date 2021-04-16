@@ -31,7 +31,6 @@ describe("Staking Controller", () => {
     creator = accounts[0];
     user1 = accounts[1];
     user2 = accounts[2];
-    user3 = accounts[3];
     const ContractFactory = await ethers.getContractFactory("Registrar");
     const Reg = await ContractFactory.deploy();
     await Reg.deployed();
@@ -133,7 +132,7 @@ describe("Staking Controller", () => {
           bidSignature,
           bidIPFSHash
         )
-      ).to.be.revertedWith("Zer0 Naming Service: Invalid Domain");
+      ).to.be.revertedWith("ZNS: Invalid Domain");
     });
   });
 
@@ -176,7 +175,7 @@ describe("Staking Controller", () => {
 
       await expect(
         controllerAsUser1.approveDomainBid(parentID, bidIPFSHash, bidSignature)
-      ).to.be.revertedWith("Zer0 Naming Service: Not Authorized Owner");
+      ).to.be.revertedWith("ZNS: Not Authorized Owner");
     });
   });
 
@@ -214,7 +213,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -243,7 +242,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -272,7 +271,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -301,7 +300,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -330,7 +329,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -359,7 +358,7 @@ describe("Staking Controller", () => {
           user1.address
         )
       ).to.be.revertedWith(
-        "Zer0 Naming Service: bid info doesnt match msg/ doesnt exist"
+        "ZNS: bid info doesnt match/exist"
       );
     });
 
@@ -415,7 +414,7 @@ describe("Staking Controller", () => {
           lock,
           user1.address
         )
-      ).to.be.revertedWith("Zer0 Naming Service: has been fullfilled");
+      ).to.be.revertedWith("ZNS: has been fullfilled");
     });
   });
 });

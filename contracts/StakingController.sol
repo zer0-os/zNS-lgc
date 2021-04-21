@@ -52,31 +52,31 @@ contract StakingController is
 
     /**
       @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
-      @param _parentId is the id number of the parent domain to the sub domain being requested
-      @param _requestAmount is the uint value of the amount of infinity request
-      @param _name is the name of the new domain being created
+      @param parentId is the id number of the parent domain to the sub domain being requested
+      @param requestAmount is the uint value of the amount of infinity request
+      @param name is the name of the new domain being created
     **/
     function placeDomainRequest(
-      uint256 _parentId,
-      uint256 _requestAmount,
-      string memory _name
+      uint256 parentId,
+      uint256 requestAmount,
+      string memory name
     ) external override {
-      require(registrar.domainExists(_parentId), "ZNS: Invalid Domain");
+      require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
       requestCount++;
       requests[requestCount] = Request({
-        parentId: _parentId,
-        requestAmount: _requestAmount,
+        parentId: parentId,
+        requestAmount: requestAmount,
         requester: _msgSender(),
-        name: _name,
+        name: name,
         accepted: false,
         valid: true
       });
 
       emit DomainRequestPlaced(
-        _parentId,
+        parentId,
         requestCount,
-        _requestAmount,
-        _name,
+        requestAmount,
+        name,
         _msgSender()
       );
     }

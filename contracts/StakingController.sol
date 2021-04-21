@@ -28,7 +28,7 @@ contract StakingController is
   mapping(uint256 => Bid) public bids;
   mapping(uint256 => bool) public tokensHeld;
   mapping(uint256 => Bid) public acceptedBids;
-  mapping(bytes32 => uint256) public domainId;
+  mapping(bytes32 => uint256) public domainIdentifier;
 
   struct Bid {
     uint256 parentId;
@@ -37,7 +37,6 @@ contract StakingController is
     string name;
     bool accepted;
     bool approved;
-    bool exists;
   }
 
   event DomainBidPlaced(
@@ -48,17 +47,19 @@ contract StakingController is
   address bidder
   );
 
-  event DomainBidApproved(string bidIdentifier);
+  event DomainBidApproved(uint256 indexed bidIdentifier);
 
   event DomainBidFulfilled(
-    string indexed bidIdentifier,
+    uint256 indexed bidIdentifier,
     string name,
     address recipient,
     uint256 indexed domainId,
     uint256 indexed parentID
   );
 
-  event BidWithdrawn(string indexed bidIdentifier);
+  event BidWithdrawn(uint256 indexed bidIdentifier);
+
+  event TokenOwnershipRelenquished(uint256 indexed bidIdentifier);
 
   function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
     __ERC165_init();
@@ -72,16 +73,16 @@ contract StakingController is
 
     /**
       @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
-      @param parentId is the id number of the parent domain to the sub domain being requested
-      @param bidAmount is the uint value of the amount of infinity bid
-      @param name is the name of the new domain being created
+      @param _parentId is the id number of the parent domain to the sub domain being requested
+      @param _bidAmount is the uint value of the amount of infinity bid
+      @param _name is the name of the new domain being created
     **/
     function placeDomainBid(
       uint256 _parentId,
       uint256 _bidAmount,
       string memory _name
     ) external {
-      require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
+      require(registrar.domainExists(_parentId), "ZNS: Invalid Domain");
       bidCount++;
       bids[bidCount] = Bid({
         parentId: _parentId,
@@ -135,13 +136,14 @@ contract StakingController is
         require(bid.approved == false, "ZNS: already fulfilled/withdrawn");
         infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
         uint256 id;
+        bytes32 domainId;
         if(!registrar.domainExists(bid.parentId)){
            id = registrar.registerDomain(bid.parentId, bid.name, controller, bid.bidder);
-           bytes32 domainId = keccak256(abi.encode(bid.parentId, bid.name));
-           domainId[domainId] = id;
+           domainId = keccak256(abi.encode(bid.parentId, bid.name));
+           domainIdentifier[domainId] = id;
         } else {
-          bytes32 domainId = keccak256(abi.encode(bid.parentId, bid.name));
-           id = domainId[domainId];
+           domainId = keccak256(abi.encode(bid.parentId, bid.name));
+           id = domainIdentifier[domainId];
            require(tokensHeld[id], "ZNS: Domain not held");
         }
         registrar.setDomainMetadataUri(id, metadata);
@@ -151,10 +153,10 @@ contract StakingController is
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(id);
         }
-        approvedBids[hashOfSig] = false;
+
         emit DomainBidFulfilled(
           bidIdentifier,
-          name,
+          bid.name,
           bid.bidder,
           id,
           bid.parentId
@@ -170,7 +172,8 @@ contract StakingController is
       ) external {
         Bid memory bid = bids[bidIdentifier];
         require(bid.bidder == _msgSender(), "ZNS: Not bid creator");
-        bids.approved = true;
+        bid.approved = true;
+        emit BidWithdrawn(bidIdentifier);
       }
 
       /**
@@ -190,6 +193,9 @@ contract StakingController is
         Bid memory bid = acceptedBids[tokenId];
         infinity.safeTransfer(bid.bidder, bid.bidAmount);
         tokensHeld[tokenId] = true;
-        registrar.unlockDomainMetadata(id);
+        if(registrar.isDomainMetadataLocked(tokenId)){
+          registrar.unlockDomainMetadata(tokenId);
+        }
+        emit TokenOwnershipRelenquished(tokenId);
       }
   }

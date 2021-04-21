@@ -24,6 +24,9 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   );
 
   event BidWithdrawn(string indexed bidIdentifier);
+  
+  event TokenOwnershipRelenquished(uint256 indexed bidIdentifier);
+
 
   /**
     @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner

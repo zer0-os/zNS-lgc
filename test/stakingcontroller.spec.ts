@@ -50,67 +50,23 @@ describe("Staking Controller", () => {
     controller = await controller.deployed();
   });
 
-  describe("tests recovery", () => {
-    it("checks that the recovered address matches the message signers address", async () => {
-      const controllerAsUser1 = await controller.connect(user1);
-      const bidRequestHash = await controllerAsUser1.createBid(
-        parentID,
-        bidAmount,
-        bidIPFSHash,
-        name
-      );
-      const bidSignature = await user1.signMessage(
-        await ethers.utils.arrayify(bidRequestHash)
-      );
-      const recoveredAddress = await controllerAsUser1.recover(
-        bidRequestHash,
-        bidSignature
-      );
-      expect(recoveredAddress).to.eq(user1.address);
-    });
 
-    it("checks that the recovered address does not the message signers address", async () => {
-      const controllerAsUser1 = await controller.connect(user1);
-      const bidRequestHash = await controllerAsUser1.createBid(
-        parentID,
-        bidAmount,
-        bidIPFSHash,
-        name
-      );
-      const bidSignature = await user2.signMessage(
-        await ethers.utils.arrayify(bidRequestHash)
-      );
-      const recoveredAddress = await controllerAsUser1.recover(
-        bidRequestHash,
-        bidSignature
-      );
-      expect(recoveredAddress).to.not.equal(user1.address);
-    });
-  });
+
+
 
   describe("Placing a bid", () => {
     it("emits a DomainBidPlaced event with the correct bid info", async () => {
       const controllerAsUser1 = await controller.connect(user1);
-      const bidRequestHash = await controllerAsUser1.createBid(
-        parentID,
-        bidAmount,
-        bidIPFSHash,
-        name
-      );
-      const bidSignature = await user1.signMessage(
-        await ethers.utils.arrayify(bidRequestHash)
-      );
       await registrarSmock.smocked.domainExists.will.return.with(true);
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const tx = await controllerAsUser1.placeDomainBid(
         parentID,
-        bidRequestHash,
-        bidSignature,
-        bidIPFSHash
+        bidAmount,
+        name
       );
       expect(tx)
         .to.emit(controller, "DomainBidPlaced")
-        .withArgs(bidRequestHash, bidIPFSHash, bidSignature);
+        .withArgs(parentID, 1, bidAmount, name, user1.address);
     });
 
     it("fails when a user places a bid for a subdomain on a domain that doesnt exist", async () => {

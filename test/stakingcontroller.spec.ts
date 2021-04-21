@@ -80,9 +80,9 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainRequest(1)).to.be.revertedWith(
-        "ZNS: Not Authorized Owner"
-      );
+      await expect(
+        controllerAsUser1.approveDomainRequest(1)
+      ).to.be.revertedWith("ZNS: Not Authorized Owner");
     });
 
     it("Fails to allow a user to approve a bid for a domain that doesnt exist", async () => {
@@ -90,9 +90,9 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainRequest(1)).to.be.revertedWith(
-        "ZNS: Invalid Domain"
-      );
+      await expect(
+        controllerAsUser1.approveDomainRequest(1)
+      ).to.be.revertedWith("ZNS: Invalid Domain");
     });
 
     it("Fails to allow a user to approve a bid that doesnt exist", async () => {
@@ -100,9 +100,9 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainRequest(5)).to.be.revertedWith(
-        "ZNS: Request doesnt exist"
-      );
+      await expect(
+        controllerAsUser1.approveDomainRequest(5)
+      ).to.be.revertedWith("ZNS: Request doesnt exist");
     });
 
     it("emits a DomainRequestApproved event with the correct bid id", async () => {
@@ -193,5 +193,4 @@ describe("Staking Controller", () => {
       );
     });
   });
-
 });

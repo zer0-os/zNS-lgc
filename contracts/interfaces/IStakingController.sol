@@ -6,11 +6,11 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradea
 
 interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event DomainRequestPlaced(
-  uint256 indexed parentId,
-  uint256 indexed requestIdentifier,
-  uint256 requestAmount,
-  string indexed name,
-  address requestdder
+    uint256 indexed parentId,
+    uint256 indexed requestIdentifier,
+    uint256 requestAmount,
+    string indexed name,
+    address requestdder
   );
 
   event DomainRequestApproved(uint256 indexed requestIdentifier);
@@ -24,7 +24,6 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   );
 
   event RequestWithdrawn(uint256 indexed requestIdentifier);
-
 
   /**
     @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
@@ -43,7 +42,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     @param parentId is the id number of the parent domain to the sub domain being requested
     @param bidIdentifier is the number representing the bid being accepted
   **/
-  function approveDomainRequest(uint256 parentId, uint256 bidIdentifier) external;
+  function approveDomainRequest(uint256 parentId, uint256 bidIdentifier)
+    external;
 
   /**
     @notice Fulfills a domain bid, creating the domain.
@@ -65,5 +65,4 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     @param bidIdentifier is the number representing the bid being withdrawn
   **/
   function withdrawRequest(uint256 bidIdentifier) external;
-
 }

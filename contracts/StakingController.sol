@@ -133,8 +133,8 @@ contract StakingController is
       bool lockOnCreation
     ) external {
         Bid storage bid = bids[bidIdentifier];
-        require(bid.accepted == true, "ZNS: bid not accepted");
         require(bid.approved == false, "ZNS: already fulfilled/withdrawn");
+        require(bid.accepted == true, "ZNS: bid not accepted");
         infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
         uint256 id;
         bytes32 domainId;
@@ -154,6 +154,7 @@ contract StakingController is
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(id);
         }
+        bid.approved = true;
 
         emit DomainBidFulfilled(
           bidIdentifier,
@@ -171,8 +172,9 @@ contract StakingController is
       function withdrawBid(
         uint256 bidIdentifier
       ) external {
-        Bid memory bid = bids[bidIdentifier];
+        Bid storage bid = bids[bidIdentifier];
         require(bid.bidder == _msgSender(), "ZNS: Not bid creator");
+        require(bid.accepted == false, "ZNS: Bid already accepted");
         bid.approved = true;
         emit BidWithdrawn(bidIdentifier);
       }

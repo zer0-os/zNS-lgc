@@ -138,7 +138,7 @@ contract StakingController is
         infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
         uint256 id;
         bytes32 domainId;
-        if(registrar.domainExists(bid.parentId)){
+        if(!registrar.domainExists(bid.parentId)){
            id = registrar.registerDomain(bid.parentId, bid.name, controller, bid.bidder);
            domainId = keccak256(abi.encode(bid.parentId, bid.name));
            domainIdentifier[domainId] = id;

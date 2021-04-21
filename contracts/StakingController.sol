@@ -10,12 +10,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable
 
 
 import "./interfaces/IRegistrar.sol";
+import "./interfaces/IStakingController.sol";
+
 
 contract StakingController is
   Initializable,
   ContextUpgradeable,
   ERC165Upgradeable,
-  ERC721HolderUpgradeable
+  ERC721HolderUpgradeable,
+  IStakingController
 {
 
   using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -26,9 +29,6 @@ contract StakingController is
   uint256 public requestCount;
 
   mapping(uint256 => Request) public requests;
-  mapping(uint256 => bool) public tokensHeld;
-  mapping(uint256 => Request) public acceptedRequests;
-  mapping(bytes32 => uint256) public domainIdentifier;
 
   struct Request {
     uint256 parentId;
@@ -36,29 +36,8 @@ contract StakingController is
     address requester;
     string name;
     bool accepted;
-    bool fulfilled;
     bool valid;
   }
-
-  event DomainRequestPlaced(
-  uint256 indexed parentId,
-  uint256 indexed requestIdentifier,
-  uint256 requestAmount,
-  string indexed name,
-  address requestdder
-  );
-
-  event DomainRequestApproved(uint256 indexed requestIdentifier);
-
-  event DomainRequestFulfilled(
-    uint256 indexed requestIdentifier,
-    string name,
-    address recipient,
-    uint256 indexed domainId,
-    uint256 indexed parentID
-  );
-
-  event RequestWithdrawn(uint256 indexed requestIdentifier);
 
 
   function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
@@ -81,7 +60,7 @@ contract StakingController is
       uint256 _parentId,
       uint256 _requestAmount,
       string memory _name
-    ) external {
+    ) external override {
       require(registrar.domainExists(_parentId), "ZNS: Invalid Domain");
       requestCount++;
       requests[requestCount] = Request({
@@ -90,8 +69,7 @@ contract StakingController is
         requester: _msgSender(),
         name: _name,
         accepted: false,
-        fulfilled: false,
-        valid: false
+        valid: true
       });
 
       emit DomainRequestPlaced(
@@ -109,7 +87,7 @@ contract StakingController is
     **/
     function approveDomainRequest(
         uint256 requestIdentifier
-    ) external {
+    ) external override{
       Request storage request = requests[requestIdentifier];
       require(request.requestAmount != 0, "ZNS: Request doesnt exist");
       require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
@@ -132,22 +110,19 @@ contract StakingController is
       uint256 royaltyAmount,
       string memory metadata,
       bool lockOnCreation
-    ) external {
+    ) external override{
         Request storage request = requests[requestIdentifier];
-        require(request.fulfilled == false, "ZNS: already fulfilled");
-        require(request.valid == false, "ZNS: request not valid");
+        require(request.valid == true, "ZNS: request not valid");
         require(request.accepted == true, "ZNS: request not accepted");
         uint256 domainId = registrar.registerDomain(request.parentId, request.name, controller, request.requester);
         registrar.setDomainMetadataUri(domainId, metadata);
         registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
         registrar.transferFrom(controller, request.requester, domainId);
-        acceptedRequests[domainId] = request;
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(domainId);
         }
-        request.fulfilled = true;
+        request.valid = false;
         infinity.safeTransferFrom(request.requester, controller, request.requestAmount);
-
         emit DomainRequestFulfilled(
           requestIdentifier,
           request.name,
@@ -163,11 +138,11 @@ contract StakingController is
       **/
       function withdrawRequest(
         uint256 requestIdentifier
-      ) external {
+      ) external override{
         Request storage request = requests[requestIdentifier];
         require(request.requester == _msgSender(), "ZNS: Not request creator");
         require(request.accepted == false, "ZNS: request already accepted");
-        request.valid = true;
+        request.valid = false;
         emit RequestWithdrawn(requestIdentifier);
       }
 

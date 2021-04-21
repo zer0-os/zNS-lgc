@@ -38,12 +38,10 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   ) external;
 
   /**
-    @notice approveDomainRequest approves a domain bid, allowing the domain to be created.
-    @param parentId is the id number of the parent domain to the sub domain being requested
-    @param bidIdentifier is the number representing the bid being accepted
+  @notice approveDomainRequest approves a domain request, allowing the domain to be created.
+  @param requestIdentifier is the id number of the request being accepted
   **/
-  function approveDomainRequest(uint256 parentId, uint256 bidIdentifier)
-    external;
+  function approveDomainRequest(uint256 requestIdentifier) external;
 
   /**
     @notice Fulfills a domain bid, creating the domain.

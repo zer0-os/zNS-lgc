@@ -130,7 +130,7 @@ describe("Staking Controller", () => {
 
       await expect(
         controllerAsUser1.fulfillDomainRequest(4, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("ZNS: request not accepted");
+      ).to.be.revertedWith("ZNS: request not valid");
     });
 
     it("successfully fufills a domain bid", async () => {
@@ -154,7 +154,7 @@ describe("Staking Controller", () => {
 
       await expect(
         controllerAsUser1.fulfillDomainRequest(1, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("ZNS: already fulfilled");
+      ).to.be.revertedWith("ZNS: request not valid");
     });
   });
   describe("withdrawing a bid", () => {

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts-upgradeable/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
@@ -19,38 +18,47 @@ contract StakingController is
   ERC721HolderUpgradeable
 {
 
-  using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   IERC20Upgradeable private infinity;
   IRegistrar private registrar;
   address private controller;
+  uint256 public bidCount;
 
-  mapping(bytes32 => bool) private approvedBids;
+  mapping(uint256 => Bid) public bids;
+  mapping(uint256 => bool) public tokensHeld;
+  mapping(uint256 => Bid) public acceptedBids;
+  mapping(bytes32 => uint256) public domainId;
 
+  struct Bid {
+    uint256 parentId;
+    uint256 bidAmount;
+    address bidder;
+    string name;
+    bool accepted;
+    bool approved;
+    bool exists;
+  }
 
   event DomainBidPlaced(
-    bytes32 indexed unsignedRequestHash,
-    string indexed bidIPFSHash,
-    bytes indexed signature
+  uint256 indexed parentId,
+  uint256 indexed bidIdentifier,
+  uint256 bidAmount,
+  string indexed name,
+  address bidder
   );
 
-  event DomainBidApproved(string indexed bidIdentifier);
+  event DomainBidApproved(string bidIdentifier);
 
   event DomainBidFulfilled(
     string indexed bidIdentifier,
-    string  name,
-    address recoveredbidder,
-    uint256 indexed id,
+    string name,
+    address recipient,
+    uint256 indexed domainId,
     uint256 indexed parentID
   );
 
-  modifier authorizedOwner(uint256 domain) {
-    require(registrar.domainExists(domain), "ZNS: Invalid Domain");
-    require(registrar.ownerOf(domain) == _msgSender(), "ZNS: Not Authorized Owner");
-    _;
-  }
-
+  event BidWithdrawn(string indexed bidIdentifier);
 
   function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
     __ERC165_init();
@@ -65,122 +73,123 @@ contract StakingController is
     /**
       @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
       @param parentId is the id number of the parent domain to the sub domain being requested
-      @param unsignedRequestHash is the un-signed hashed data for a domain bid request
-      @param signature is the signature used to sign the request hash
-      @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
-      @dev the IPFS hash must be emitted as a string here for the front end to be able to recover the bid info
-      @dev signature is emitted here so that the domain owner approving the bid can use the recover function to check that
-            the bid information in the IPFS hash matches the bid information used to create the signed message
+      @param bidAmount is the uint value of the amount of infinity bid
+      @param name is the name of the new domain being created
     **/
     function placeDomainBid(
-      uint256 parentId,
-      bytes32 unsignedRequestHash,
-      bytes memory signature,
-      string memory bidIPFSHash
+      uint256 _parentId,
+      uint256 _bidAmount,
+      string memory _name
     ) external {
       require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
+      bidCount++;
+      bids[bidCount] = Bid({
+        parentId: _parentId,
+        bidAmount: _bidAmount,
+        bidder: _msgSender(),
+        name: _name,
+        accepted: false,
+        approved: false
+      });
+
       emit DomainBidPlaced(
-        unsignedRequestHash,
-        bidIPFSHash,
-        signature
+        _parentId,
+        bidCount,
+        _bidAmount,
+        _name,
+        _msgSender()
       );
     }
 
     /**
       @notice approveDomainBid approves a domain bid, allowing the domain to be created.
-      @param parentId is the id number of the parent domain to the sub domain being requested
-      @param bidIPFSHash is the IPFS hash of the bids information
-      @param signature is the signed hashed data for a domain bid request
+      @param bidIdentifier is the id number of the bid being accepted
     **/
     function approveDomainBid(
-        uint256 parentId,
-        string memory bidIPFSHash,
-        bytes memory signature
-    ) external authorizedOwner(parentId) {
-      bytes32 hashOfSig = keccak256(abi.encode(signature));
-      approvedBids[hashOfSig] = true;
-      emit DomainBidApproved(bidIPFSHash);
+        uint256 bidIdentifier
+    ) external {
+      Bid memory bid = bids[bidIdentifier];
+      require(registrar.domainExists(bid.parentId), "ZNS: Invalid Domain");
+      require(registrar.ownerOf(bid.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
+      bid.accepted = true;
+      emit DomainBidApproved(bidIdentifier);
     }
 
 
     /**
       @notice Fulfills a domain bid, creating the domain.
         Transfers tokens from bidders wallet into controller.
-      @param parentId is the id number of the parent domain to the sub domain being requested
-      @param bidAmount is the uint value of the amount of infinity bid
+      @param bidIdentifier is the id number of the bid being fullfilled
       @param royaltyAmount is the royalty amount the creator sets for resales on zAuction
       @param metadata is the IPFS hash of the new domains information
-      @dev this is the same IPFS hash that contains the bids information as this is just stored on its own feild in the metadata
-      @param name is the name of the new domain being created
-      @param bidIPFSHash is the IPFS hash containing the bids params(ex: name being requested, amount, stc)
-      @param signature is the signature of the bidder
       @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
-      @param recipient is the address receiving the new domain
     **/
-        function fulfillDomainBid(
-        uint256 parentId,
-        uint256 bidAmount,
-        uint256 royaltyAmount,
-        string memory bidIPFSHash,
-        string memory name,
-        string memory metadata,
-        bytes memory signature,
-        bool lockOnCreation,
-        address recipient
-      ) external {
-        bytes32 recoveredBidHash = createBid(parentId, bidAmount, bidIPFSHash, name);
-        address recoveredBidder = recover(recoveredBidHash, signature);
-        require(recipient == recoveredBidder, "ZNS: bid info doesnt match/exist");
-        bytes32 hashOfSig = keccak256(abi.encode(signature));
-        require(approvedBids[hashOfSig] == true, "ZNS: has been fullfilled");
-        infinity.safeTransferFrom(recoveredBidder, controller, bidAmount);
-        uint256 id = registrar.registerDomain(parentId, name, controller, recoveredBidder);
+    function fulfillDomainBid(
+      uint256 bidIdentifier,
+      uint256 royaltyAmount,
+      string memory metadata,
+      bool lockOnCreation
+    ) external {
+        Bid memory bid = bids[bidIdentifier];
+        require(bid.accepted == true, "ZNS: unnaccepted");
+        require(bid.approved == false, "ZNS: already fulfilled/withdrawn");
+        infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
+        uint256 id;
+        if(!registrar.domainExists(bid.parentId)){
+           id = registrar.registerDomain(bid.parentId, bid.name, controller, bid.bidder);
+           bytes32 domainId = keccak256(abi.encode(bid.parentId, bid.name));
+           domainId[domainId] = id;
+        } else {
+          bytes32 domainId = keccak256(abi.encode(bid.parentId, bid.name));
+           id = domainId[domainId];
+           require(tokensHeld[id], "ZNS: Domain not held");
+        }
         registrar.setDomainMetadataUri(id, metadata);
         registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-        registrar.transferFrom(controller, recoveredBidder, id);
+        registrar.transferFrom(controller, bid.bidder, id);
+        acceptedBids[id] = bid;
         if (lockOnCreation) {
           registrar.lockDomainMetadataForOwner(id);
         }
         approvedBids[hashOfSig] = false;
         emit DomainBidFulfilled(
-          metadata,
+          bidIdentifier,
           name,
-          recoveredBidder,
+          bid.bidder,
           id,
-          parentId
+          bid.parentId
         );
       }
 
-    /**
-      @notice recover allows the un-signed hashed data of a domain request to be recovered
-      @notice unsignedRequestHash is the un-signed hash of the request being recovered
-      @notice signature is the signature the hash was signed with
-    **/
-      function recover(
-        bytes32 unsignedRequestHash,
-        bytes memory signature
-      )
-      public
-      pure
-      returns (address) {
-        return unsignedRequestHash.toEthSignedMessageHash().recover(signature);
+      /**
+        @notice withdrawBid allows a bidder to withdraw a placed bid should they change their mind
+        @param bidIdentifier is the number representing the bid being withdrawn
+      **/
+      function withdrawBid(
+        uint256 bidIdentifier
+      ) external {
+        Bid memory bid = bids[bidIdentifier];
+        require(bid.bidder == _msgSender(), "ZNS: Not bid creator");
+        bids.approved = true;
       }
 
       /**
-      @notice createBid is a pure function  that creates a bid hash for the end user
-      @param parentId is the ID of the domain where the sub domain is being requested
-      @param bidAmount is the amount being bid for the domain
-      @param bidIPFSHash is the IPFS hash that contains the bids information
-      @param name is the name of the sub domain being requested
+        @notice relenquishOwnership allows a domain owner to relenquish
+                ownership of a domain they own
+        @param tokenId is the tokenId of the domain being relenquished
+        @dev this function relenquishes control of the domain to the staking controller and returns the
+              user their staked funds. This function also unlocks the metadata for the domain if it
+              is locked
       **/
-      function createBid(
-        uint256 parentId,
-        uint256 bidAmount,
-        string memory bidIPFSHash,
-        string memory name
-      ) public pure returns(bytes32) {
-        return keccak256(abi.encode(parentId, bidAmount, bidIPFSHash, name));
+      function relenquishOwnership(
+        uint256 tokenId
+      ) external {
+        require(registrar.domainExists(tokenId), "ZNS: Invalid Domain");
+        require(registrar.ownerOf(tokenId) == _msgSender(), "ZNS: Not Authorized Owner");
+        registrar.transferFrom(_msgSender(), controller, tokenId);
+        Bid memory bid = acceptedBids[tokenId];
+        infinity.safeTransfer(bid.bidder, bid.bidAmount);
+        tokensHeld[tokenId] = true;
+        registrar.unlockDomainMetadata(id);
       }
-
-
   }

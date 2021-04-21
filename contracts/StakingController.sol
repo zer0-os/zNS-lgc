@@ -109,7 +109,8 @@ contract StakingController is
     function approveDomainBid(
         uint256 bidIdentifier
     ) external {
-      Bid memory bid = bids[bidIdentifier];
+      Bid storage bid = bids[bidIdentifier];
+      require(bid.bidAmount != 0, "ZNS: Bid doesnt exist");
       require(registrar.domainExists(bid.parentId), "ZNS: Invalid Domain");
       require(registrar.ownerOf(bid.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
       bid.accepted = true;
@@ -131,13 +132,13 @@ contract StakingController is
       string memory metadata,
       bool lockOnCreation
     ) external {
-        Bid memory bid = bids[bidIdentifier];
-        require(bid.accepted == true, "ZNS: unnaccepted");
+        Bid storage bid = bids[bidIdentifier];
+        require(bid.accepted == true, "ZNS: bid not accepted");
         require(bid.approved == false, "ZNS: already fulfilled/withdrawn");
         infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
         uint256 id;
         bytes32 domainId;
-        if(!registrar.domainExists(bid.parentId)){
+        if(registrar.domainExists(bid.parentId)){
            id = registrar.registerDomain(bid.parentId, bid.name, controller, bid.bidder);
            domainId = keccak256(abi.encode(bid.parentId, bid.name));
            domainIdentifier[domainId] = id;

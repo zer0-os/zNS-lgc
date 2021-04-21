@@ -50,17 +50,17 @@ describe("Staking Controller", () => {
   });
 
   describe("Placing a bid", () => {
-    it("emits a DomainBidPlaced event with the correct bid info", async () => {
+    it("emits a DomainRequestPlaced event with the correct bid info", async () => {
       const controllerAsUser1 = await controller.connect(user1);
       await registrarSmock.smocked.domainExists.will.return.with(true);
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
-      const tx = await controllerAsUser1.placeDomainBid(
+      const tx = await controllerAsUser1.placeDomainRequest(
         parentID,
         bidAmount,
         name
       );
       expect(tx)
-        .to.emit(controller, "DomainBidPlaced")
+        .to.emit(controller, "DomainRequestPlaced")
         .withArgs(parentID, 1, bidAmount, name, user1.address);
     });
 
@@ -69,7 +69,7 @@ describe("Staking Controller", () => {
       const controllerAsUser1 = await controller.connect(user1);
 
       await expect(
-        controllerAsUser1.placeDomainBid(parentID, bidAmount, name)
+        controllerAsUser1.placeDomainRequest(parentID, bidAmount, name)
       ).to.be.revertedWith("ZNS: Invalid Domain");
     });
   });
@@ -80,7 +80,7 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainBid(1)).to.be.revertedWith(
+      await expect(controllerAsUser1.approveDomainRequest(1)).to.be.revertedWith(
         "ZNS: Not Authorized Owner"
       );
     });
@@ -90,7 +90,7 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainBid(1)).to.be.revertedWith(
+      await expect(controllerAsUser1.approveDomainRequest(1)).to.be.revertedWith(
         "ZNS: Invalid Domain"
       );
     });
@@ -100,18 +100,18 @@ describe("Staking Controller", () => {
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      await expect(controllerAsUser1.approveDomainBid(5)).to.be.revertedWith(
-        "ZNS: Bid doesnt exist"
+      await expect(controllerAsUser1.approveDomainRequest(5)).to.be.revertedWith(
+        "ZNS: Request doesnt exist"
       );
     });
 
-    it("emits a DomainBidApproved event with the correct bid id", async () => {
+    it("emits a DomainRequestApproved event with the correct bid id", async () => {
       await registrarSmock.smocked.domainExists.will.return.with(true);
       await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
       const controllerAsUser1 = await controller.connect(user1);
 
-      const tx = await controllerAsUser1.approveDomainBid(1);
-      expect(tx).to.emit(controller, "DomainBidApproved").withArgs(1);
+      const tx = await controllerAsUser1.approveDomainRequest(1);
+      expect(tx).to.emit(controller, "DomainRequestApproved").withArgs(1);
     });
   });
 
@@ -129,22 +129,22 @@ describe("Staking Controller", () => {
       const lock = true;
 
       await expect(
-        controllerAsUser1.fulfillDomainBid(4, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("ZNS: bid not accepted");
+        controllerAsUser1.fulfillDomainRequest(4, royaltyAmount, metadata, lock)
+      ).to.be.revertedWith("ZNS: request not accepted");
     });
 
     it("successfully fufills a domain bid", async () => {
       const controllerAsUser1 = await controller.connect(user1);
       const lock = true;
 
-      const tx = await controllerAsUser1.fulfillDomainBid(
+      const tx = await controllerAsUser1.fulfillDomainRequest(
         1,
         royaltyAmount,
         metadata,
         lock
       );
       expect(tx)
-        .to.emit(controller, "DomainBidFulfilled")
+        .to.emit(controller, "DomainRequestFulfilled")
         .withArgs(1, name, user1.address, returnedId, parentID);
     });
 
@@ -153,28 +153,28 @@ describe("Staking Controller", () => {
       const lock = true;
 
       await expect(
-        controllerAsUser1.fulfillDomainBid(1, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("ZNS: already fulfilled/withdrawn");
+        controllerAsUser1.fulfillDomainRequest(1, royaltyAmount, metadata, lock)
+      ).to.be.revertedWith("ZNS: already fulfilled");
     });
   });
   describe("withdrawing a bid", () => {
     it("Fails to fulfill a withdrawn bid", async () => {
       await registrarSmock.smocked.domainExists.will.return.with(true);
       const controllerAsUser1 = await controller.connect(user1);
-      await controllerAsUser1.placeDomainBid(
+      await controllerAsUser1.placeDomainRequest(
         parentID,
         bidAmount,
         "another name"
       );
       const controllerAsUser2 = await controller.connect(user2);
-      await expect(controllerAsUser2.withdrawBid(2)).to.be.revertedWith(
-        "ZNS: Not bid creator"
+      await expect(controllerAsUser2.withdrawRequest(2)).to.be.revertedWith(
+        "ZNS: Not request creator"
       );
     });
     it("allows a user to withdraw their bid", async () => {
       const controllerAsUser1 = await controller.connect(user1);
-      const tx = await controllerAsUser1.withdrawBid(2);
-      expect(tx).to.emit(controller, "BidWithdrawn").withArgs(2);
+      const tx = await controllerAsUser1.withdrawRequest(2);
+      expect(tx).to.emit(controller, "RequestWithdrawn").withArgs(2);
     });
 
     it("Fails to fulfill a withdrawn bid", async () => {
@@ -182,83 +182,16 @@ describe("Staking Controller", () => {
       const lock = true;
 
       await expect(
-        controllerAsUser1.fulfillDomainBid(2, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("ZNS: already fulfilled/withdrawn");
+        controllerAsUser1.fulfillDomainRequest(2, royaltyAmount, metadata, lock)
+      ).to.be.revertedWith("ZNS: request not valid");
     });
 
     it("Fails to withdraw an accepted bid", async () => {
       const controllerAsUser1 = await controller.connect(user1);
-      await expect(controllerAsUser1.withdrawBid(1)).to.be.revertedWith(
-        "ZNS: Bid already accepted"
+      await expect(controllerAsUser1.withdrawRequest(1)).to.be.revertedWith(
+        "ZNS: request already accepted"
       );
     });
   });
-  describe("Relenquishing Ownership of a domain and re-staking it to a new user", () => {
-    it("Allows the owner of a domain to relenquish ownership and returns their stake", async () => {
-      await MockTokenSmock.smocked.transfer.will.return.with(true);
-      await registrarSmock.smocked.domainExists.will.return.with(true);
-      await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
-      await registrarSmock.smocked.transferFrom.will.return();
-      const controllerAsUser1 = await controller.connect(user1);
 
-      const tx = await controllerAsUser1.relenquishOwnership(1);
-      expect(tx).to.emit(controller, "TokenOwnershipRelenquished").withArgs(1);
-    });
-
-    it("Fails if a user tries to relenquish ownership of a non existent domain", async () => {
-      await MockTokenSmock.smocked.transfer.will.return.with(true);
-      await registrarSmock.smocked.domainExists.will.return.with(false);
-      await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
-      await registrarSmock.smocked.transferFrom.will.return();
-      const controllerAsUser1 = await controller.connect(user1);
-
-      await expect(controllerAsUser1.relenquishOwnership(6)).to.be.revertedWith(
-        "ZNS: Invalid Domain"
-      );
-    });
-    it("Fails if a user tries to relenquish ownership of a domain they dont own", async () => {
-      await MockTokenSmock.smocked.transfer.will.return.with(true);
-      await registrarSmock.smocked.domainExists.will.return.with(true);
-      await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
-      await registrarSmock.smocked.transferFrom.will.return();
-      const controllerAsUser1 = await controller.connect(user1);
-
-      await expect(controllerAsUser1.relenquishOwnership(6)).to.be.revertedWith(
-        "ZNS: Not Authorized Owner"
-      );
-    });
-
-    it("successfully fufills a domain bid on a relenquished domain", async () => {
-      await registrarSmock.smocked.domainExists.will.return.with(true);
-      await registrarSmock.smocked.registerDomain.will.return.with(99);
-      await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
-      const controllerAsUser1 = await controller.connect(user1);
-      const controllerAsUser2 = await controller.connect(user2);
-      const lock = true;
-      await controllerAsUser1.placeDomainBid(parentID, bidAmount, name);
-      await controllerAsUser2.approveDomainBid(3);
-      await registrarSmock.smocked.domainExists.will.return.with(false);
-      await controllerAsUser1.fulfillDomainBid(
-        3,
-        royaltyAmount,
-        metadata,
-        lock
-      );
-      await registrarSmock.smocked.domainExists.will.return.with(true);
-      await registrarSmock.smocked.ownerOf.will.return.with(user1.address);
-      await controllerAsUser1.relenquishOwnership(99);
-      await controllerAsUser1.placeDomainBid(parentID, bidAmount, name);
-      await registrarSmock.smocked.ownerOf.will.return.with(user2.address);
-      await controllerAsUser2.approveDomainBid(4);
-      const tx = await controllerAsUser1.fulfillDomainBid(
-        4,
-        royaltyAmount,
-        metadata,
-        lock
-      );
-      expect(tx)
-        .to.emit(controller, "DomainBidFulfilled")
-        .withArgs(4, name, user1.address, 99, parentID);
-    });
-  });
 });

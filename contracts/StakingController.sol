@@ -23,43 +23,43 @@ contract StakingController is
   IERC20Upgradeable private infinity;
   IRegistrar private registrar;
   address private controller;
-  uint256 public bidCount;
+  uint256 public requestCount;
 
-  mapping(uint256 => Bid) public bids;
+  mapping(uint256 => Request) public requests;
   mapping(uint256 => bool) public tokensHeld;
-  mapping(uint256 => Bid) public acceptedBids;
+  mapping(uint256 => Request) public acceptedRequests;
   mapping(bytes32 => uint256) public domainIdentifier;
 
-  struct Bid {
+  struct Request {
     uint256 parentId;
-    uint256 bidAmount;
-    address bidder;
+    uint256 requestAmount;
+    address requester;
     string name;
     bool accepted;
-    bool approved;
+    bool fulfilled;
+    bool valid;
   }
 
-  event DomainBidPlaced(
+  event DomainRequestPlaced(
   uint256 indexed parentId,
-  uint256 indexed bidIdentifier,
-  uint256 bidAmount,
+  uint256 indexed requestIdentifier,
+  uint256 requestAmount,
   string indexed name,
-  address bidder
+  address requestdder
   );
 
-  event DomainBidApproved(uint256 indexed bidIdentifier);
+  event DomainRequestApproved(uint256 indexed requestIdentifier);
 
-  event DomainBidFulfilled(
-    uint256 indexed bidIdentifier,
+  event DomainRequestFulfilled(
+    uint256 indexed requestIdentifier,
     string name,
     address recipient,
     uint256 indexed domainId,
     uint256 indexed parentID
   );
 
-  event BidWithdrawn(uint256 indexed bidIdentifier);
+  event RequestWithdrawn(uint256 indexed requestIdentifier);
 
-  event TokenOwnershipRelenquished(uint256 indexed bidIdentifier);
 
   function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
     __ERC165_init();
@@ -72,133 +72,104 @@ contract StakingController is
 
 
     /**
-      @notice placeDomainBid allows a user to send a request for a new sub domain to a domains owner
+      @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
       @param _parentId is the id number of the parent domain to the sub domain being requested
-      @param _bidAmount is the uint value of the amount of infinity bid
+      @param _requestAmount is the uint value of the amount of infinity request
       @param _name is the name of the new domain being created
     **/
-    function placeDomainBid(
+    function placeDomainRequest(
       uint256 _parentId,
-      uint256 _bidAmount,
+      uint256 _requestAmount,
       string memory _name
     ) external {
       require(registrar.domainExists(_parentId), "ZNS: Invalid Domain");
-      bidCount++;
-      bids[bidCount] = Bid({
+      requestCount++;
+      requests[requestCount] = Request({
         parentId: _parentId,
-        bidAmount: _bidAmount,
-        bidder: _msgSender(),
+        requestAmount: _requestAmount,
+        requester: _msgSender(),
         name: _name,
         accepted: false,
-        approved: false
+        fulfilled: false,
+        valid: false
       });
 
-      emit DomainBidPlaced(
+      emit DomainRequestPlaced(
         _parentId,
-        bidCount,
-        _bidAmount,
+        requestCount,
+        _requestAmount,
         _name,
         _msgSender()
       );
     }
 
     /**
-      @notice approveDomainBid approves a domain bid, allowing the domain to be created.
-      @param bidIdentifier is the id number of the bid being accepted
+      @notice approveDomainRequest approves a domain request, allowing the domain to be created.
+      @param requestIdentifier is the id number of the request being accepted
     **/
-    function approveDomainBid(
-        uint256 bidIdentifier
+    function approveDomainRequest(
+        uint256 requestIdentifier
     ) external {
-      Bid storage bid = bids[bidIdentifier];
-      require(bid.bidAmount != 0, "ZNS: Bid doesnt exist");
-      require(registrar.domainExists(bid.parentId), "ZNS: Invalid Domain");
-      require(registrar.ownerOf(bid.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
-      bid.accepted = true;
-      emit DomainBidApproved(bidIdentifier);
+      Request storage request = requests[requestIdentifier];
+      require(request.requestAmount != 0, "ZNS: Request doesnt exist");
+      require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
+      require(registrar.ownerOf(request.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
+      request.accepted = true;
+      emit DomainRequestApproved(requestIdentifier);
     }
 
 
     /**
-      @notice Fulfills a domain bid, creating the domain.
-        Transfers tokens from bidders wallet into controller.
-      @param bidIdentifier is the id number of the bid being fullfilled
+      @notice Fulfills a domain request, creating the domain.
+        Transfers tokens from requesters wallet into controller.
+      @param requestIdentifier is the id number of the request being fullfilled
       @param royaltyAmount is the royalty amount the creator sets for resales on zAuction
       @param metadata is the IPFS hash of the new domains information
       @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
     **/
-    function fulfillDomainBid(
-      uint256 bidIdentifier,
+    function fulfillDomainRequest(
+      uint256 requestIdentifier,
       uint256 royaltyAmount,
       string memory metadata,
       bool lockOnCreation
     ) external {
-        Bid storage bid = bids[bidIdentifier];
-        require(bid.approved == false, "ZNS: already fulfilled/withdrawn");
-        require(bid.accepted == true, "ZNS: bid not accepted");
-        infinity.safeTransferFrom(bid.bidder, controller, bid.bidAmount);
-        uint256 id;
-        bytes32 domainId;
-        if(!registrar.domainExists(bid.parentId)){
-           id = registrar.registerDomain(bid.parentId, bid.name, controller, bid.bidder);
-           domainId = keccak256(abi.encode(bid.parentId, bid.name));
-           domainIdentifier[domainId] = id;
-        } else {
-           domainId = keccak256(abi.encode(bid.parentId, bid.name));
-           id = domainIdentifier[domainId];
-           require(tokensHeld[id], "ZNS: Domain not held");
-        }
-        registrar.setDomainMetadataUri(id, metadata);
-        registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-        registrar.transferFrom(controller, bid.bidder, id);
-        acceptedBids[id] = bid;
+        Request storage request = requests[requestIdentifier];
+        require(request.fulfilled == false, "ZNS: already fulfilled");
+        require(request.valid == false, "ZNS: request not valid");
+        require(request.accepted == true, "ZNS: request not accepted");
+        uint256 domainId = registrar.registerDomain(request.parentId, request.name, controller, request.requester);
+        registrar.setDomainMetadataUri(domainId, metadata);
+        registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
+        registrar.transferFrom(controller, request.requester, domainId);
+        acceptedRequests[domainId] = request;
         if (lockOnCreation) {
-          registrar.lockDomainMetadataForOwner(id);
+          registrar.lockDomainMetadataForOwner(domainId);
         }
-        bid.approved = true;
+        request.fulfilled = true;
+        infinity.safeTransferFrom(request.requester, controller, request.requestAmount);
 
-        emit DomainBidFulfilled(
-          bidIdentifier,
-          bid.name,
-          bid.bidder,
-          id,
-          bid.parentId
+        emit DomainRequestFulfilled(
+          requestIdentifier,
+          request.name,
+          request.requester,
+          domainId,
+          request.parentId
         );
       }
 
       /**
-        @notice withdrawBid allows a bidder to withdraw a placed bid should they change their mind
-        @param bidIdentifier is the number representing the bid being withdrawn
+        @notice withdrawRequest allows a requester to withdraw a placed request should they change their mind
+        @param requestIdentifier is the number representing the request being withdrawn
       **/
-      function withdrawBid(
-        uint256 bidIdentifier
+      function withdrawRequest(
+        uint256 requestIdentifier
       ) external {
-        Bid storage bid = bids[bidIdentifier];
-        require(bid.bidder == _msgSender(), "ZNS: Not bid creator");
-        require(bid.accepted == false, "ZNS: Bid already accepted");
-        bid.approved = true;
-        emit BidWithdrawn(bidIdentifier);
+        Request storage request = requests[requestIdentifier];
+        require(request.requester == _msgSender(), "ZNS: Not request creator");
+        require(request.accepted == false, "ZNS: request already accepted");
+        request.valid = true;
+        emit RequestWithdrawn(requestIdentifier);
       }
 
-      /**
-        @notice relenquishOwnership allows a domain owner to relenquish
-                ownership of a domain they own
-        @param tokenId is the tokenId of the domain being relenquished
-        @dev this function relenquishes control of the domain to the staking controller and returns the
-              user their staked funds. This function also unlocks the metadata for the domain if it
-              is locked
-      **/
-      function relenquishOwnership(
-        uint256 tokenId
-      ) external {
-        require(registrar.domainExists(tokenId), "ZNS: Invalid Domain");
-        require(registrar.ownerOf(tokenId) == _msgSender(), "ZNS: Not Authorized Owner");
-        registrar.transferFrom(_msgSender(), controller, tokenId);
-        Bid memory bid = acceptedBids[tokenId];
-        infinity.safeTransfer(bid.bidder, bid.bidAmount);
-        tokensHeld[tokenId] = true;
-        if(registrar.isDomainMetadataLocked(tokenId)){
-          registrar.unlockDomainMetadata(tokenId);
-        }
-        emit TokenOwnershipRelenquished(tokenId);
-      }
+
   }

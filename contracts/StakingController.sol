@@ -89,7 +89,7 @@ contract StakingController is
         uint256 requestIdentifier
     ) external override{
       Request storage request = requests[requestIdentifier];
-      require(request.offeredAmount != 0, "ZNS: Request doesnt exist");
+      require(request.valid == true, "ZNS: Request doesnt exist");
       require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
       require(registrar.ownerOf(request.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
       request.accepted = true;
@@ -141,7 +141,7 @@ contract StakingController is
       ) external override{
         Request storage request = requests[requestIdentifier];
         require(request.requester == _msgSender(), "ZNS: Not request creator");
-        require(request.accepted == false, "ZNS: request already accepted");
+        require(request.valid == true, "ZNS: request already accepted");
         request.valid = false;
         emit RequestWithdrawn(requestIdentifier);
       }

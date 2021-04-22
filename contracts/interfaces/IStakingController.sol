@@ -8,7 +8,7 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event DomainRequestPlaced(
     uint256 indexed parentId,
     uint256 indexed requestIdentifier,
-    uint256 requestAmount,
+    uint256 offeredAmount,
     string indexed name,
     address requestdder
   );

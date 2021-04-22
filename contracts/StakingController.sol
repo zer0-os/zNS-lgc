@@ -32,9 +32,9 @@ contract StakingController is
 
   struct Request {
     uint256 parentId;
-    uint256 requestAmount;
+    uint256 offeredAmount;
     address requester;
-    string name;
+    string requestedName;
     bool accepted;
     bool valid;
   }
@@ -53,21 +53,21 @@ contract StakingController is
     /**
       @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
       @param parentId is the id number of the parent domain to the sub domain being requested
-      @param requestAmount is the uint value of the amount of infinity request
+      @param offeredAmount is the uint value of the amount of infinity request
       @param name is the name of the new domain being created
     **/
     function placeDomainRequest(
       uint256 parentId,
-      uint256 requestAmount,
+      uint256 offeredAmount,
       string memory name
     ) external override {
       require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
       requestCount++;
       requests[requestCount] = Request({
         parentId: parentId,
-        requestAmount: requestAmount,
+        offeredAmount: offeredAmount,
         requester: _msgSender(),
-        name: name,
+        requestedName: name,
         accepted: false,
         valid: true
       });
@@ -75,7 +75,7 @@ contract StakingController is
       emit DomainRequestPlaced(
         parentId,
         requestCount,
-        requestAmount,
+        offeredAmount,
         name,
         _msgSender()
       );
@@ -89,7 +89,7 @@ contract StakingController is
         uint256 requestIdentifier
     ) external override{
       Request storage request = requests[requestIdentifier];
-      require(request.requestAmount != 0, "ZNS: Request doesnt exist");
+      require(request.offeredAmount != 0, "ZNS: Request doesnt exist");
       require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
       require(registrar.ownerOf(request.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
       request.accepted = true;
@@ -114,7 +114,7 @@ contract StakingController is
         Request storage request = requests[requestIdentifier];
         require(request.valid == true, "ZNS: request not valid");
         require(request.accepted == true, "ZNS: request not accepted");
-        uint256 domainId = registrar.registerDomain(request.parentId, request.name, controller, request.requester);
+        uint256 domainId = registrar.registerDomain(request.parentId, request.requestedName, controller, request.requester);
         registrar.setDomainMetadataUri(domainId, metadata);
         registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
         registrar.transferFrom(controller, request.requester, domainId);
@@ -122,10 +122,10 @@ contract StakingController is
           registrar.lockDomainMetadataForOwner(domainId);
         }
         request.valid = false;
-        infinity.safeTransferFrom(request.requester, controller, request.requestAmount);
+        infinity.safeTransferFrom(request.requester, controller, request.offeredAmount);
         emit DomainRequestFulfilled(
           requestIdentifier,
-          request.name,
+          request.requestedName,
           request.requester,
           domainId,
           request.parentId

@@ -79,7 +79,7 @@ contract Registrar is
     address domainOwner,
     address minter
   ) external override onlyController returns (uint256) {
-    require(name.length > 0, "Zer0 Registrar: Empty name");
+    require(bytes(name).length > 0, "Zer0 Registrar: Empty name");
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));

@@ -55,6 +55,10 @@ contract Registrar is
     @param controller The address of the controller
    */
   function addController(address controller) external override onlyOwner {
+    require(
+      !controllers[controller],
+      "Zer0 Registrar: Controller is already added"
+    );
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -64,6 +68,10 @@ contract Registrar is
     @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
+    require(
+      controllers[controller],
+      "Zer0 Registrar: Controller does not exist"
+    );
     controllers[controller] = false;
     emit ControllerRemoved(controller);
   }
@@ -111,6 +119,10 @@ contract Registrar is
     onlyOwnerOf(id)
   {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(
+      records[id].royaltyAmount != amount,
+      "Zer0 Registrar: Royalty Amount must be different"
+    );
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);

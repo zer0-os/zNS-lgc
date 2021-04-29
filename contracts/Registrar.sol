@@ -77,6 +77,20 @@ contract Registrar is
   }
 
   /**
+    @notice Pauses the registrar. Can only be done when not paused.
+   */
+  function pause() external onlyOwner {
+    _pause();
+  }
+
+  /**
+    @notice Unpauses the registrar. Can only be done when not paused.
+   */
+  function unpause() external onlyOwner {
+    _unpause();
+  }
+
+  /**
     @notice Registers a new (sub) domain
     @param parentId The parent domain
     @param name The name of the domain

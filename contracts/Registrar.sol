@@ -38,6 +38,8 @@ contract Registrar is
 
   function initialize() public initializer {
     __Ownable_init();
+
+    __ERC721Pausable_init();
     __ERC721_init("Zer0 Name Service", "ZNS");
 
     // create the root domain

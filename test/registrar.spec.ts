@@ -3,7 +3,7 @@ import { ethers, upgrades } from "hardhat";
 import { Registrar, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import { BigNumber } from "ethers";
+import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
@@ -105,26 +105,29 @@ describe("Registrar", () => {
       await deployRegistry(creator);
     });
 
+    let addControllerTx: ContractTransaction;
+    let removeControllerTx: ContractTransaction;
+
     it("adds controllers to the controller list", async () => {
-      await registry.addController(user1.address);
+      addControllerTx = await registry.addController(user1.address);
       expect(await registry.controllers(user1.address)).to.be.true;
     });
 
     it("emits a ControllerAdded event when a controller is added", async () => {
-      const tx = await registry.addController(user1.address);
-      expect(tx).to.emit(registry, "ControllerAdded").withArgs(user1.address);
+      expect(addControllerTx)
+        .to.emit(registry, "ControllerAdded")
+        .withArgs(user1.address);
     });
 
     it("removes controllers from the controller list", async () => {
-      await registry.addController(user1.address);
-      await registry.removeController(user1.address);
+      removeControllerTx = await registry.removeController(user1.address);
       expect(await registry.controllers(user1.address)).to.be.false;
     });
 
     it("emits a ControllerRemoved event when a controller is removed", async () => {
-      await registry.addController(user1.address);
-      const tx = await registry.removeController(user1.address);
-      expect(tx).to.emit(registry, "ControllerRemoved").withArgs(user1.address);
+      expect(removeControllerTx)
+        .to.emit(registry, "ControllerRemoved")
+        .withArgs(user1.address);
     });
 
     it("prevents non-owners from adding controllers", async () => {

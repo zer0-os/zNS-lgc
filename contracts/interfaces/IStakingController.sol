@@ -9,8 +9,10 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 indexed parentId,
     uint256 indexed requestIdentifier,
     uint256 offeredAmount,
+    string requestUri,
     string indexed name,
-    address requestdder
+    address requestor,
+    uint256 domainNonce
   );
 
   event DomainRequestApproved(uint256 indexed requestIdentifier);
@@ -20,7 +22,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     string name,
     address recipient,
     uint256 indexed domainId,
-    uint256 indexed parentID
+    uint256 indexed parentID,
+    uint256 domainNonce
   );
 
   event RequestWithdrawn(uint256 indexed requestIdentifier);
@@ -34,7 +37,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   function placeDomainRequest(
     uint256 parentId,
     uint256 bidAmount,
-    string memory name
+    string memory name,
+    string memory requestUri
   ) external;
 
   /**

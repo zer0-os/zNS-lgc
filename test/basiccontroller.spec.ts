@@ -145,6 +145,9 @@ describe("Basic Controller", () => {
       const domainName = "mySubDomain";
       const returnedId = 13361357;
 
+      await registrarMock.mock.ownerOf
+        .withArgs(parentId)
+        .revertsWithReason("ERC721: owner query for nonexistent token");
       await registrarMock.mock.domainExists.withArgs(parentId).returns(false);
       await registrarMock.mock.registerDomain.returns(returnedId);
 
@@ -155,7 +158,9 @@ describe("Basic Controller", () => {
         user2.address
       );
 
-      await expect(tx).to.be.revertedWith("Zer0 Controller: Invalid Domain");
+      await expect(tx).to.be.revertedWith(
+        "ERC721: owner query for nonexistent token"
+      );
     });
   });
 });

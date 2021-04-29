@@ -6,10 +6,10 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 contract MockToken is Initializable, ERC20Upgradeable {
   function initialize() public initializer {
-    __ERC20_init("Infinity", "IFY");
+    __ERC20_init("Mock Token", "MT");
   }
 
   function mint() public {
-    _mint(msg.sender, 1000000000000000000000000);
+    _mint(msg.sender, 10000 * 10**18);
   }
 }

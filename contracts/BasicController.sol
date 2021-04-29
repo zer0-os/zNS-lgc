@@ -29,6 +29,7 @@ contract BasicController is
   function initialize(IRegistrar _registrar) public initializer {
     __ERC165_init();
     __Context_init();
+    __ERC721Holder_init();
 
     registrar = _registrar;
     rootDomain = 0x0;

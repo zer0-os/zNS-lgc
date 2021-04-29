@@ -120,7 +120,7 @@ contract StakingController is
       );
     registrar.setDomainMetadataUri(domainId, metadata);
     registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
-    registrar.transferFrom(controller, request.requester, domainId);
+    registrar.safeTransferFrom(controller, request.requester, domainId);
     if (lockOnCreation) {
       registrar.lockDomainMetadataForOwner(domainId);
     }

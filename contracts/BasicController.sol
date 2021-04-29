@@ -67,7 +67,7 @@ contract BasicController is
     uint256 id = registrar.registerDomain(parentId, label, controller, minter);
     registrar.setDomainMetadataUri(id, metadata);
     registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-    registrar.transferFrom(controller, owner, id);
+    registrar.safeTransferFrom(controller, owner, id);
 
     if (lockOnCreation) {
       registrar.lockDomainMetadataForOwner(id);

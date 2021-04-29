@@ -8,10 +8,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
-
 import "./interfaces/IRegistrar.sol";
 import "./interfaces/IStakingController.sol";
-
 
 contract StakingController is
   Initializable,
@@ -20,7 +18,6 @@ contract StakingController is
   ERC721HolderUpgradeable,
   IStakingController
 {
-
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   IERC20Upgradeable private infinity;
@@ -39,8 +36,10 @@ contract StakingController is
     bool valid;
   }
 
-
-  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity) public initializer {
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity)
+    public
+    initializer
+  {
     __ERC165_init();
     __Context_init();
 
@@ -49,55 +48,54 @@ contract StakingController is
     controller = address(this);
   }
 
-
-    /**
+  /**
       @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
       @param parentId is the id number of the parent domain to the sub domain being requested
       @param offeredAmount is the uint value of the amount of infinity request
       @param name is the name of the new domain being created
     **/
-    function placeDomainRequest(
-      uint256 parentId,
-      uint256 offeredAmount,
-      string memory name
-    ) external override {
-      require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
-      requestCount++;
-      requests[requestCount] = Request({
-        parentId: parentId,
-        offeredAmount: offeredAmount,
-        requester: _msgSender(),
-        requestedName: name,
-        accepted: false,
-        valid: true
-      });
+  function placeDomainRequest(
+    uint256 parentId,
+    uint256 offeredAmount,
+    string memory name
+  ) external override {
+    require(registrar.domainExists(parentId), "ZNS: Invalid Domain");
+    requestCount++;
+    requests[requestCount] = Request({
+      parentId: parentId,
+      offeredAmount: offeredAmount,
+      requester: _msgSender(),
+      requestedName: name,
+      accepted: false,
+      valid: true
+    });
 
-      emit DomainRequestPlaced(
-        parentId,
-        requestCount,
-        offeredAmount,
-        name,
-        _msgSender()
-      );
-    }
+    emit DomainRequestPlaced(
+      parentId,
+      requestCount,
+      offeredAmount,
+      name,
+      _msgSender()
+    );
+  }
 
-    /**
+  /**
       @notice approveDomainRequest approves a domain request, allowing the domain to be created.
       @param requestIdentifier is the id number of the request being accepted
     **/
-    function approveDomainRequest(
-        uint256 requestIdentifier
-    ) external override{
-      Request storage request = requests[requestIdentifier];
-      require(request.valid == true, "ZNS: Request doesnt exist");
-      require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
-      require(registrar.ownerOf(request.parentId) == _msgSender(), "ZNS: Not Authorized Owner");
-      request.accepted = true;
-      emit DomainRequestApproved(requestIdentifier);
-    }
+  function approveDomainRequest(uint256 requestIdentifier) external override {
+    Request storage request = requests[requestIdentifier];
+    require(request.valid == true, "ZNS: Request doesnt exist");
+    require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
+    require(
+      registrar.ownerOf(request.parentId) == _msgSender(),
+      "ZNS: Not Authorized Owner"
+    );
+    request.accepted = true;
+    emit DomainRequestApproved(requestIdentifier);
+  }
 
-
-    /**
+  /**
       @notice Fulfills a domain request, creating the domain.
         Transfers tokens from requesters wallet into controller.
       @param requestIdentifier is the id number of the request being fullfilled
@@ -105,46 +103,52 @@ contract StakingController is
       @param metadata is the IPFS hash of the new domains information
       @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
     **/
-    function fulfillDomainRequest(
-      uint256 requestIdentifier,
-      uint256 royaltyAmount,
-      string memory metadata,
-      bool lockOnCreation
-    ) external override{
-        Request storage request = requests[requestIdentifier];
-        require(request.valid == true, "ZNS: request not valid");
-        require(request.accepted == true, "ZNS: request not accepted");
-        uint256 domainId = registrar.registerDomain(request.parentId, request.requestedName, controller, request.requester);
-        registrar.setDomainMetadataUri(domainId, metadata);
-        registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
-        registrar.transferFrom(controller, request.requester, domainId);
-        if (lockOnCreation) {
-          registrar.lockDomainMetadataForOwner(domainId);
-        }
-        request.valid = false;
-        infinity.safeTransferFrom(request.requester, controller, request.offeredAmount);
-        emit DomainRequestFulfilled(
-          requestIdentifier,
-          request.requestedName,
-          request.requester,
-          domainId,
-          request.parentId
-        );
-      }
+  function fulfillDomainRequest(
+    uint256 requestIdentifier,
+    uint256 royaltyAmount,
+    string memory metadata,
+    bool lockOnCreation
+  ) external override {
+    Request storage request = requests[requestIdentifier];
+    require(request.valid == true, "ZNS: request not valid");
+    require(request.accepted == true, "ZNS: request not accepted");
+    uint256 domainId =
+      registrar.registerDomain(
+        request.parentId,
+        request.requestedName,
+        controller,
+        request.requester
+      );
+    registrar.setDomainMetadataUri(domainId, metadata);
+    registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
+    registrar.transferFrom(controller, request.requester, domainId);
+    if (lockOnCreation) {
+      registrar.lockDomainMetadataForOwner(domainId);
+    }
+    request.valid = false;
+    infinity.safeTransferFrom(
+      request.requester,
+      controller,
+      request.offeredAmount
+    );
+    emit DomainRequestFulfilled(
+      requestIdentifier,
+      request.requestedName,
+      request.requester,
+      domainId,
+      request.parentId
+    );
+  }
 
-      /**
+  /**
         @notice withdrawRequest allows a requester to withdraw a placed request should they change their mind
         @param requestIdentifier is the number representing the request being withdrawn
       **/
-      function withdrawRequest(
-        uint256 requestIdentifier
-      ) external override{
-        Request storage request = requests[requestIdentifier];
-        require(request.requester == _msgSender(), "ZNS: Not request creator");
-        require(request.valid == true, "ZNS: request already accepted");
-        request.valid = false;
-        emit RequestWithdrawn(requestIdentifier);
-      }
-
-
+  function withdrawRequest(uint256 requestIdentifier) external override {
+    Request storage request = requests[requestIdentifier];
+    require(request.requester == _msgSender(), "ZNS: Not request creator");
+    require(request.valid == true, "ZNS: request already accepted");
+    request.valid = false;
+    emit RequestWithdrawn(requestIdentifier);
   }
+}

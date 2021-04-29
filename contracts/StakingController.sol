@@ -86,7 +86,6 @@ contract StakingController is
   function approveDomainRequest(uint256 requestIdentifier) external override {
     Request storage request = requests[requestIdentifier];
     require(request.valid == true, "ZNS: Request doesnt exist");
-    require(registrar.domainExists(request.parentId), "ZNS: Invalid Domain");
     require(
       registrar.ownerOf(request.parentId) == _msgSender(),
       "ZNS: Not Authorized Owner"

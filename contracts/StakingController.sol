@@ -26,7 +26,10 @@ contract StakingController is
   uint256 public requestCount;
 
   struct DomainData {
+    // Used to invalidate all existing requests whenever a request is fulfilled
     uint256 nonce;
+    // Tracks the request which was fulfilled to create this domain
+    uint256 fulfilledRequest;
   }
 
   mapping(uint256 => Request) public requests;
@@ -78,6 +81,12 @@ contract StakingController is
 
     // Calculate what the created domain's id would be so we can get the nonce
     uint256 domainId = calculateDomainId(parentId, name);
+
+    require(
+      !registrar.domainExists(domainId),
+      "Staking Controller: Domain already exists."
+    );
+
     uint256 domainNonce = domainData[domainId].nonce;
 
     requests[requestCount] = Request({
@@ -103,10 +112,10 @@ contract StakingController is
 
   /**
    * @notice approveDomainRequest approves a domain request, allowing the domain to be created.
-   * @param requestIdentifier is the id number of the request being accepted
+   * @param requestId is the id number of the request being accepted
    **/
-  function approveDomainRequest(uint256 requestIdentifier) external override {
-    Request storage request = requests[requestIdentifier];
+  function approveDomainRequest(uint256 requestId) external override {
+    Request storage request = requests[requestId];
 
     require(request.valid, "Staking Controller: Request doesnt exist");
     require(
@@ -125,29 +134,32 @@ contract StakingController is
 
     request.accepted = true;
 
-    emit DomainRequestApproved(requestIdentifier);
+    emit DomainRequestApproved(requestId);
   }
 
   /**
    *  @notice Fulfills a domain request, creating the domain.
    *    Transfers tokens from requesters wallet into controller.
-   *  @param requestIdentifier is the id number of the request being fullfilled
+   *  @param requestId is the id number of the request being fullfilled
    *  @param royaltyAmount is the royalty amount the creator sets for resales on zAuction
    *  @param metadata is the IPFS hash of the new domains information
    *  @param lockOnCreation is a bool representing whether or not the metadata for this domain is locked
    **/
   function fulfillDomainRequest(
-    uint256 requestIdentifier,
+    uint256 requestId,
     uint256 royaltyAmount,
     string memory metadata,
     bool lockOnCreation
   ) external override {
-    Request storage request = requests[requestIdentifier];
+    Request storage request = requests[requestId];
 
+    // Only allow requestor to fulfill
     require(
       _msgSender() == request.requester,
       "Staking Controller: Only requester may fulfill."
     );
+
+    // Check for out dated / invalid requests
     require(request.valid, "Staking Controller: Request not valid");
     require(request.accepted, "Staking Controller: Request not accepted");
 
@@ -161,12 +173,14 @@ contract StakingController is
 
     request.valid = false;
 
+    // This will fail if the user hasn't approved the token or have enough
     infinity.safeTransferFrom(
       request.requester,
       controller,
       request.offeredAmount
     );
 
+    // This will fail if the domain already exists
     uint256 domainId =
       registrar.registerDomain(
         request.parentId,
@@ -175,6 +189,11 @@ contract StakingController is
         request.requester
       );
 
+    /*
+     * This should never really happen, but if it does it means the controller
+     * is somehow calculating the domainId different than the Registrar which
+     * means we can't reliably track domain data
+     */
     require(
       predictedDomainId == domainId,
       "Staking Controller: internal error, domain id's did not match."
@@ -183,6 +202,8 @@ contract StakingController is
     // Increment the nonce on the domain data so any existing requests for this domain become invalid
     uint256 newDomainNonce = domainData[domainId].nonce + 1;
     domainData[domainId].nonce = newDomainNonce;
+    // Track the request which was fulfilled for this domain
+    domainData[domainId].fulfilledRequest = requestId;
 
     registrar.setDomainMetadataUri(domainId, metadata);
     registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
@@ -193,7 +214,7 @@ contract StakingController is
     }
 
     emit DomainRequestFulfilled(
-      requestIdentifier,
+      requestId,
       request.requestedName,
       request.requester,
       domainId,
@@ -204,10 +225,10 @@ contract StakingController is
 
   /**
    *  @notice withdrawRequest allows a requester to withdraw a placed request should they change their mind
-   *  @param requestIdentifier is the number representing the request being withdrawn
+   *  @param requestId is the number representing the request being withdrawn
    **/
-  function withdrawRequest(uint256 requestIdentifier) external override {
-    Request storage request = requests[requestIdentifier];
+  function withdrawRequest(uint256 requestId) external override {
+    Request storage request = requests[requestId];
 
     require(
       request.requester == _msgSender(),
@@ -224,7 +245,7 @@ contract StakingController is
 
     request.valid = false;
 
-    emit RequestWithdrawn(requestIdentifier);
+    emit RequestWithdrawn(requestId);
   }
 
   /**

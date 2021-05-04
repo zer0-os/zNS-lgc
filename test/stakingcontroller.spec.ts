@@ -162,7 +162,7 @@ describe("Staking Controller", () => {
       const controllerAsUser1 = await controller.connect(user1);
       const lock = true;
 
-      let expectedId = calculateDomainHash(
+      const expectedId = calculateDomainHash(
         ethers.constants.HashZero,
         hashDomainName(name)
       );

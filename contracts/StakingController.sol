@@ -112,6 +112,8 @@ contract StakingController is
 
   /**
    * @notice approveDomainRequest approves a domain request, allowing the domain to be created.
+   *      two different requests can be approved at a time, whichever requestor fulfills their
+   *      request first gets to fulfill the request.
    * @param requestId is the id number of the request being accepted
    **/
   function approveDomainRequest(uint256 requestId) external override {

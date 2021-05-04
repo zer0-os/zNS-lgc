@@ -19,7 +19,6 @@ contract BasicController is
   uint256 private rootDomain;
 
   modifier authorized(uint256 domain) {
-    require(registrar.domainExists(domain), "Zer0 Controller: Invalid Domain");
     require(
       registrar.ownerOf(domain) == _msgSender(),
       "Zer0 Controller: Not Authorized"
@@ -30,6 +29,7 @@ contract BasicController is
   function initialize(IRegistrar _registrar) public initializer {
     __ERC165_init();
     __Context_init();
+    __ERC721Holder_init();
 
     registrar = _registrar;
     rootDomain = 0x0;
@@ -68,7 +68,7 @@ contract BasicController is
     uint256 id = registrar.registerDomain(parentId, label, controller, minter);
     registrar.setDomainMetadataUri(id, metadata);
     registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-    registrar.transferFrom(controller, owner, id);
+    registrar.safeTransferFrom(controller, owner, id);
 
     if (lockOnCreation) {
       registrar.lockDomainMetadataForOwner(id);

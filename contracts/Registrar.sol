@@ -38,6 +38,8 @@ contract Registrar is
 
   function initialize() public initializer {
     __Ownable_init();
+
+    __ERC721Pausable_init();
     __ERC721_init("Zer0 Name Service", "ZNS");
 
     // create the root domain
@@ -53,6 +55,10 @@ contract Registrar is
     @param controller The address of the controller
    */
   function addController(address controller) external override onlyOwner {
+    require(
+      !controllers[controller],
+      "Zer0 Registrar: Controller is already added"
+    );
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -62,8 +68,26 @@ contract Registrar is
     @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
+    require(
+      controllers[controller],
+      "Zer0 Registrar: Controller does not exist"
+    );
     controllers[controller] = false;
     emit ControllerRemoved(controller);
+  }
+
+  /**
+    @notice Pauses the registrar. Can only be done when not paused.
+   */
+  function pause() external onlyOwner {
+    _pause();
+  }
+
+  /**
+    @notice Unpauses the registrar. Can only be done when not paused.
+   */
+  function unpause() external onlyOwner {
+    _unpause();
   }
 
   /**
@@ -79,6 +103,8 @@ contract Registrar is
     address domainOwner,
     address minter
   ) external override onlyController returns (uint256) {
+    require(bytes(name).length > 0, "Zer0 Registrar: Empty name");
+
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
@@ -107,6 +133,10 @@ contract Registrar is
     onlyOwnerOf(id)
   {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(
+      records[id].royaltyAmount != amount,
+      "Zer0 Registrar: Royalty Amount must be different"
+    );
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);

@@ -61,10 +61,4 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     string memory metadata,
     bool lockOnCreation
   ) external;
-
-  /**
-   * @notice withdrawRequest allows a bidder to withdraw a placed bid should they change their mind
-   * @param bidIdentifier is the number representing the bid being withdrawn
-   **/
-  function withdrawRequest(uint256 bidIdentifier) external;
 }

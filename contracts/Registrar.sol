@@ -133,10 +133,6 @@ contract Registrar is
     onlyOwnerOf(id)
   {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    require(
-      records[id].royaltyAmount != amount,
-      "Zer0 Registrar: Royalty Amount must be different"
-    );
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);

@@ -41,7 +41,6 @@ contract StakingController is
     address requester;
     string requestedName;
     bool accepted;
-    bool valid;
     uint256 domainNonce;
   }
 
@@ -95,7 +94,6 @@ contract StakingController is
       requester: _msgSender(),
       requestedName: name,
       accepted: false,
-      valid: true,
       domainNonce: domainNonce
     });
 
@@ -119,7 +117,11 @@ contract StakingController is
   function approveDomainRequest(uint256 requestId) external override {
     Request storage request = requests[requestId];
 
-    require(request.valid, "Staking Controller: Request doesnt exist");
+    require(
+      request.requester != address(0),
+      "Staking Controller: Request doesn't exist"
+    );
+
     require(
       registrar.ownerOf(request.parentId) == _msgSender(),
       "Staking Controller: Not Authorized Owner"
@@ -161,8 +163,6 @@ contract StakingController is
       "Staking Controller: Only requester may fulfill."
     );
 
-    // Check for out dated / invalid requests
-    require(request.valid, "Staking Controller: Request not valid");
     require(request.accepted, "Staking Controller: Request not accepted");
 
     uint256 predictedDomainId =
@@ -172,8 +172,6 @@ contract StakingController is
       request.domainNonce == domainData[predictedDomainId].nonce,
       "Staking Controller: Request is outdated."
     );
-
-    request.valid = false;
 
     // This will fail if the user hasn't approved the token or have enough
     infinity.safeTransferFrom(
@@ -223,31 +221,6 @@ contract StakingController is
       request.parentId,
       newDomainNonce
     );
-  }
-
-  /**
-   *  @notice withdrawRequest allows a requester to withdraw a placed request should they change their mind
-   *  @param requestId is the number representing the request being withdrawn
-   **/
-  function withdrawRequest(uint256 requestId) external override {
-    Request storage request = requests[requestId];
-
-    require(
-      request.requester == _msgSender(),
-      "Staking Controller: Not Requestor"
-    );
-    require(request.valid, "Staking Controller: Request is invalid");
-
-    uint256 predictedDomainId =
-      calculateDomainId(request.parentId, request.requestedName);
-    require(
-      request.domainNonce == domainData[predictedDomainId].nonce,
-      "Staking Controller: Request is outdated"
-    );
-
-    request.valid = false;
-
-    emit RequestWithdrawn(requestId);
   }
 
   /**

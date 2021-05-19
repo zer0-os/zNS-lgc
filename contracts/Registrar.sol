@@ -12,6 +12,7 @@ contract Registrar is
 {
   // Data recorded for each domain
   struct DomainRecord {
+    uint256 parentId;
     address minter;
     bool metadataLocked;
     address metadataLockedBy;
@@ -43,7 +44,7 @@ contract Registrar is
     __ERC721_init("Zer0 Name Service", "ZNS");
 
     // create the root domain
-    _createDomain(0, msg.sender, msg.sender, address(0));
+    _createDomain(0, 0, msg.sender, msg.sender, address(0));
   }
 
   /*
@@ -115,7 +116,7 @@ contract Registrar is
     // Calculate the new domain's id and create it
     uint256 domainId =
       uint256(keccak256(abi.encodePacked(parentId, labelHash)));
-    _createDomain(domainId, domainOwner, minter, controller);
+    _createDomain(parentId, domainId, domainOwner, minter, controller);
 
     emit DomainCreated(domainId, name, labelHash, parentId, minter, controller);
 
@@ -275,12 +276,24 @@ contract Registrar is
     return amount;
   }
 
+  /**
+   * @notice Returns the parent id of a domain.
+   * @param id The domain
+   */
+  function parentOf(uint256 id) public view override returns (uint256) {
+    require(_exists(id), "Zer0 Registrar: Does not exist");
+
+    uint256 parentId = records[id].parentId;
+    return parentId;
+  }
+
   /*
     Internal Methods
   */
 
   // internal - creates a domain
   function _createDomain(
+    uint256 parentId,
     uint256 domainId,
     address domainOwner,
     address minter,
@@ -289,6 +302,7 @@ contract Registrar is
     // Create the NFT and register the domain data
     _safeMint(domainOwner, domainId);
     records[domainId] = DomainRecord({
+      parentId: parentId,
       minter: minter,
       metadataLocked: false,
       metadataLockedBy: address(0),

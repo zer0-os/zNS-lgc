@@ -32,7 +32,9 @@ contract StakingControllerV2 is
     // Used to invalidate all existing requests whenever a request is fulfilled
     uint256 nonce;
     // Tracks the request which was fulfilled to create this domain
-    uint256 fulfilledRequest;
+    uint256 fulfilledRequestId;
+    // Tracks the current (actual) domain token of a domain (will always be a token)
+    address domainToken;
   }
 
   mapping(uint256 => Request) public requests;
@@ -45,7 +47,7 @@ contract StakingControllerV2 is
     string requestedName;
     bool accepted;
     uint256 domainNonce;
-    address domainToken;
+    address domainToken; // may be address(0)
   }
 
   function initialize(
@@ -61,7 +63,6 @@ contract StakingControllerV2 is
     registrar = _registrar;
     tokenSafelist = _tokenSafelist;
     controller = address(this);
-    requestCount = 1; // Start at 1 so requests[0] is always empty
   }
 
   /**
@@ -191,10 +192,10 @@ contract StakingControllerV2 is
     );
 
     // Gets the configured ERC20 token for a domain, will default to infinity
-    IERC20Upgradeable domainToken = getDomainToken(request.parentId);
+    IERC20Upgradeable parentDomainToken = getDomainToken(request.parentId);
 
     // This will fail if the user hasn't approved the token or have enough
-    domainToken.safeTransferFrom(
+    parentDomainToken.safeTransferFrom(
       request.requester,
       controller,
       request.offeredAmount
@@ -223,7 +224,14 @@ contract StakingControllerV2 is
     uint256 newDomainNonce = domainData[domainId].nonce + 1;
     domainData[domainId].nonce = newDomainNonce;
     // Track the request which was fulfilled for this domain
-    domainData[domainId].fulfilledRequest = requestId;
+    domainData[domainId].fulfilledRequestId = requestId;
+
+    // Lock the domain token on registration
+    if (request.domainToken != address(0)) {
+      domainData[domainId].domainToken = request.domainToken;
+    } else {
+      domainData[domainId].domainToken = address(parentDomainToken);
+    }
 
     registrar.setDomainMetadataUri(domainId, metadata);
     registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
@@ -252,17 +260,18 @@ contract StakingControllerV2 is
     view
     returns (IERC20Upgradeable)
   {
-    // Instead of storing a second copy of the domain token address, we access the requests
-    // This could be attackable if requests[0] was valid
-    // but it will never be used so requests[0].domainToken is always address(0)
-    address domainToken =
-      requests[domainData[domain].fulfilledRequest].domainToken;
+    if (domain == 0) {
+      return defaultToken;
+    }
+
+    address domainToken = domainData[domain].domainToken;
 
     if (domainToken != address(0)) {
       return IERC20Upgradeable(domainToken);
     }
 
-    return defaultToken;
+    // In the case that a domain's token was not indicated, defaults to the parent's
+    return getDomainToken(registrar.parentOf(domain));
   }
 
   /**

@@ -275,6 +275,29 @@ contract Registrar is
     return amount;
   }
 
+  /**
+    @notice Returns whether a domain is a child domain of a given parent domain
+    @param domain The domain to check if it is a child
+    @param parent The parent domain
+    @return True of domain is a child of parent.
+   */
+  function isChildOf(uint256 domain, uint256 parent)
+    public
+    view
+    returns (bool)
+  {
+    uint256 currentDomain = domain;
+
+    while (currentDomain != 0) {
+      if (records[currentDomain].parentId == parent) {
+        return true;
+      }
+      currentDomain = records[currentDomain].parentId;
+    }
+
+    return false;
+  }
+
   /*
     Internal Methods
   */

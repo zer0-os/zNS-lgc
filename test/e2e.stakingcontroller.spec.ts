@@ -13,6 +13,8 @@ import {
   Registrar,
   StakingController,
   StakingController__factory,
+  SimpleTokenSafelist,
+  SimpleTokenSafelist__factory,
 } from "../typechain";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
@@ -27,6 +29,8 @@ describe("Staking Controller", () => {
   let controller: StakingController;
   let mockTokenSmock: MockContract;
   let registrar: Registrar | ModifiableContract;
+  let tokenSafelist: SimpleTokenSafelist;
+
   const parentID = 0;
   const bidAmount = 5000;
   const royaltyAmount = 10;
@@ -52,9 +56,20 @@ describe("Staking Controller", () => {
     await mockToken.deployed();
 
     mockTokenSmock = await smockit(mockToken);
+
+    const safelistFactory = new SimpleTokenSafelist__factory(creator);
+    tokenSafelist = await safelistFactory.deploy();
+    await tokenSafelist.initialize();
+
+    await tokenSafelist.safelistToken(mockTokenSmock.address);
+
     controllerFactory = new StakingController__factory(creator);
     controller = await controllerFactory.deploy();
-    await controller.initialize(registrar.address, mockTokenSmock.address);
+    await controller.initialize(
+      registrar.address,
+      mockTokenSmock.address,
+      tokenSafelist.address
+    );
 
     await registrar.addController(controller.address);
   });
@@ -67,7 +82,8 @@ describe("Staking Controller", () => {
         ethers.constants.HashZero,
         bidAmount,
         name,
-        requestUri
+        requestUri,
+        ethers.constants.AddressZero
       );
 
       const expectedNonce = 0;
@@ -81,7 +97,8 @@ describe("Staking Controller", () => {
           requestUri,
           name,
           user1.address,
-          expectedNonce
+          expectedNonce,
+          ethers.constants.AddressZero
         );
     });
 
@@ -89,7 +106,13 @@ describe("Staking Controller", () => {
       const controllerAsUser1 = await controller.connect(user1);
 
       await expect(
-        controllerAsUser1.placeDomainRequest(1234, bidAmount, name, requestUri)
+        controllerAsUser1.placeDomainRequest(
+          1234,
+          bidAmount,
+          name,
+          requestUri,
+          ethers.constants.AddressZero
+        )
       ).to.be.revertedWith("Staking Controller: Invalid Domain");
     });
   });
@@ -149,7 +172,15 @@ describe("Staking Controller", () => {
 
       expect(tx)
         .to.emit(controller, "DomainRequestFulfilled")
-        .withArgs(1, name, user1.address, expectedId, parentID, expectedNonce);
+        .withArgs(
+          1,
+          name,
+          user1.address,
+          expectedId,
+          parentID,
+          expectedNonce,
+          mockTokenSmock.address
+        );
     });
 
     it("Fails to fulfill the same bid twice", async () => {
@@ -172,7 +203,8 @@ describe("Staking Controller", () => {
         parentID,
         bidAmount,
         otherDomainName,
-        requestUri
+        requestUri,
+        mockTokenSmock.address
       );
 
       const expectedNonce = 0;
@@ -186,14 +218,16 @@ describe("Staking Controller", () => {
           requestUri,
           otherDomainName,
           user1.address,
-          expectedNonce
+          expectedNonce,
+          mockTokenSmock.address
         );
 
       await controllerAsUser1.placeDomainRequest(
         parentID,
         bidAmount,
         otherDomainName,
-        requestUri
+        requestUri,
+        ethers.constants.AddressZero
       );
     });
 
@@ -203,7 +237,8 @@ describe("Staking Controller", () => {
         parentID,
         bidAmount,
         otherDomainName,
-        requestUri
+        requestUri,
+        ethers.constants.AddressZero
       );
     });
 
@@ -227,6 +262,61 @@ describe("Staking Controller", () => {
     it("fails to accept the third bid", async () => {
       await expect(controller.approveDomainRequest(4)).to.be.revertedWith(
         "Staking Controller: Request is outdated"
+      );
+    });
+  });
+
+  describe("update domain token", () => {
+    const domainName = "blahblah";
+    const domainId = calculateDomainHash(
+      ethers.constants.HashZero,
+      hashDomainName(domainName)
+    );
+
+    before(async () => {
+      await registrar.registerDomain(
+        0,
+        domainName,
+        creator.address,
+        creator.address
+      );
+    });
+
+    it("domain token is default before", async () => {
+      const token = await controller.getDomainToken(domainId);
+
+      expect(token).to.be.eq(mockTokenSmock.address);
+    });
+
+    it("prevents non owner from setting domain token", async () => {
+      const controllerAsUser1 = await controller.connect(user1.address);
+      const tx = controllerAsUser1.setDomainToken(domainId, creator.address);
+
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
+    });
+
+    it("prevents setting domain token on non-existing domain", async () => {
+      const controllerAsUser1 = await controller.connect(user1.address);
+      const tx = controllerAsUser1.setDomainToken(1337, creator.address);
+
+      await expect(tx).to.be.revertedWith(
+        "ERC721: owner query for nonexistent token"
+      );
+    });
+
+    it("allows domain owner to set domain token", async () => {
+      await controller.setDomainToken(domainId, creator.address);
+
+      const token = await controller.getDomainToken(domainId);
+
+      expect(token).to.be.eq(creator.address);
+    });
+
+    it("prevents owner from setting domain token twice", async () => {
+      const tx = controller.setDomainToken(domainId, creator.address);
+
+      await expect(tx).to.be.revertedWith(
+        "Staking Controller: Domain Token already set."
       );
     });
   });

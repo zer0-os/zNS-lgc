@@ -24,7 +24,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     address recipient,
     uint256 indexed domainId,
     uint256 indexed parentID,
-    uint256 domainNonce
+    uint256 domainNonce,
+    address domainToken
   );
 
   /**

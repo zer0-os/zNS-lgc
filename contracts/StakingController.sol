@@ -66,7 +66,6 @@ contract StakingController is
     registrar = _registrar;
     tokenSafelist = _tokenSafelist;
     controller = address(this);
-    requestCount = 1; // We do this so requests[0] is always default
   }
 
   /**
@@ -262,7 +261,8 @@ contract StakingController is
       request.requester,
       domainId,
       request.parentId,
-      newDomainNonce
+      newDomainNonce,
+      domainData[domainId].domainToken
     );
   }
 

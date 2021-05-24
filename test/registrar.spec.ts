@@ -650,4 +650,31 @@ describe("Registrar", () => {
       ).to.be.revertedWith("Zer0 Registrar: Not owner");
     });
   });
+
+  describe("domain unregister", () => {
+    let testDomainId: string;
+
+    before(async () => {
+      await deployRegistry(creator);
+      await registry.addController(creator.address);
+
+      const domainName = "myDomain";
+      await registry.registerDomain(
+        rootDomainId,
+        domainName,
+        creator.address,
+        creator.address
+      );
+
+      const domainNameHash = hashDomainName(domainName);
+      const expectedDomainHash = calculateDomainHash(
+        rootDomainHash,
+        domainNameHash
+      );
+
+      testDomainId = expectedDomainHash;
+    });
+
+    it("allows unregistering a domain", async () => {});
+  });
 });

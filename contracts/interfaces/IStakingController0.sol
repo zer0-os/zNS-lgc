@@ -4,7 +4,7 @@ pragma solidity ^0.7.3;
 import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
-interface IStakingControllerV2 is
+interface IStakingController0 is
   IERC165Upgradeable,
   IERC721ReceiverUpgradeable
 {
@@ -15,8 +15,7 @@ interface IStakingControllerV2 is
     string requestUri,
     string indexed name,
     address requestor,
-    uint256 domainNonce,
-    address domainToken
+    uint256 domainNonce
   );
 
   event DomainRequestApproved(uint256 indexed requestId);
@@ -42,8 +41,7 @@ interface IStakingControllerV2 is
     uint256 parentId,
     uint256 bidAmount,
     string memory name,
-    string memory requestUri,
-    address domainToken
+    string memory requestUri
   ) external;
 
   /**

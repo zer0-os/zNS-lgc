@@ -48,12 +48,12 @@ contract Registrar is
   }
 
   /*
-    External Methods
-  */
+   * External Methods
+   */
 
   /**
-    @notice Authorizes a controller to control the registrar
-    @param controller The address of the controller
+   * @notice Authorizes a controller to control the registrar
+   * @param controller The address of the controller
    */
   function addController(address controller) external override onlyOwner {
     require(
@@ -65,8 +65,8 @@ contract Registrar is
   }
 
   /**
-    @notice Unauthorizes a controller to control the registrar
-    @param controller The address of the controller
+   * @notice Unauthorizes a controller to control the registrar
+   * @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
     require(
@@ -78,25 +78,25 @@ contract Registrar is
   }
 
   /**
-    @notice Pauses the registrar. Can only be done when not paused.
+   * @notice Pauses the registrar. Can only be done when not paused.
    */
   function pause() external onlyOwner {
     _pause();
   }
 
   /**
-    @notice Unpauses the registrar. Can only be done when not paused.
+   * @notice Unpauses the registrar. Can only be done when not paused.
    */
   function unpause() external onlyOwner {
     _unpause();
   }
 
   /**
-    @notice Registers a new (sub) domain
-    @param parentId The parent domain
-    @param name The name of the domain
-    @param domainOwner the owner of the new domain
-    @param minter the minter of the new domain
+   * @notice Registers a new (sub) domain
+   * @param parentId The parent domain
+   * @param name The name of the domain
+   * @param domainOwner the owner of the new domain
+   * @param minter the minter of the new domain
    */
   function registerDomain(
     uint256 parentId,
@@ -124,9 +124,9 @@ contract Registrar is
   }
 
   /**
-    @notice Sets the domain royalty amount
-    @param id The domain to set on
-    @param amount The royalty amount
+   * @notice Sets the domain royalty amount
+   * @param id The domain to set on
+   * @param amount The royalty amount
    */
   function setDomainRoyaltyAmount(uint256 id, uint256 amount)
     external
@@ -140,9 +140,9 @@ contract Registrar is
   }
 
   /**
-    @notice Sets the domain metadata uri
-    @param id The domain to set on
-    @param uri The uri to set
+   * @notice Sets the domain metadata uri
+   * @param id The domain to set on
+   * @param uri The uri to set
    */
   function setDomainMetadataUri(uint256 id, string memory uri)
     external
@@ -156,8 +156,8 @@ contract Registrar is
   }
 
   /**
-    @notice Locks a domains metadata uri
-    @param id The domain to lock
+   * @notice Locks a domains metadata uri
+   * @param id The domain to lock
    */
   function lockDomainMetadata(uint256 id) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
@@ -166,8 +166,8 @@ contract Registrar is
   }
 
   /**
-    @notice Locks a domains metadata uri on behalf the owner
-    @param id The domain to lock
+   * @notice Locks a domains metadata uri on behalf the owner
+   * @param id The domain to lock
    */
   function lockDomainMetadataForOwner(uint256 id)
     external
@@ -181,8 +181,8 @@ contract Registrar is
   }
 
   /**
-    @notice Unlocks a domains metadata uri
-    @param id The domain to unlock
+   * @notice Unlocks a domains metadata uri
+   * @param id The domain to unlock
    */
   function unlockDomainMetadata(uint256 id) external override {
     require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
@@ -195,12 +195,21 @@ contract Registrar is
   }
 
   /*
-    Public View
-  */
+   * Public View
+   */
 
   /**
-    @notice Returns whether or not a domain is available to be created
-    @param id The domain
+   * @notice Returns whether or not an account is a a controller
+   * @param account Address of account to check
+   */
+  function isController(address account) external view override returns (bool) {
+    bool accountIsController = controllers[account];
+    return accountIsController;
+  }
+
+  /**
+   * @notice Returns whether or not a domain is available to be created
+   * @param id The domain
    */
   function isAvailable(uint256 id) public view override returns (bool) {
     bool notRegistered = !_exists(id);
@@ -208,8 +217,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns whether or not a domain is exists
-    @param id The domain
+   * @notice Returns whether or not a domain is exists
+   * @param id The domain
    */
   function domainExists(uint256 id) public view override returns (bool) {
     bool domainNftExists = _exists(id);
@@ -217,8 +226,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns the original minter of a domain
-    @param id The domain
+   * @notice Returns the original minter of a domain
+   * @param id The domain
    */
   function minterOf(uint256 id) public view override returns (address) {
     address minter = records[id].minter;
@@ -226,8 +235,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns whether or not a domain's metadata is locked
-    @param id The domain
+   * @notice Returns whether or not a domain's metadata is locked
+   * @param id The domain
    */
   function isDomainMetadataLocked(uint256 id)
     public
@@ -240,8 +249,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns who locked a domain's metadata
-    @param id The domain
+   * @notice Returns who locked a domain's metadata
+   * @param id The domain
    */
   function domainMetadataLockedBy(uint256 id)
     public
@@ -254,8 +263,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns the controller which created the domain on behalf of a user
-    @param id The domain
+   * @notice Returns the controller which created the domain on behalf of a user
+   * @param id The domain
    */
   function domainController(uint256 id) public view override returns (address) {
     address controller = records[id].controller;
@@ -263,8 +272,8 @@ contract Registrar is
   }
 
   /**
-    @notice Returns the current royalty amount for a domain
-    @param id The domain
+   * @notice Returns the current royalty amount for a domain
+   * @param id The domain
    */
   function domainRoyaltyAmount(uint256 id)
     public
@@ -288,8 +297,8 @@ contract Registrar is
   }
 
   /*
-    Internal Methods
-  */
+   * Internal Methods
+   */
 
   // internal - creates a domain
   function _createDomain(

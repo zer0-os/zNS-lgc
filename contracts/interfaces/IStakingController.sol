@@ -12,7 +12,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     string requestUri,
     string indexed name,
     address requestor,
-    uint256 domainNonce
+    uint256 domainNonce,
+    address domainToken
   );
 
   event DomainRequestApproved(uint256 indexed requestId);
@@ -26,8 +27,6 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 domainNonce
   );
 
-  event RequestWithdrawn(uint256 indexed requestId);
-
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
    * @param parentId is the id number of the parent domain to the sub domain being requested
@@ -38,7 +37,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 parentId,
     uint256 bidAmount,
     string memory name,
-    string memory requestUri
+    string memory requestUri,
+    address domainToken
   ) external;
 
   /**

@@ -9,32 +9,27 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
 import "./interfaces/IRegistrar.sol";
-import {IStakingControllerV2} from "./interfaces/IStakingController2.sol";
-import {ITokenSafelist} from "./interfaces/ITokenSafelist.sol";
+import "./interfaces/IStakingController0.sol";
 
-contract StakingControllerV2 is
+contract StakingController0 is
   Initializable,
   ContextUpgradeable,
   ERC165Upgradeable,
   ERC721HolderUpgradeable,
-  IStakingControllerV2
+  IStakingController0
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  ITokenSafelist private tokenSafelist;
-  IERC20Upgradeable private defaultToken;
+  IERC20Upgradeable private infinity;
   IRegistrar private registrar;
   address private controller;
-
   uint256 public requestCount;
 
   struct DomainData {
     // Used to invalidate all existing requests whenever a request is fulfilled
     uint256 nonce;
     // Tracks the request which was fulfilled to create this domain
-    uint256 fulfilledRequestId;
-    // Tracks the current (actual) domain token of a domain (will always be a token)
-    address domainToken;
+    uint256 fulfilledRequest;
   }
 
   mapping(uint256 => Request) public requests;
@@ -47,21 +42,18 @@ contract StakingControllerV2 is
     string requestedName;
     bool accepted;
     uint256 domainNonce;
-    address domainToken; // may be address(0)
   }
 
-  function initialize(
-    IRegistrar _registrar,
-    IERC20Upgradeable _defaultToken,
-    ITokenSafelist _tokenSafelist
-  ) public initializer {
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity)
+    public
+    initializer
+  {
     __ERC165_init();
     __Context_init();
     __ERC721Holder_init();
 
-    defaultToken = _defaultToken;
+    infinity = _infinity;
     registrar = _registrar;
-    tokenSafelist = _tokenSafelist;
     controller = address(this);
   }
 
@@ -76,21 +68,13 @@ contract StakingControllerV2 is
     uint256 parentId,
     uint256 offeredAmount,
     string memory name,
-    string memory requestUri,
-    address domainToken
+    string memory requestUri
   ) external override {
     require(
       registrar.domainExists(parentId),
       "Staking Controller: Invalid Domain"
     );
     require(bytes(name).length > 0, "Staking Controller: Name is empty");
-
-    if (domainToken != address(0)) {
-      require(
-        tokenSafelist.isTokenSafelisted(domainToken),
-        "Staking Controller: Domain Token not safelisted"
-      );
-    }
 
     requestCount++;
 
@@ -110,8 +94,7 @@ contract StakingControllerV2 is
       requester: _msgSender(),
       requestedName: name,
       accepted: false,
-      domainNonce: domainNonce,
-      domainToken: domainToken
+      domainNonce: domainNonce
     });
 
     emit DomainRequestPlaced(
@@ -121,8 +104,7 @@ contract StakingControllerV2 is
       requestUri,
       name,
       _msgSender(),
-      domainNonce,
-      domainToken
+      domainNonce
     );
   }
 
@@ -191,11 +173,8 @@ contract StakingControllerV2 is
       "Staking Controller: Request is outdated."
     );
 
-    // Gets the configured ERC20 token for a domain, will default to infinity
-    IERC20Upgradeable parentDomainToken = getDomainToken(request.parentId);
-
     // This will fail if the user hasn't approved the token or have enough
-    parentDomainToken.safeTransferFrom(
+    infinity.safeTransferFrom(
       request.requester,
       controller,
       request.offeredAmount
@@ -224,14 +203,7 @@ contract StakingControllerV2 is
     uint256 newDomainNonce = domainData[domainId].nonce + 1;
     domainData[domainId].nonce = newDomainNonce;
     // Track the request which was fulfilled for this domain
-    domainData[domainId].fulfilledRequestId = requestId;
-
-    // Lock the domain token on registration
-    if (request.domainToken != address(0)) {
-      domainData[domainId].domainToken = request.domainToken;
-    } else {
-      domainData[domainId].domainToken = address(parentDomainToken);
-    }
+    domainData[domainId].fulfilledRequest = requestId;
 
     registrar.setDomainMetadataUri(domainId, metadata);
     registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
@@ -249,29 +221,6 @@ contract StakingControllerV2 is
       request.parentId,
       newDomainNonce
     );
-  }
-
-  /**
-   * @notice Gets the domain token for a given domain
-   * @param domain The domain id
-   */
-  function getDomainToken(uint256 domain)
-    public
-    view
-    returns (IERC20Upgradeable)
-  {
-    if (domain == 0) {
-      return defaultToken;
-    }
-
-    address domainToken = domainData[domain].domainToken;
-
-    if (domainToken != address(0)) {
-      return IERC20Upgradeable(domainToken);
-    }
-
-    // In the case that a domain's token was not indicated, defaults to the parent's
-    return getDomainToken(registrar.parentOf(domain));
   }
 
   /**

@@ -68,6 +68,14 @@ contract StakingController is
     controller = address(this);
   }
 
+  modifier authorized(uint256 domain) {
+    require(
+      registrar.ownerOf(domain) == _msgSender(),
+      "Zer0 Controller: Not Authorized"
+    );
+    _;
+  }
+
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
    * @param parentId is the id number of the parent domain to the sub domain being requested
@@ -231,8 +239,8 @@ contract StakingController is
       "Staking Controller: internal error, domain id's did not match."
     );
 
-    // Increment the nonce on the domain data so any existing requests for this domain become invalid
-    uint256 newDomainNonce = domainData[domainId].nonce + 1;
+    // Update the domain nonce so any previous requests are now invalid
+    uint256 newDomainNonce = registrar.domainNonce(domainId);
     domainData[domainId].nonce = newDomainNonce;
     // Track the request which was fulfilled for this domain
     domainData[domainId].fulfilledRequestId = requestId;
@@ -264,6 +272,30 @@ contract StakingController is
       newDomainNonce,
       domainData[domainId].domainToken
     );
+  }
+
+  /**
+   * @notice Used to set the domain token of a domain which doesn't have one set.
+   *         Can only be called by the domain owner, if the domain exists.
+   * @param domainId The domain id
+   * @param token The token address to be the domain token
+   */
+  function setDomainToken(uint256 domainId, address token)
+    external
+    authorized(domainId)
+  {
+    uint256 domainNonce = registrar.domainNonce(domainId);
+    if (
+      domainData[domainId].domainToken != address(0) &&
+      domainNonce == domainData[domainId].nonce
+    ) {
+      revert("Staking Controller: Domain Token already set.");
+    }
+
+    domainData[domainId].domainToken = token;
+    domainData[domainId].nonce = domainNonce;
+
+    emit DomainTokenSet(domainId, token);
   }
 
   /**

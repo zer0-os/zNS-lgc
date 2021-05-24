@@ -91,4 +91,7 @@ interface IRegistrar is
 
   // Returns the parent domain of a child domain
   function parentOf(uint256 id) external view returns (uint256);
+
+  // Returns the current domain nonce
+  function domainNonce(uint256 id) external view returns (uint256);
 }

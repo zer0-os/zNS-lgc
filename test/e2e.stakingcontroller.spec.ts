@@ -265,4 +265,59 @@ describe("Staking Controller", () => {
       );
     });
   });
+
+  describe("update domain token", () => {
+    const domainName = "blahblah";
+    const domainId = calculateDomainHash(
+      ethers.constants.HashZero,
+      hashDomainName(domainName)
+    );
+
+    before(async () => {
+      await registrar.registerDomain(
+        0,
+        domainName,
+        creator.address,
+        creator.address
+      );
+    });
+
+    it("domain token is default before", async () => {
+      const token = await controller.getDomainToken(domainId);
+
+      expect(token).to.be.eq(mockTokenSmock.address);
+    });
+
+    it("prevents non owner from setting domain token", async () => {
+      const controllerAsUser1 = await controller.connect(user1.address);
+      const tx = controllerAsUser1.setDomainToken(domainId, creator.address);
+
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
+    });
+
+    it("prevents setting domain token on non-existing domain", async () => {
+      const controllerAsUser1 = await controller.connect(user1.address);
+      const tx = controllerAsUser1.setDomainToken(1337, creator.address);
+
+      await expect(tx).to.be.revertedWith(
+        "ERC721: owner query for nonexistent token"
+      );
+    });
+
+    it("allows domain owner to set domain token", async () => {
+      await controller.setDomainToken(domainId, creator.address);
+
+      const token = await controller.getDomainToken(domainId);
+
+      expect(token).to.be.eq(creator.address);
+    });
+
+    it("prevents owner from setting domain token twice", async () => {
+      const tx = controller.setDomainToken(domainId, creator.address);
+
+      await expect(tx).to.be.revertedWith(
+        "Staking Controller: Domain Token already set."
+      );
+    });
+  });
 });

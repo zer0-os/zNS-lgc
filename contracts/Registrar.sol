@@ -18,6 +18,7 @@ contract Registrar is
     address metadataLockedBy;
     address controller;
     uint256 royaltyAmount;
+    uint256 nonce;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -296,6 +297,17 @@ contract Registrar is
     return parentId;
   }
 
+  /**
+   * @notice Returns the domain nonce of a domain.
+   * @param id The domain
+   */
+  function domainNonce(uint256 id) public view override returns (uint256) {
+    require(_exists(id), "Zer0 Registrar: Does not exist");
+
+    uint256 nonce = records[id].nonce;
+    return nonce;
+  }
+
   /*
    * Internal Methods
    */
@@ -310,13 +322,15 @@ contract Registrar is
   ) internal {
     // Create the NFT and register the domain data
     _safeMint(domainOwner, domainId);
+    uint256 lastNonce = records[domainId].nonce; // default to zero
     records[domainId] = DomainRecord({
       parentId: parentId,
       minter: minter,
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,
-      royaltyAmount: 0
+      royaltyAmount: 0,
+      nonce: lastNonce + 1
     });
   }
 

@@ -28,6 +28,8 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     address domainToken
   );
 
+  event DomainTokenSet(uint256 indexed domainId, address domainToken);
+
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
    * @param parentId is the id number of the parent domain to the sub domain being requested

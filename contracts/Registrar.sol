@@ -125,6 +125,27 @@ contract Registrar is
   }
 
   /**
+   * @notice Unregisters a domain
+   * @param domainId the Id of the domain to unregister
+   */
+  function unregisterDomain(uint256 domainId) external override onlyController {
+    require(_exists(domainId), "Zer0 Registrar: Does not exist");
+    require(domainId != 0x0, "Zer0 Registrar: Root must be registered");
+
+    DomainRecord storage record = records[domainId];
+
+    record.controller = address(0);
+    record.metadataLockedBy = address(0);
+    record.minter = address(0);
+    record.metadataLocked = false;
+    record.royaltyAmount = 0;
+
+    _burn(domainId);
+
+    emit DomainUnregistered(domainId);
+  }
+
+  /**
    * @notice Sets the domain royalty amount
    * @param id The domain to set on
    * @param amount The royalty amount

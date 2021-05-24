@@ -24,6 +24,9 @@ interface IRegistrar is
     address controller
   );
 
+  // Emitted whenever a domain is deregistered
+  event DomainUnregistered(uint256 indexed id);
+
   // Emitted whenever the metadata of a domain is locked
   event MetadataLocked(uint256 indexed id, address locker);
 
@@ -49,6 +52,9 @@ interface IRegistrar is
     address domainOwner,
     address minter
   ) external returns (uint256);
+
+  // Unregister's a domain
+  function unregisterDomain(uint256 domainId) external;
 
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
   function lockDomainMetadata(uint256 id) external;

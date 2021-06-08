@@ -19,6 +19,9 @@ import {
 
 const logger = getLogger("scripts::deploy-staking-controller");
 
+// change for target staking token
+const tokenAddress = "0x279D6D836e75947F2aC9F66f893C4297B6Ba9e44";
+
 async function main() {
   await run("compile");
 
@@ -62,7 +65,7 @@ async function main() {
 
   const instance = await upgrades.deployProxy(
     controllerFactory,
-    [registrar.address],
+    [registrar.address, tokenAddress],
     {
       initializer: "initialize",
     }

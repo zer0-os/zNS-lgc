@@ -1,0 +1,4 @@
+# Mainnet Deployment
+
+Registrar: 0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D
+Basic Controller: 0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a

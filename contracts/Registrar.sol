@@ -27,12 +27,12 @@ contract Registrar is
   mapping(uint256 => DomainRecord) public records;
 
   modifier onlyController {
-    require(controllers[msg.sender], "Zer0 Registrar: Not controller");
+    require(controllers[msg.sender], "Registrar: Not controller");
     _;
   }
 
   modifier onlyOwnerOf(uint256 id) {
-    require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
+    require(ownerOf(id) == msg.sender, "Registrar: Not owner");
     _;
   }
 
@@ -40,7 +40,7 @@ contract Registrar is
     __Ownable_init();
 
     __ERC721Pausable_init();
-    __ERC721_init("Zer0 Name Service", "ZNS");
+    __ERC721_init("Zero Name Service", "zNS");
 
     // create the root domain
     _createDomain(0, msg.sender, msg.sender, address(0));
@@ -55,10 +55,7 @@ contract Registrar is
     @param controller The address of the controller
    */
   function addController(address controller) external override onlyOwner {
-    require(
-      !controllers[controller],
-      "Zer0 Registrar: Controller is already added"
-    );
+    require(!controllers[controller], "Registrar: Controller is already added");
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -68,10 +65,7 @@ contract Registrar is
     @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
-    require(
-      controllers[controller],
-      "Zer0 Registrar: Controller does not exist"
-    );
+    require(controllers[controller], "Registrar: Controller does not exist");
     controllers[controller] = false;
     emit ControllerRemoved(controller);
   }
@@ -103,14 +97,14 @@ contract Registrar is
     address domainOwner,
     address minter
   ) external override onlyController returns (uint256) {
-    require(bytes(name).length > 0, "Zer0 Registrar: Empty name");
+    require(bytes(name).length > 0, "Registrar: Empty name");
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
 
     // Domain parents must exist
-    require(_exists(parentId), "Zer0 Registrar: No parent");
+    require(_exists(parentId), "Registrar: No parent");
 
     // Calculate the new domain's id and create it
     uint256 domainId =
@@ -132,7 +126,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "Registrar: Metadata locked");
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
@@ -148,7 +142,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "Registrar: Metadata locked");
 
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
@@ -159,7 +153,7 @@ contract Registrar is
     @param id The domain to lock
    */
   function lockDomainMetadata(uint256 id) external override onlyOwnerOf(id) {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "Registrar: Metadata locked");
 
     _lockMetadata(id, msg.sender);
   }
@@ -173,7 +167,7 @@ contract Registrar is
     override
     onlyController
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "Registrar: Metadata locked");
 
     address domainOwner = ownerOf(id);
     _lockMetadata(id, domainOwner);
@@ -184,11 +178,8 @@ contract Registrar is
     @param id The domain to unlock
    */
   function unlockDomainMetadata(uint256 id) external override {
-    require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
-    require(
-      domainMetadataLockedBy(id) == msg.sender,
-      "Zer0 Registrar: Not locker"
-    );
+    require(isDomainMetadataLocked(id), "Registrar: Not locked");
+    require(domainMetadataLockedBy(id) == msg.sender, "Registrar: Not locker");
 
     _unlockMetadata(id);
   }

@@ -14,6 +14,7 @@ export interface DeployedContract {
 export interface DeploymentOutput {
   registrar?: DeployedContract;
   basicController?: DeployedContract;
+  stakingController?: DeployedContract;
 }
 
 const root = "zns";

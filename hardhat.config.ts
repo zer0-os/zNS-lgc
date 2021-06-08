@@ -46,6 +46,11 @@ const config: HardhatUserConfig = {
         blockNumber: 11845661,
       },
     },
+    mainnet: {
+      accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
+      url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+      gasPrice: 48000000000,
+    },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
       url: `https://kovan.infura.io/v3/0e6434f252a949719227b5d68caa2657`,

@@ -10,7 +10,7 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 indexed requestId,
     uint256 offeredAmount,
     string requestUri,
-    string indexed name,
+    string name,
     address requestor,
     uint256 domainNonce
   );

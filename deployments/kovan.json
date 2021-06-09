@@ -15,9 +15,9 @@
   },
   "stakingController": {
     "name": "StakingController",
-    "address": "0x09d36c4e72F740D46C18769d91b446Fdbb71B2B5",
-    "version": "ce074c3a3f850882ee1f3fcdf5a31d684067513b736d07aecef07cb2f5f15a44",
-    "date": "2021-06-08T19:10:56.599Z",
-    "implementation": "0x7a4D633db9A8a74Ea2182B811Fd6b1FC38843674"
+    "address": "0xC6E3a8eD83eFdA986Eab9EfA4286fb031333448f",
+    "version": "45068d32d3f1f0887338ce2260201847fd5620398be50d83e0ee566a839dbe2c",
+    "date": "2021-06-09T01:57:35.239Z",
+    "implementation": "0xEbC415DbC17681ffc615F79B76656395124d7313"
   }
 }

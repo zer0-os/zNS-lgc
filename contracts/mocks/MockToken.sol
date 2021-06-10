@@ -10,10 +10,14 @@ contract MockToken is Initializable, ERC20Upgradeable {
   }
 
   function mint() public {
-    _mint(msg.sender, 10000 * 10**18);
+    _mint(msg.sender, 100000000000 * 10**18);
   }
 
   function mintFor(address account) public {
-    _mint(account, 10000 * 10**18);
+    _mint(account, 100000000000 * 10**18);
+  }
+
+  function mintAmountFor(address account, uint256 amount) public {
+    _mint(account, amount);
   }
 }

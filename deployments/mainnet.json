@@ -12,5 +12,12 @@
     "version": "115cab06c1d1d5748ea6b4cb2eaef5c545110f9637e6670873abd52b034fbd4a",
     "date": "2021-06-03T16:55:55.563Z",
     "implementation": "0x8c51d6758f1bbe5cEf8A4e94980930A584BcbF6C"
+  },
+  "stakingController": {
+    "name": "StakingController",
+    "address": "0x79135dd59346BBf06Ccf40978ACaC570d92eefBa",
+    "version": "45068d32d3f1f0887338ce2260201847fd5620398be50d83e0ee566a839dbe2c",
+    "date": "2021-06-11T22:48:32.477Z",
+    "implementation": "0x6Fe863A05181b2E63154Cf0cF80eb4a95aE0B6E5"
   }
 }

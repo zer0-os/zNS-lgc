@@ -1,16 +1,23 @@
 {
   "registrar": {
     "name": "Registrar",
-    "address": "0x74299b367E199a3f9a37fdFDb1f9dE85b1224A13",
+    "address": "0x7293c267cA90FEdD32c67AEf52fB3416903A24B3",
     "version": "0c0619b25f03ecfe0fa4cde1970ac7ff5fabab42fc6705c4c4495885771879da",
     "date": "2021-03-25T19:07:33.308Z",
     "implementation": "0xF6868A2E45f92381D1806d27E2D09Cc458e4C10b"
   },
   "basicController": {
     "name": "BasicController",
-    "address": "0x682ac9f7BA50A2713510598bF2b7901E2AC0B096",
+    "address": "0x7EB6D0E8c91F6e88bf029138FDf0d04Fb78E43a4",
     "version": "04c52b4af521ec673046e56975f1faabde99e7ad92ebd0f5647d69607921dacc",
     "date": "2021-03-25T19:09:25.891Z",
     "implementation": "0xA36b7042d3CFD951034c6E942Fb47259991AF8Fb"
+  },
+  "stakingController": {
+    "name": "StakingController",
+    "address": "0xC6E3a8eD83eFdA986Eab9EfA4286fb031333448f",
+    "version": "45068d32d3f1f0887338ce2260201847fd5620398be50d83e0ee566a839dbe2c",
+    "date": "2021-06-09T01:57:35.239Z",
+    "implementation": "0xEbC415DbC17681ffc615F79B76656395124d7313"
   }
 }

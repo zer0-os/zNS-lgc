@@ -21,7 +21,7 @@ contract BasicController is
   modifier authorized(uint256 domain) {
     require(
       registrar.ownerOf(domain) == _msgSender(),
-      "Zer0 Controller: Not Authorized"
+      "BasicController: Not Authorized"
     );
     _;
   }

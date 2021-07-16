@@ -20,7 +20,7 @@ contract StakingController is
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  IERC20Upgradeable private infinity;
+  IERC20Upgradeable public token;
   IRegistrar private registrar;
   address private controller;
   uint256 public requestCount;
@@ -44,7 +44,7 @@ contract StakingController is
     uint256 domainNonce;
   }
 
-  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity)
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _token)
     public
     initializer
   {
@@ -52,7 +52,7 @@ contract StakingController is
     __Context_init();
     __ERC721Holder_init();
 
-    infinity = _infinity;
+    token = _token;
     registrar = _registrar;
     controller = address(this);
   }
@@ -60,7 +60,7 @@ contract StakingController is
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
    * @param parentId is the id number of the parent domain to the sub domain being requested
-   * @param offeredAmount is the uint value of the amount of infinity request
+   * @param offeredAmount is the uint value of the amount of token request
    * @param name is the name of the new domain being created
    * @param requestUri is the uri to a JSON object which will have more details about the request (for ui)
    **/
@@ -174,7 +174,7 @@ contract StakingController is
     );
 
     // This will fail if the user hasn't approved the token or have enough
-    infinity.safeTransferFrom(
+    token.safeTransferFrom(
       request.requester,
       controller,
       request.offeredAmount

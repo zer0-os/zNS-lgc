@@ -1,5 +1,9 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import { Registrar__factory } from "../typechain";
+import {
+  StakingController__factory,
+  Registrar,
+  Registrar__factory,
+} from "../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
@@ -13,7 +17,10 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-registrar");
+const logger = getLogger("scripts::deploy-staking-controller");
+
+// change for target staking token
+const tokenAddress = "0x2a3bFF78B79A009976EeA096a51A948a3dC00e34";
 
 async function main() {
   await run("compile");
@@ -27,18 +34,6 @@ async function main() {
     `'${deploymentAccount.address}' will be used as the deployment account`
   );
 
-  const registrarFactory = new Registrar__factory(deploymentAccount);
-  const bytecodeHash = hashBytecodeWithoutMetadata(registrarFactory.bytecode);
-
-  logger.log(`Implementation version is ${bytecodeHash}`);
-
-  const instance = await upgrades.deployProxy(registrarFactory, [], {
-    initializer: "initialize",
-  });
-  await instance.deployed();
-
-  logger.log(`Deployed Registrar to '${instance.address}'`);
-
   const fileName = `${network.name}.json`;
   const filepath = `${deploymentsFolder}/${fileName}`;
   let deploymentData: DeploymentOutput;
@@ -51,8 +46,36 @@ async function main() {
     deploymentData = {};
   }
 
-  const registrarObject: DeployedContract = {
-    name: "Registrar",
+  if (!deploymentData.registrar) {
+    logger.error(
+      `Registrar must be deployed before controller can be deployed!`
+    );
+    process.exit(1);
+  }
+
+  const registrarFactory = new Registrar__factory(deploymentAccount);
+  const registrar: Registrar = await registrarFactory.attach(
+    deploymentData.registrar.address
+  );
+
+  const controllerFactory = new StakingController__factory(deploymentAccount);
+  const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
+
+  logger.log(`Implementation version is ${bytecodeHash}`);
+
+  const instance = await upgrades.deployProxy(
+    controllerFactory,
+    [registrar.address, tokenAddress],
+    {
+      initializer: "initialize",
+    }
+  );
+  await instance.deployed();
+
+  logger.log(`Deployed Staking Controller to '${instance.address}'`);
+
+  const deploymentRecord: DeployedContract = {
+    name: "StakingController",
     address: instance.address,
     version: bytecodeHash,
     date: new Date().toISOString(),
@@ -63,10 +86,10 @@ async function main() {
   const implementationContract = manifest.impls[bytecodeHash];
 
   if (implementationContract) {
-    registrarObject.implementation = implementationContract.address;
+    deploymentRecord.implementation = implementationContract.address;
   }
 
-  deploymentData.registrar = registrarObject;
+  deploymentData.stakingController = deploymentRecord;
 
   const jsonToWrite = JSON.stringify(deploymentData, undefined, 2);
 
@@ -76,8 +99,8 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
-    logger.log(`Waiting for 3 confirmations`);
-    await instance.deployTransaction.wait(3);
+    logger.log(`Waiting for 5 confirmations`);
+    await instance.deployTransaction.wait(5);
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

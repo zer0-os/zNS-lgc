@@ -1,14 +1,13 @@
 import { ethers, network, run } from "hardhat";
 import {
-  BasicController,
-  BasicController__factory,
   Registrar,
   Registrar__factory,
+  StakingController__factory,
 } from "../typechain";
 import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 
-const logger = getLogger("scripts::add-controller");
+const logger = getLogger("scripts::add-staking-controller");
 
 async function main() {
   await run("compile");
@@ -28,7 +27,7 @@ async function main() {
     deploymentData = {};
   }
 
-  if (!deploymentData.registrar || !deploymentData.basicController) {
+  if (!deploymentData.registrar || !deploymentData.stakingController) {
     logger.error(`Registrar and Controller are not deployed.`);
     process.exit(1);
   }
@@ -49,9 +48,9 @@ async function main() {
     process.exit(1);
   }
 
-  const controllerFactory = new BasicController__factory(deploymentAccount);
-  const controller: BasicController = await controllerFactory.attach(
-    deploymentData.basicController.address
+  const controllerFactory = new StakingController__factory(deploymentAccount);
+  const controller = await controllerFactory.attach(
+    deploymentData.stakingController.address
   );
 
   const alreadyController = await registrar["controllers(address)"](

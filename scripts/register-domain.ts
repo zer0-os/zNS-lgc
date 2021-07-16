@@ -16,11 +16,12 @@ const parentId = ethers.constants.HashZero;
 const domainName = "wilder";
 const domainMetadata =
   "https://ipfs.io/ipfs/QmTH2eNVXmeyxPBG1kQaeTcueBiv34FpGzE29indvtqYgp";
-const domainOwner = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+const domainOwner = "0x37358Aa5D051B434C23Bad744E56E6A484107272";
 
 async function main() {
   const accounts = await ethers.getSigners();
   const deploymentAccount = accounts[0];
+  console.log(`account ${deploymentAccount} is being used`);
 
   const fileName = `${network.name}.json`;
   const filepath = `${deploymentsFolder}/${fileName}`;
@@ -54,7 +55,7 @@ async function main() {
     domainOwner,
     domainMetadata,
     0,
-    true
+    false
   );
 
   logger.debug(`waiting to mine...`);

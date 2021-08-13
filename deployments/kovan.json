@@ -1,23 +1,23 @@
 {
   "registrar": {
     "name": "Registrar",
-    "address": "0x7293c267cA90FEdD32c67AEf52fB3416903A24B3",
-    "version": "0c0619b25f03ecfe0fa4cde1970ac7ff5fabab42fc6705c4c4495885771879da",
-    "date": "2021-03-25T19:07:33.308Z",
-    "implementation": "0xF6868A2E45f92381D1806d27E2D09Cc458e4C10b"
+    "address": "0xC613fCc3f81cC2888C5Cccc1620212420FFe4931",
+    "version": "766d00de356fb546c4841d9b362b1625961bbdeae5f4c8db416d2446b6201568",
+    "date": "2021-08-10T18:01:31.879Z",
+    "implementation": "0xa4e2B57D0FeD9bCC254CB89Ad33f09EA37D0B7DA"
   },
   "basicController": {
     "name": "BasicController",
-    "address": "0x7EB6D0E8c91F6e88bf029138FDf0d04Fb78E43a4",
-    "version": "04c52b4af521ec673046e56975f1faabde99e7ad92ebd0f5647d69607921dacc",
-    "date": "2021-03-25T19:09:25.891Z",
-    "implementation": "0xA36b7042d3CFD951034c6E942Fb47259991AF8Fb"
+    "address": "0x2EF34C52138781C901Fe9e50B64d80aA9903f730",
+    "version": "115cab06c1d1d5748ea6b4cb2eaef5c545110f9637e6670873abd52b034fbd4a",
+    "date": "2021-08-10T18:03:08.321Z",
+    "implementation": "0x64CE27B5280CBCD548FA78d07A334A74F0f4dd57"
   },
   "stakingController": {
     "name": "StakingController",
-    "address": "0xC6E3a8eD83eFdA986Eab9EfA4286fb031333448f",
-    "version": "45068d32d3f1f0887338ce2260201847fd5620398be50d83e0ee566a839dbe2c",
-    "date": "2021-06-09T01:57:35.239Z",
-    "implementation": "0xEbC415DbC17681ffc615F79B76656395124d7313"
+    "address": "0x1E3F8B31b24EC0E938BE45ecF6971584F90A1602",
+    "version": "075a0a7a48acff742ca326b0146332f5e0b13aa0f3a24fa3c0564bbd5d361c08",
+    "date": "2021-08-13T22:42:59.756Z",
+    "implementation": "0x76B04abFf0896ad741484b62e9525612Ca7c77Ad"
   }
 }

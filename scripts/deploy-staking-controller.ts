@@ -20,7 +20,7 @@ import {
 const logger = getLogger("scripts::deploy-staking-controller");
 
 // change for target staking token
-const tokenAddress = "0x2a3bFF78B79A009976EeA096a51A948a3dC00e34";
+const tokenAddress = "0xD364C50c33902110230255FE1D730D84FA23e48e";
 
 async function main() {
   await run("compile");

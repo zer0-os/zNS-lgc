@@ -1,15 +1,8 @@
 import { ethers, upgrades, network, run } from "hardhat";
 import {
-  StakingController__factory,
-  Registrar,
-  Registrar__factory,
   MockToken__factory,
 } from "../typechain";
-import * as fs from "fs";
 import {
-  DeployedContract,
-  DeploymentOutput,
-  deploymentsFolder,
   getLogger,
 } from "../utilities";
 
@@ -18,7 +11,7 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-staking-controller");
+const logger = getLogger("scripts::deploy-mock-token");
 
 async function main() {
   await run("compile");

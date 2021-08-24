@@ -2,21 +2,18 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers } from "hardhat";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import {
-  smockit,
-  MockContract,
-  smoddit,
-  ModifiableContract,
-} from "@eth-optimism/smock";
+import { smock, MockContract } from "@defi-wonderland/smock";
 
 import {
   Registrar,
+  MockToken,
   StakingController,
   StakingController__factory,
 } from "../typechain";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
+chai.use(smock.matchers);
 const { expect } = chai;
 
 describe("Staking Controller", () => {
@@ -25,7 +22,7 @@ describe("Staking Controller", () => {
   let user1: SignerWithAddress;
   let controllerFactory: StakingController__factory;
   let controller: StakingController;
-  let mockTokenSmock: MockContract;
+  let mockTokenSmock: MockContract<MockToken>;
   let registrar: Registrar | ModifiableContract;
   const parentID = 0;
   const bidAmount = 5000;

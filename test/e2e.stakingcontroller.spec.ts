@@ -2,13 +2,14 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers } from "hardhat";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import { smock, MockContract } from "@defi-wonderland/smock";
+import { smock, FakeContract, MockContract } from "@defi-wonderland/smock";
 
 import {
   Registrar,
   MockToken,
   StakingController,
   StakingController__factory,
+  Registrar__factory,
 } from "../typechain";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
@@ -22,8 +23,8 @@ describe("Staking Controller", () => {
   let user1: SignerWithAddress;
   let controllerFactory: StakingController__factory;
   let controller: StakingController;
-  let mockTokenSmock: MockContract<MockToken>;
-  let registrar: Registrar | ModifiableContract;
+  let mockTokenSmock: FakeContract<MockToken>;
+  let registrar: Registrar | MockContract<Registrar>;
   const parentID = 0;
   const bidAmount = 5000;
   const royaltyAmount = 10;
@@ -36,7 +37,7 @@ describe("Staking Controller", () => {
     creator = accounts[0];
     user1 = accounts[1];
 
-    const registrarFactory = await smoddit("Registrar");
+    const registrarFactory = await smock.mock<Registrar__factory>("Registrar");
     registrar = await registrarFactory.deploy();
 
     await registrar.initialize();

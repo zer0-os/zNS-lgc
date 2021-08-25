@@ -64,7 +64,7 @@ describe("Registrar", () => {
 
   describe("ownership", () => {
     it("allows the contract owner to be transferred", async () => {
-      await registry["transferOwnership(address)"](user1.address);
+      await registry.transferOwnership(user1.address);
       expect(await registry.owner()).to.be.eq(user1.address);
     });
   });
@@ -389,7 +389,7 @@ describe("Registrar", () => {
           user2.address,
           user2.address
         )
-      ).to.be.revertedWith("Zer0 Registrar: No parent");
+      ).to.be.revertedWith("Registrar: No parent");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
@@ -473,7 +473,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainMetadataUri(testDomainId, newMetadataUri)
-      ).to.be.revertedWith("Zer0 Registrar: Not owner");
+      ).to.be.revertedWith("Registrar: Not owner");
     });
   });
 
@@ -506,7 +506,7 @@ describe("Registrar", () => {
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.unlockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Zer0 Registrar: Not locked");
+      ).to.be.revertedWith("Registrar: Not locked");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -514,7 +514,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Zer0 Registrar: Not owner");
+      ).to.be.revertedWith("Registrar: Not owner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
@@ -539,7 +539,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+      ).to.be.revertedWith("Registrar: Metadata locked");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -547,7 +547,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.unlockDomainMetadata(testDomainId)
-      ).to.be.revertedWith("Zer0 Registrar: Not locker");
+      ).to.be.revertedWith("Registrar: Not locker");
     });
 
     it("prevents metadata from being set if it is locked", async () => {
@@ -556,7 +556,7 @@ describe("Registrar", () => {
           testDomainId,
           "https://www.chuckecheese.com/"
         )
-      ).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+      ).to.be.revertedWith("Registrar: Metadata locked");
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
@@ -573,7 +573,7 @@ describe("Registrar", () => {
     it("prevents a non controller from locking metadata on behalf of a user", async () => {
       const tx = registryAsUser1.lockDomainMetadataForOwner(testDomainId);
 
-      await expect(tx).to.be.revertedWith("Zer0 Registrar: Not controller");
+      await expect(tx).to.be.revertedWith("Registrar: Not controller");
     });
 
     it("allows a controller to lock metadata on behalf of a user", async () => {
@@ -591,7 +591,7 @@ describe("Registrar", () => {
     it("prevents a controller from locking metadata if it is already locked", async () => {
       const tx = registry.lockDomainMetadataForOwner(testDomainId);
 
-      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+      await expect(tx).to.be.revertedWith("Registrar: Metadata locked");
     });
   });
 
@@ -647,7 +647,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWith("Zer0 Registrar: Not owner");
+      ).to.be.revertedWith("Registrar: Not owner");
     });
   });
 });

@@ -77,8 +77,7 @@ describe("End 2 End Tests", () => {
     it("owner of registrar adds controller", async () => {
       await registrar.addController(controller.address);
 
-      expect(await registrar["controllers(address)"](controller.address)).to.be
-        .true;
+      expect(await registrar.controllers(controller.address)).to.be.true;
     });
   });
 
@@ -145,10 +144,10 @@ describe("End 2 End Tests", () => {
 
     it("user1 is unable to set metadata or royalty", async () => {
       let tx = registrarAsUser1.setDomainMetadataUri(domain1Id, "blah");
-      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+      await expect(tx).to.be.revertedWith("Registrar: Metadata locked");
 
       tx = registrarAsUser1.setDomainRoyaltyAmount(domain1Id, 0);
-      await expect(tx).to.be.revertedWith("Zer0 Registrar: Metadata locked");
+      await expect(tx).to.be.revertedWith("Registrar: Metadata locked");
     });
   });
 
@@ -220,8 +219,7 @@ describe("End 2 End Tests", () => {
     it("owner of registrar adds second controller", async () => {
       await registrar.addController(basicController2.address);
 
-      expect(await registrar["controllers(address)"](basicController2.address))
-        .to.be.true;
+      expect(await registrar.controllers(basicController2.address)).to.be.true;
     });
 
     it("admin creates user1 a domain through controller (A)", async () => {

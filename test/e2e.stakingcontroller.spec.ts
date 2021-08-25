@@ -49,7 +49,7 @@ describe("Staking Controller", () => {
     ).deploy();
     await mockToken.deployed();
 
-    mockTokenSmock = await smockit(mockToken);
+    mockTokenSmock = await smock.fake(mockToken);
     controllerFactory = new StakingController__factory(creator);
     controller = await controllerFactory.deploy();
     await controller.initialize(registrar.address, mockTokenSmock.address);
@@ -134,7 +134,7 @@ describe("Staking Controller", () => {
         hashDomainName(name)
       );
 
-      await mockTokenSmock.smocked.transferFrom.will.return.with(true);
+      await mockTokenSmock.transferFrom.returns(true);
 
       const tx = await controllerAsUser1.fulfillDomainRequest(
         1,

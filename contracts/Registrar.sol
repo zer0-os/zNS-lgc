@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "./interfaces/IRegistrar.sol";
 
 contract Registrar is
   IRegistrar,
   OwnableUpgradeable,
-  ERC721PausableUpgradeable
+  ERC721PausableUpgradeable,
+  ERC721EnumerableUpgradeable
 {
   // Data recorded for each domain
   struct DomainRecord {
@@ -17,6 +19,7 @@ contract Registrar is
     address metadataLockedBy;
     address controller;
     uint256 royaltyAmount;
+    string metadataUri;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -26,7 +29,7 @@ contract Registrar is
   // This essentially expands the internal ERC721's token storage to additional fields
   mapping(uint256 => DomainRecord) public records;
 
-  modifier onlyController {
+  modifier onlyController() {
     require(controllers[msg.sender], "Registrar: Not controller");
     _;
   }
@@ -39,6 +42,7 @@ contract Registrar is
   function initialize() public initializer {
     __Ownable_init();
 
+    __ERC721Enumerable_init();
     __ERC721Pausable_init();
     __ERC721_init("Zero Name Service", "zNS");
 
@@ -107,8 +111,9 @@ contract Registrar is
     require(_exists(parentId), "Registrar: No parent");
 
     // Calculate the new domain's id and create it
-    uint256 domainId =
-      uint256(keccak256(abi.encodePacked(parentId, labelHash)));
+    uint256 domainId = uint256(
+      keccak256(abi.encodePacked(parentId, labelHash))
+    );
     _createDomain(domainId, domainOwner, minter, controller);
 
     emit DomainCreated(domainId, name, labelHash, parentId, minter, controller);
@@ -144,7 +149,7 @@ contract Registrar is
   {
     require(!isDomainMetadataLocked(id), "Registrar: Metadata locked");
 
-    _setTokenURI(id, uri);
+    records[id].metadataUri = uri;
     emit MetadataChanged(id, uri);
   }
 
@@ -187,6 +192,17 @@ contract Registrar is
   /*
     Public View
   */
+
+  function tokenURI(uint256 id)
+    public
+    view
+    virtual
+    override(ERC721Upgradeable, IERC721MetadataUpgradeable)
+    returns (string memory)
+  {
+    require(_exists(id), "ERC721Metadata: URI query for nonexistent token");
+    return records[id].metadataUri;
+  }
 
   /**
     @notice Returns whether or not a domain is available to be created
@@ -266,6 +282,16 @@ contract Registrar is
     return amount;
   }
 
+  function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    virtual
+    override(IERC165Upgradeable, ERC721Upgradeable, ERC721EnumerableUpgradeable)
+    returns (bool)
+  {
+    return super.supportsInterface(interfaceId);
+  }
+
   /*
     Internal Methods
   */
@@ -284,7 +310,8 @@ contract Registrar is
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,
-      royaltyAmount: 0
+      royaltyAmount: 0,
+      metadataUri: ""
     });
   }
 
@@ -302,5 +329,17 @@ contract Registrar is
     records[id].metadataLockedBy = address(0);
 
     emit MetadataUnlocked(id);
+  }
+
+  function _beforeTokenTransfer(
+    address from,
+    address to,
+    uint256 tokenId
+  )
+    internal
+    virtual
+    override(ERC721PausableUpgradeable, ERC721EnumerableUpgradeable)
+  {
+    super._beforeTokenTransfer(from, to, tokenId);
   }
 }

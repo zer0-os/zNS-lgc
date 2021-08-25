@@ -1,10 +1,10 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
 import chai from "chai";
 import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import { BasicController, BasicController__factory } from "../typechain";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -37,7 +37,7 @@ describe("Basic Controller", () => {
         {
           initializer: "initialize",
         }
-      )) as BasicController;
+      )) as unknown as BasicController;
       controller = await controller.deployed();
     });
 
@@ -85,7 +85,7 @@ describe("Basic Controller", () => {
         {
           initializer: "initialize",
         }
-      )) as BasicController;
+      )) as unknown as BasicController;
       controller = await controller.deployed();
     });
 

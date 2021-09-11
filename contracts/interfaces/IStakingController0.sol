@@ -4,7 +4,10 @@ pragma solidity ^0.7.3;
 import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
-interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
+interface IStakingController0 is
+  IERC165Upgradeable,
+  IERC721ReceiverUpgradeable
+{
   event DomainRequestPlaced(
     uint256 indexed parentId,
     uint256 indexed requestId,
@@ -12,8 +15,7 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     string requestUri,
     string indexed name,
     address requestor,
-    uint256 domainNonce,
-    address domainToken
+    uint256 domainNonce
   );
 
   event DomainRequestApproved(uint256 indexed requestId);
@@ -24,11 +26,10 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     address recipient,
     uint256 indexed domainId,
     uint256 indexed parentID,
-    uint256 domainNonce,
-    address domainToken
+    uint256 domainNonce
   );
 
-  event DomainTokenSet(uint256 indexed domainId, address domainToken);
+  event RequestWithdrawn(uint256 indexed requestId);
 
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner
@@ -40,8 +41,7 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 parentId,
     uint256 bidAmount,
     string memory name,
-    string memory requestUri,
-    address domainToken
+    string memory requestUri
   ) external;
 
   /**

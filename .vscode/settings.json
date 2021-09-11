@@ -9,5 +9,6 @@
   "files.eol": "\n",
   "[solidity]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "solidity.compileUsingRemoteVersion": "v0.7.3+commit.9bfce1f6"
 }

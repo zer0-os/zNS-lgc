@@ -21,7 +21,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.7",
+        version: "0.7.3",
         settings: {
           outputSelection: {
             "*": {
@@ -43,7 +43,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
-        blockNumber: 11845661,
+        blockNumber: 13201766,
       },
     },
     mainnet: {

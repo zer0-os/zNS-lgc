@@ -195,6 +195,24 @@ contract Registrar is
     _unlockMetadata(id);
   }
 
+  function fixParentLink(uint256 parentId, string memory name) external {
+    uint256 labelHash = uint256(keccak256(bytes(name)));
+
+    // Domain parents must exist
+    require(_exists(parentId), "No parent");
+
+    // Calculate the new domain's id and create it
+    uint256 domainId = uint256(
+      keccak256(abi.encodePacked(parentId, labelHash))
+    );
+
+    require(_exists(domainId), "Invalid domain");
+
+    require(records[domainId].parentId == 0, "Parent Already Set");
+
+    records[domainId].parentId = parentId;
+  }
+
   /*
    * Public View
    */

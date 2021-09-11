@@ -157,8 +157,8 @@ contract StakingController is
     );
 
     require(
-      domainData[domainId].fulfilledRequestId == 0,
-      "Staking Controller: Request is outdated."
+      !registrar.domainExists(domainId),
+      "Staking Controller: Domain already exists."
     );
 
     request.accepted = true;
@@ -201,8 +201,8 @@ contract StakingController is
     );
 
     require(
-      domainData[predictedDomainId].fulfilledRequestId == 0,
-      "Staking Controller: Request is outdated."
+      !registrar.domainExists(predictedDomainId),
+      "Staking Controller: Domain already exists."
     );
 
     request.fulfilled = true;

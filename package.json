@@ -53,7 +53,7 @@
     "fix:contracts": "prettier --write ./contracts/**/*.sol",
     "fix:ts": "eslint . --ext .ts --fix",
     "lint": "yarn run lint:contracts && yarn run lint:ts",
-    "lint:contracts": "./node_modules/.bin/solhint -f table contracts/**/*.sol",
+    "lint:contracts": "./node_modules/.bin/solhint -c ./.solhint-ci.json -f table contracts/**/*.sol",
     "lint:ts": "eslint . --ext .ts"
   },
   "name": "zns-contracts",

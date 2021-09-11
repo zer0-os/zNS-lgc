@@ -1,10 +1,10 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers, upgrades, waffle } from "hardhat";
 import chai from "chai";
-import { deployMockContract, MockContract, solidity } from "ethereum-waffle";
+import { MockContract, solidity } from "ethereum-waffle";
 
 import * as registrar from "../artifacts/contracts/Registrar.sol/Registrar.json";
 import { BasicController, BasicController__factory } from "../typechain";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -29,7 +29,7 @@ describe("Basic Controller", () => {
 
   describe("register top level domains", () => {
     before("deploys", async () => {
-      registrarMock = await deployMockContract(creator, registrar.abi);
+      registrarMock = await waffle.deployMockContract(creator, registrar.abi);
       controllerFactory = new BasicController__factory(creator);
       controller = (await upgrades.deployProxy(
         controllerFactory,
@@ -37,7 +37,7 @@ describe("Basic Controller", () => {
         {
           initializer: "initialize",
         }
-      )) as BasicController;
+      )) as unknown as BasicController;
       controller = await controller.deployed();
     });
 
@@ -69,7 +69,7 @@ describe("Basic Controller", () => {
       const controllerAsUser2 = await controller.connect(user2);
       const tx = controllerAsUser2.registerDomain(domainName, user1.address);
 
-      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
+      await expect(tx).to.be.revertedWith("BasicController: Not Authorized");
     });
   });
 
@@ -77,7 +77,7 @@ describe("Basic Controller", () => {
     const topLevelDomainId = 80008;
 
     before("deploys", async () => {
-      registrarMock = await deployMockContract(creator, registrar.abi);
+      registrarMock = await waffle.deployMockContract(creator, registrar.abi);
       controllerFactory = new BasicController__factory(creator);
       controller = (await upgrades.deployProxy(
         controllerFactory,
@@ -85,7 +85,7 @@ describe("Basic Controller", () => {
         {
           initializer: "initialize",
         }
-      )) as BasicController;
+      )) as unknown as BasicController;
       controller = await controller.deployed();
     });
 
@@ -137,7 +137,7 @@ describe("Basic Controller", () => {
         user3.address
       );
 
-      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
+      await expect(tx).to.be.revertedWith("BasicController: Not Authorized");
     });
 
     it("prevents creating subdomains on domains with no parent", async () => {

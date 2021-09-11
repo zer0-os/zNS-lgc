@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.7;
 
 interface ControllerV0Reference {
   // Used by an end user to register a subdomain on a given parent domain

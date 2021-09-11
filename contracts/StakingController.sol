@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 
 import "./interfaces/IRegistrar.sol";
 import "./interfaces/IStakingController.sol";
@@ -128,8 +128,10 @@ contract StakingController is
     );
     require(!request.accepted, "Staking Controller: Request already accepted");
 
-    uint256 domainId =
-      calculateDomainId(request.parentId, request.requestedName);
+    uint256 domainId = calculateDomainId(
+      request.parentId,
+      request.requestedName
+    );
 
     require(
       request.domainNonce == domainData[domainId].nonce,
@@ -165,8 +167,10 @@ contract StakingController is
 
     require(request.accepted, "Staking Controller: Request not accepted");
 
-    uint256 predictedDomainId =
-      calculateDomainId(request.parentId, request.requestedName);
+    uint256 predictedDomainId = calculateDomainId(
+      request.parentId,
+      request.requestedName
+    );
 
     require(
       request.domainNonce == domainData[predictedDomainId].nonce,
@@ -181,13 +185,12 @@ contract StakingController is
     );
 
     // This will fail if the domain already exists
-    uint256 domainId =
-      registrar.registerDomain(
-        request.parentId,
-        request.requestedName,
-        controller,
-        request.requester
-      );
+    uint256 domainId = registrar.registerDomain(
+      request.parentId,
+      request.requestedName,
+      controller,
+      request.requester
+    );
 
     /*
      * This should never really happen, but if it does it means the controller
@@ -235,8 +238,9 @@ contract StakingController is
     returns (uint256)
   {
     uint256 labelHash = uint256(keccak256(bytes(name)));
-    uint256 domainId =
-      uint256(keccak256(abi.encodePacked(parentId, labelHash)));
+    uint256 domainId = uint256(
+      keccak256(abi.encodePacked(parentId, labelHash))
+    );
 
     return domainId;
   }

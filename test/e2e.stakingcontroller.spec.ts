@@ -2,21 +2,19 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers } from "hardhat";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import {
-  smockit,
-  MockContract,
-  smoddit,
-  ModifiableContract,
-} from "@eth-optimism/smock";
+import { smock, FakeContract, MockContract } from "@defi-wonderland/smock";
 
 import {
   Registrar,
+  MockToken,
   StakingController,
   StakingController__factory,
+  Registrar__factory,
 } from "../typechain";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
 chai.use(solidity);
+chai.use(smock.matchers);
 const { expect } = chai;
 
 describe("Staking Controller", () => {
@@ -25,8 +23,8 @@ describe("Staking Controller", () => {
   let user1: SignerWithAddress;
   let controllerFactory: StakingController__factory;
   let controller: StakingController;
-  let mockTokenSmock: MockContract;
-  let registrar: Registrar | ModifiableContract;
+  let mockTokenSmock: FakeContract<MockToken>;
+  let registrar: Registrar | MockContract<Registrar>;
   const parentID = 0;
   const bidAmount = 5000;
   const royaltyAmount = 10;
@@ -39,7 +37,7 @@ describe("Staking Controller", () => {
     creator = accounts[0];
     user1 = accounts[1];
 
-    const registrarFactory = await smoddit("Registrar");
+    const registrarFactory = await smock.mock<Registrar__factory>("Registrar");
     registrar = await registrarFactory.deploy();
 
     await registrar.initialize();
@@ -51,7 +49,7 @@ describe("Staking Controller", () => {
     ).deploy();
     await mockToken.deployed();
 
-    mockTokenSmock = await smockit(mockToken);
+    mockTokenSmock = await smock.fake(mockToken);
     controllerFactory = new StakingController__factory(creator);
     controller = await controllerFactory.deploy();
     await controller.initialize(registrar.address, mockTokenSmock.address);
@@ -136,7 +134,7 @@ describe("Staking Controller", () => {
         hashDomainName(name)
       );
 
-      await mockTokenSmock.smocked.transferFrom.will.return.with(true);
+      await mockTokenSmock.transferFrom.returns(true);
 
       const tx = await controllerAsUser1.fulfillDomainRequest(
         1,

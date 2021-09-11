@@ -3,7 +3,10 @@ import { MockToken__factory } from "../typechain";
 
 async function main() {
   const accounts = await ethers.getSigners();
-  const token = MockToken__factory.connect("0x50A0A3E9873D7e7d306299a75Dc05bd3Ab2d251F", accounts[0]);
+  const token = MockToken__factory.connect(
+    "0x50A0A3E9873D7e7d306299a75Dc05bd3Ab2d251F",
+    accounts[0]
+  );
 
   const accountsToMintFor = [
     "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53",
@@ -20,8 +23,11 @@ async function main() {
   ];
 
   for (let i = 0; i < accountsToMintFor.length; ++i) {
-    console.log(`minting for ${accountsToMintFor[i]}`)
-    const tx = await token.mintAmountFor(accountsToMintFor[i], ethers.utils.parseEther("1000000"));
+    console.log(`minting for ${accountsToMintFor[i]}`);
+    const tx = await token.mintAmountFor(
+      accountsToMintFor[i],
+      ethers.utils.parseEther("1000000")
+    );
     await tx.wait();
   }
 }

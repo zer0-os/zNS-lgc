@@ -5,9 +5,9 @@
   "prettier.printWidth": 80,
   "solidity.enabledAsYouTypeCompilationErrorCheck": true,
   "solidity.validationDelay": 1500,
-  "solidity.formatter": "prettier",
-  "solidity.enableLocalNodeCompiler": true,
-  "solidity.compileUsingRemoteVersion": "v0.7.3+commit.9bfce1f6",
   "solidity.linter": "solhint",
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "[solidity]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

@@ -1,10 +1,6 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import {
-  MockToken__factory,
-} from "../typechain";
-import {
-  getLogger,
-} from "../utilities";
+import { MockToken__factory } from "../typechain";
+import { getLogger } from "../utilities";
 
 import {
   hashBytecodeWithoutMetadata,

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721MetadataUpgradeable.sol";
 
 interface IRegistrar is
   IERC721MetadataUpgradeable,
@@ -65,6 +65,9 @@ interface IRegistrar is
   // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)
   function setDomainRoyaltyAmount(uint256 id, uint256 amount) external;
 
+  // Returns whether an address is a controller
+  function isController(address account) external view returns (bool);
+
   // Checks whether or not a domain exists
   function domainExists(uint256 id) external view returns (bool);
 
@@ -85,4 +88,10 @@ interface IRegistrar is
 
   // Gets a domains current royalty amount
   function domainRoyaltyAmount(uint256 id) external view returns (uint256);
+
+  // Returns the parent domain of a child domain
+  function parentOf(uint256 id) external view returns (uint256);
+
+  // Returns the current domain nonce
+  function domainNonce(uint256 id) external view returns (uint256);
 }

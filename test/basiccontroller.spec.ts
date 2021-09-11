@@ -69,7 +69,7 @@ describe("Basic Controller", () => {
       const controllerAsUser2 = await controller.connect(user2);
       const tx = controllerAsUser2.registerDomain(domainName, user1.address);
 
-      await expect(tx).to.be.revertedWith("BasicController: Not Authorized");
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
     });
   });
 
@@ -137,7 +137,7 @@ describe("Basic Controller", () => {
         user3.address
       );
 
-      await expect(tx).to.be.revertedWith("BasicController: Not Authorized");
+      await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
     });
 
     it("prevents creating subdomains on domains with no parent", async () => {

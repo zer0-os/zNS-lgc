@@ -9,34 +9,27 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
 import "./interfaces/IRegistrar.sol";
-import {IStakingController} from "./interfaces/IStakingController.sol";
-import {ITokenSafelist} from "./interfaces/ITokenSafelist.sol";
+import "./interfaces/IStakingController0.sol";
 
-contract StakingController is
+contract StakingController0 is
   Initializable,
   ContextUpgradeable,
   ERC165Upgradeable,
   ERC721HolderUpgradeable,
-  IStakingController
+  IStakingController0
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  ITokenSafelist private tokenSafelist;
-  IERC20Upgradeable private defaultToken;
+  IERC20Upgradeable private infinity;
   IRegistrar private registrar;
   address private controller;
-
   uint256 public requestCount;
 
   struct DomainData {
     // Used to invalidate all existing requests whenever a request is fulfilled
     uint256 nonce;
     // Tracks the request which was fulfilled to create this domain
-    uint256 fulfilledRequestId;
-    // Tracks the current (actual) domain token of a domain (will always be a token)
-    address domainToken;
-    // Tracks what token was used to stake for this domain
-    IERC20Upgradeable stakedToken;
+    uint256 fulfilledRequest;
   }
 
   mapping(uint256 => Request) public requests;
@@ -49,31 +42,19 @@ contract StakingController is
     string requestedName;
     bool accepted;
     uint256 domainNonce;
-    address domainToken; // may be address(0)
-    bool fulfilled;
   }
 
-  function initialize(
-    IRegistrar _registrar,
-    IERC20Upgradeable _defaultToken,
-    ITokenSafelist _tokenSafelist
-  ) public initializer {
+  function initialize(IRegistrar _registrar, IERC20Upgradeable _infinity)
+    public
+    initializer
+  {
     __ERC165_init();
     __Context_init();
     __ERC721Holder_init();
 
-    defaultToken = _defaultToken;
+    infinity = _infinity;
     registrar = _registrar;
-    tokenSafelist = _tokenSafelist;
     controller = address(this);
-  }
-
-  modifier authorized(uint256 domain) {
-    require(
-      registrar.ownerOf(domain) == _msgSender(),
-      "Zer0 Controller: Not Authorized"
-    );
-    _;
   }
 
   /**
@@ -87,21 +68,13 @@ contract StakingController is
     uint256 parentId,
     uint256 offeredAmount,
     string memory name,
-    string memory requestUri,
-    address domainToken
+    string memory requestUri
   ) external override {
     require(
       registrar.domainExists(parentId),
       "Staking Controller: Invalid Domain"
     );
     require(bytes(name).length > 0, "Staking Controller: Name is empty");
-
-    if (domainToken != address(0)) {
-      require(
-        tokenSafelist.isTokenSafelisted(domainToken),
-        "Staking Controller: Domain Token not safelisted"
-      );
-    }
 
     requestCount++;
 
@@ -121,9 +94,7 @@ contract StakingController is
       requester: _msgSender(),
       requestedName: name,
       accepted: false,
-      domainNonce: domainNonce,
-      domainToken: domainToken,
-      fulfilled: false
+      domainNonce: domainNonce
     });
 
     emit DomainRequestPlaced(
@@ -133,8 +104,7 @@ contract StakingController is
       requestUri,
       name,
       _msgSender(),
-      domainNonce,
-      domainToken
+      domainNonce
     );
   }
 
@@ -207,18 +177,8 @@ contract StakingController is
       "Staking Controller: Request is outdated."
     );
 
-    require(
-      !request.fulfilled,
-      "Staking Controller: Request already fulfilled."
-    );
-
-    request.fulfilled = true;
-
-    // Gets the configured ERC20 token for a domain, will default to infinity
-    IERC20Upgradeable parentDomainToken = getDomainToken(request.parentId);
-
     // This will fail if the user hasn't approved the token or have enough
-    parentDomainToken.safeTransferFrom(
+    infinity.safeTransferFrom(
       request.requester,
       controller,
       request.offeredAmount
@@ -242,21 +202,11 @@ contract StakingController is
       "Staking Controller: internal error, domain id's did not match."
     );
 
-    // Update the domain nonce so any previous requests are now invalid
-    uint256 newDomainNonce = registrar.domainNonce(domainId);
+    // Increment the nonce on the domain data so any existing requests for this domain become invalid
+    uint256 newDomainNonce = domainData[domainId].nonce + 1;
     domainData[domainId].nonce = newDomainNonce;
     // Track the request which was fulfilled for this domain
-    domainData[domainId].fulfilledRequestId = requestId;
-
-    // Lock the domain token on registration
-    if (request.domainToken != address(0)) {
-      domainData[domainId].domainToken = request.domainToken;
-    } else {
-      domainData[domainId].domainToken = address(parentDomainToken);
-    }
-
-    // Lock the token that was used to stake with
-    domainData[domainId].stakedToken = parentDomainToken;
+    domainData[domainId].fulfilledRequest = requestId;
 
     registrar.setDomainMetadataUri(domainId, metadata);
     registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
@@ -272,56 +222,8 @@ contract StakingController is
       request.requester,
       domainId,
       request.parentId,
-      newDomainNonce,
-      domainData[domainId].domainToken
+      newDomainNonce
     );
-  }
-
-  /**
-   * @notice Used to set the domain token of a domain which doesn't have one set.
-   *         Can only be called by the domain owner, if the domain exists.
-   * @param domainId The domain id
-   * @param token The token address to be the domain token
-   */
-  function setDomainToken(uint256 domainId, address token)
-    external
-    authorized(domainId)
-  {
-    uint256 domainNonce = registrar.domainNonce(domainId);
-    if (
-      domainData[domainId].domainToken != address(0) &&
-      domainNonce == domainData[domainId].nonce
-    ) {
-      revert("Staking Controller: Domain Token already set.");
-    }
-
-    domainData[domainId].domainToken = token;
-    domainData[domainId].nonce = domainNonce;
-
-    emit DomainTokenSet(domainId, token);
-  }
-
-  /**
-   * @notice Gets the domain token for a given domain
-   * @param domain The domain id
-   */
-  function getDomainToken(uint256 domain)
-    public
-    view
-    returns (IERC20Upgradeable)
-  {
-    if (domain == 0) {
-      return defaultToken;
-    }
-
-    address domainToken = domainData[domain].domainToken;
-
-    if (domainToken != address(0)) {
-      return IERC20Upgradeable(domainToken);
-    }
-
-    // In the case that a domain's token was not indicated, defaults to the parent's
-    return getDomainToken(registrar.parentOf(domain));
   }
 
   /**

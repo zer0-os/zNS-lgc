@@ -158,10 +158,8 @@ contract StakingController is
     );
     require(!request.accepted, "Staking Controller: Request already accepted");
 
-    uint256 domainId = calculateDomainId(
-      request.parentId,
-      request.requestedName
-    );
+    uint256 domainId =
+      calculateDomainId(request.parentId, request.requestedName);
 
     require(
       request.domainNonce == domainData[domainId].nonce,
@@ -197,10 +195,8 @@ contract StakingController is
 
     require(request.accepted, "Staking Controller: Request not accepted");
 
-    uint256 predictedDomainId = calculateDomainId(
-      request.parentId,
-      request.requestedName
-    );
+    uint256 predictedDomainId =
+      calculateDomainId(request.parentId, request.requestedName);
 
     require(
       request.domainNonce == domainData[predictedDomainId].nonce,
@@ -225,12 +221,13 @@ contract StakingController is
     );
 
     // This will fail if the domain already exists
-    uint256 domainId = registrar.registerDomain(
-      request.parentId,
-      request.requestedName,
-      controller,
-      request.requester
-    );
+    uint256 domainId =
+      registrar.registerDomain(
+        request.parentId,
+        request.requestedName,
+        controller,
+        request.requester
+      );
 
     /*
      * This should never really happen, but if it does it means the controller
@@ -336,9 +333,8 @@ contract StakingController is
     returns (uint256)
   {
     uint256 labelHash = uint256(keccak256(bytes(name)));
-    uint256 domainId = uint256(
-      keccak256(abi.encodePacked(parentId, labelHash))
-    );
+    uint256 domainId =
+      uint256(keccak256(abi.encodePacked(parentId, labelHash)));
 
     return domainId;
   }

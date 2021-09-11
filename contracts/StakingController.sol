@@ -29,8 +29,6 @@ contract StakingController is
   uint256 public requestCount;
 
   struct DomainData {
-    // Used to invalidate all existing requests whenever a request is fulfilled
-    uint256 nonce;
     // Tracks the request which was fulfilled to create this domain
     uint256 fulfilledRequestId;
     // Tracks the current (actual) domain token of a domain (will always be a token)
@@ -48,7 +46,6 @@ contract StakingController is
     address requester;
     string requestedName;
     bool accepted;
-    uint256 domainNonce;
     address domainToken; // may be address(0)
     bool fulfilled;
   }
@@ -113,15 +110,12 @@ contract StakingController is
       "Staking Controller: Domain already exists."
     );
 
-    uint256 domainNonce = domainData[domainId].nonce;
-
     requests[requestCount] = Request({
       parentId: parentId,
       offeredAmount: offeredAmount,
       requester: _msgSender(),
       requestedName: name,
       accepted: false,
-      domainNonce: domainNonce,
       domainToken: domainToken,
       fulfilled: false
     });
@@ -133,7 +127,6 @@ contract StakingController is
       requestUri,
       name,
       _msgSender(),
-      domainNonce,
       domainToken
     );
   }
@@ -164,8 +157,8 @@ contract StakingController is
     );
 
     require(
-      request.domainNonce == domainData[domainId].nonce,
-      "Staking Controller: Request is outdated"
+      !registrar.domainExists(domainId),
+      "Staking Controller: Domain already exists."
     );
 
     request.accepted = true;
@@ -203,13 +196,13 @@ contract StakingController is
     );
 
     require(
-      request.domainNonce == domainData[predictedDomainId].nonce,
-      "Staking Controller: Request is outdated."
+      !request.fulfilled,
+      "Staking Controller: Request already fulfilled."
     );
 
     require(
-      !request.fulfilled,
-      "Staking Controller: Request already fulfilled."
+      !registrar.domainExists(predictedDomainId),
+      "Staking Controller: Domain already exists."
     );
 
     request.fulfilled = true;
@@ -242,9 +235,6 @@ contract StakingController is
       "Staking Controller: internal error, domain id's did not match."
     );
 
-    // Update the domain nonce so any previous requests are now invalid
-    uint256 newDomainNonce = registrar.domainNonce(domainId);
-    domainData[domainId].nonce = newDomainNonce;
     // Track the request which was fulfilled for this domain
     domainData[domainId].fulfilledRequestId = requestId;
 
@@ -272,7 +262,6 @@ contract StakingController is
       request.requester,
       domainId,
       request.parentId,
-      newDomainNonce,
       domainData[domainId].domainToken
     );
   }
@@ -287,16 +276,11 @@ contract StakingController is
     external
     authorized(domainId)
   {
-    uint256 domainNonce = registrar.domainNonce(domainId);
-    if (
-      domainData[domainId].domainToken != address(0) &&
-      domainNonce == domainData[domainId].nonce
-    ) {
+    if (domainData[domainId].domainToken != address(0)) {
       revert("Staking Controller: Domain Token already set.");
     }
 
     domainData[domainId].domainToken = token;
-    domainData[domainId].nonce = domainNonce;
 
     emit DomainTokenSet(domainId, token);
   }

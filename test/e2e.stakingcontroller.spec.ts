@@ -84,8 +84,6 @@ describe("Staking Controller", () => {
         ethers.constants.AddressZero
       );
 
-      const expectedNonce = 0;
-
       expect(tx)
         .to.emit(controller, "DomainRequestPlaced")
         .withArgs(
@@ -95,7 +93,6 @@ describe("Staking Controller", () => {
           requestUri,
           name,
           user1.address,
-          expectedNonce,
           ethers.constants.AddressZero
         );
     });
@@ -166,8 +163,6 @@ describe("Staking Controller", () => {
         lock
       );
 
-      const expectedNonce = 1;
-
       expect(tx)
         .to.emit(controller, "DomainRequestFulfilled")
         .withArgs(
@@ -176,7 +171,6 @@ describe("Staking Controller", () => {
           user1.address,
           expectedId,
           parentID,
-          expectedNonce,
           mockTokenSmock.address
         );
     });
@@ -187,7 +181,7 @@ describe("Staking Controller", () => {
 
       await expect(
         controllerAsUser1.fulfillDomainRequest(1, royaltyAmount, metadata, lock)
-      ).to.be.revertedWith("Staking Controller: Request is outdated");
+      ).to.be.revertedWith("Staking Controller: Request already fulfilled.");
     });
   });
 
@@ -205,8 +199,6 @@ describe("Staking Controller", () => {
         mockTokenSmock.address
       );
 
-      const expectedNonce = 0;
-
       expect(tx)
         .to.emit(controller, "DomainRequestPlaced")
         .withArgs(
@@ -216,7 +208,6 @@ describe("Staking Controller", () => {
           requestUri,
           otherDomainName,
           user1.address,
-          expectedNonce,
           mockTokenSmock.address
         );
 
@@ -254,12 +245,12 @@ describe("Staking Controller", () => {
       const controllerAsUser1 = await controller.connect(user1);
       await expect(
         controllerAsUser1.fulfillDomainRequest(3, 0, "meta", true)
-      ).to.be.revertedWith("Staking Controller: Request is outdated");
+      ).to.be.revertedWith("Staking Controller: Domain already exists.");
     });
 
     it("fails to accept the third bid", async () => {
       await expect(controller.approveDomainRequest(4)).to.be.revertedWith(
-        "Staking Controller: Request is outdated"
+        "Staking Controller: Domain already exists."
       );
     });
   });

@@ -18,7 +18,6 @@ contract Registrar is
     address controller;
     uint256 royaltyAmount;
     uint256 parentId;
-    uint256 nonce;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -196,6 +195,24 @@ contract Registrar is
     _unlockMetadata(id);
   }
 
+  function fixParentLink(uint256 parentId, string memory name) external {
+    uint256 labelHash = uint256(keccak256(bytes(name)));
+
+    // Domain parents must exist
+    require(_exists(parentId), "No parent");
+
+    // Calculate the new domain's id and create it
+    uint256 domainId = uint256(
+      keccak256(abi.encodePacked(parentId, labelHash))
+    );
+
+    require(_exists(domainId), "Invalid domain");
+
+    require(records[domainId].parentId == 0, "Parent Already Set");
+
+    records[domainId].parentId = parentId;
+  }
+
   /*
    * Public View
    */
@@ -298,17 +315,6 @@ contract Registrar is
     return parentId;
   }
 
-  /**
-   * @notice Returns the domain nonce of a domain.
-   * @param id The domain
-   */
-  function domainNonce(uint256 id) public view override returns (uint256) {
-    require(_exists(id), "Zer0 Registrar: Does not exist");
-
-    uint256 nonce = records[id].nonce;
-    return nonce;
-  }
-
   /*
    * Internal Methods
    */
@@ -323,15 +329,13 @@ contract Registrar is
   ) internal {
     // Create the NFT and register the domain data
     _safeMint(domainOwner, domainId);
-    uint256 lastNonce = records[domainId].nonce; // default to zero
     records[domainId] = DomainRecord({
       parentId: parentId,
       minter: minter,
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,
-      royaltyAmount: 0,
-      nonce: lastNonce + 1
+      royaltyAmount: 0
     });
   }
 

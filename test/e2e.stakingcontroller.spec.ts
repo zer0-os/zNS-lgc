@@ -267,7 +267,9 @@ describe("Staking Controller", () => {
         0,
         domainName,
         creator.address,
-        creator.address
+        "",
+        0,
+        false
       );
     });
 

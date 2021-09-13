@@ -35,25 +35,6 @@ contract BasicController is
     rootDomain = 0x0;
   }
 
-  function registerDomain(string memory domain, address owner)
-    public
-    override
-    authorized(rootDomain)
-  {
-    registerSubdomain(rootDomain, domain, owner);
-  }
-
-  function registerSubdomain(
-    uint256 parentId,
-    string memory label,
-    address owner
-  ) public override authorized(parentId) {
-    address minter = _msgSender();
-    uint256 id = registrar.registerDomain(parentId, label, owner, minter);
-
-    emit RegisteredDomain(label, id, parentId, owner, minter);
-  }
-
   function registerSubdomainExtended(
     uint256 parentId,
     string memory label,
@@ -63,16 +44,15 @@ contract BasicController is
     bool lockOnCreation
   ) external authorized(parentId) returns (uint256) {
     address minter = _msgSender();
-    address controller = address(this);
 
-    uint256 id = registrar.registerDomain(parentId, label, controller, minter);
-    registrar.setDomainMetadataUri(id, metadata);
-    registrar.setDomainRoyaltyAmount(id, royaltyAmount);
-    registrar.safeTransferFrom(controller, owner, id);
-
-    if (lockOnCreation) {
-      registrar.lockDomainMetadataForOwner(id);
-    }
+    uint256 id = registrar.registerDomain(
+      parentId,
+      label,
+      minter,
+      metadata,
+      royaltyAmount,
+      lockOnCreation
+    );
 
     emit RegisteredDomain(label, id, parentId, owner, minter);
 

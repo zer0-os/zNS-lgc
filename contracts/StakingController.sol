@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "./interfaces/IRegistrar.sol";
 import {IStakingController} from "./interfaces/IStakingController.sol";
 import {ITokenSafelist} from "./interfaces/ITokenSafelist.sol";
@@ -17,14 +19,14 @@ contract StakingController is
   ContextUpgradeable,
   ERC165Upgradeable,
   ERC721HolderUpgradeable,
+  OwnableUpgradeable,
   IStakingController
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  ITokenSafelist private tokenSafelist;
-  IERC20Upgradeable private defaultToken;
-  IRegistrar private registrar;
-  address private controller;
+  ITokenSafelist public tokenSafelist;
+  IERC20Upgradeable public defaultToken;
+  IRegistrar public registrar;
 
   uint256 public requestCount;
 
@@ -58,11 +60,11 @@ contract StakingController is
     __ERC165_init();
     __Context_init();
     __ERC721Holder_init();
+    __Ownable_init();
 
     defaultToken = _defaultToken;
     registrar = _registrar;
     tokenSafelist = _tokenSafelist;
-    controller = address(this);
   }
 
   modifier authorized(uint256 domain) {
@@ -213,16 +215,31 @@ contract StakingController is
     // This will fail if the user hasn't approved the token or have enough
     parentDomainToken.safeTransferFrom(
       request.requester,
-      controller,
+      address(this),
       request.offeredAmount
     );
+
+    // Track the request which was fulfilled for this domain
+    domainData[predictedDomainId].fulfilledRequestId = requestId;
+
+    // Lock the domain token on registration
+    if (request.domainToken != address(0)) {
+      domainData[predictedDomainId].domainToken = request.domainToken;
+    } else {
+      domainData[predictedDomainId].domainToken = address(parentDomainToken);
+    }
+
+    // Lock the token that was used to stake with
+    domainData[predictedDomainId].stakedToken = parentDomainToken;
 
     // This will fail if the domain already exists
     uint256 domainId = registrar.registerDomain(
       request.parentId,
       request.requestedName,
-      controller,
-      request.requester
+      request.requester,
+      metadata,
+      royaltyAmount,
+      lockOnCreation
     );
 
     /*
@@ -234,27 +251,6 @@ contract StakingController is
       predictedDomainId == domainId,
       "Staking Controller: internal error, domain id's did not match."
     );
-
-    // Track the request which was fulfilled for this domain
-    domainData[domainId].fulfilledRequestId = requestId;
-
-    // Lock the domain token on registration
-    if (request.domainToken != address(0)) {
-      domainData[domainId].domainToken = request.domainToken;
-    } else {
-      domainData[domainId].domainToken = address(parentDomainToken);
-    }
-
-    // Lock the token that was used to stake with
-    domainData[domainId].stakedToken = parentDomainToken;
-
-    registrar.setDomainMetadataUri(domainId, metadata);
-    registrar.setDomainRoyaltyAmount(domainId, royaltyAmount);
-    registrar.safeTransferFrom(controller, request.requester, domainId);
-
-    if (lockOnCreation) {
-      registrar.lockDomainMetadataForOwner(domainId);
-    }
 
     emit DomainRequestFulfilled(
       requestId,
@@ -292,6 +288,7 @@ contract StakingController is
   function getDomainToken(uint256 domain)
     public
     view
+    override
     returns (IERC20Upgradeable)
   {
     if (domain == 0) {

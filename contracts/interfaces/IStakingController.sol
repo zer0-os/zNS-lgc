@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import {IERC165Upgradeable} from "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
+import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event DomainRequestPlaced(
@@ -27,6 +28,11 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   );
 
   event DomainTokenSet(uint256 indexed domainId, address domainToken);
+
+  function getDomainToken(uint256 domain)
+    external
+    view
+    returns (IERC20Upgradeable);
 
   /**
    * @notice placeDomainRequest allows a user to send a request for a new sub domain to a domains owner

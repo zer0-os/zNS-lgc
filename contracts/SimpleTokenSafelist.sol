@@ -6,7 +6,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 
 contract SimpleTokenSafelist is ITokenSafelist, OwnableUpgradeable {
   // Safelisted tokens
-  mapping(address => bool) internal safelistedTokens;
+  mapping(address => bool) public safelistedTokens;
 
   function initialize() public initializer {
     __Ownable_init();

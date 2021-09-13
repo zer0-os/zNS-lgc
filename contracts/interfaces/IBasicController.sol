@@ -14,21 +14,20 @@ interface IBasicController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   );
 
   /**
-    @notice Registers a new top level domain
-    @param domain The name of the domain
-    @param owner Who the owner of the domain should be
-   */
-  function registerDomain(string memory domain, address owner) external;
-
-  /**
     @notice Registers a new sub domain
     @param parentId The id of the parent domain
     @param label The name of the sub domain
     @param owner The owner of the new sub domain 
+    @param metadata The metadata uri to set
+    @param royaltyAmount Amount of royalties
+    @param lockOnCreation Should the domain be locked
  */
-  function registerSubdomain(
+  function registerSubdomainExtended(
     uint256 parentId,
     string memory label,
-    address owner
+    address owner,
+    string memory metadata,
+    uint256 royaltyAmount,
+    bool lockOnCreation
   ) external;
 }

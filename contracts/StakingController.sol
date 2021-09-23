@@ -282,6 +282,25 @@ contract StakingController is
   }
 
   /**
+   * @notice Used to set the domain token of a domain which doesn't have one set.
+   *         Can only be called by the domain owner, if the domain exists.
+   * @param domainId The domain id
+   * @param token The token address to be the domain token
+   */
+  function setDomainTokenAdmin(uint256 domainId, address token)
+    external
+    onlyOwner
+  {
+    if (domainData[domainId].domainToken != address(0)) {
+      revert("Staking Controller: Domain Token already set.");
+    }
+
+    domainData[domainId].domainToken = token;
+
+    emit DomainTokenSet(domainId, token);
+  }
+
+  /**
    * @notice Gets the domain token for a given domain
    * @param domain The domain id
    */

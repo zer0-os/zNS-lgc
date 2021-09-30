@@ -1,5 +1,16 @@
 {
-  "manifestVersion": "3.1",
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x53EF64F91e0d2f4577807f39760d2D266011cd40",
+    "txHash": "0x724f4625d1603298fc12ae87d98dd516d8692893d8848259413484f73c3fa6f8"
+  },
+  "proxies": [
+    {
+      "address": "0x2AAF8385e7285eCEb464BDbC7D50Cf5C1B7363de",
+      "txHash": "0xd794ac43721dca87437db40f4097d4dde9eeefeaef5a2f9359a236573438456d",
+      "kind": "transparent"
+    }
+  ],
   "impls": {
     "18d64db7748bbc66524b565ab73b6005551d5fb3c115c29b5843a0d195b6dfd7": {
       "address": "0x35921570D157D6E9DA51e67B47d43bAF5da1e108",
@@ -2011,10 +2022,85 @@
           }
         }
       }
+    },
+    "d12a08906a45b190e573336e307c73f6ecfeaf81e10214efb33d1ef164ecc681": {
+      "address": "0x93808019d35AD6a1647210fa356E5cCfd1EA7aCe",
+      "txHash": "0x0da473e6728105b71679a01f0b098447a1a9cca7091b8bc1dbadc3d9ba607908",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "BasicController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)6542",
+            "src": "contracts\\BasicController.sol:18"
+          },
+          {
+            "contract": "BasicController",
+            "label": "rootDomain",
+            "type": "t_uint256",
+            "src": "contracts\\BasicController.sol:19"
+          }
+        ],
+        "types": {
+          "t_contract(IRegistrar)6542": {
+            "label": "contract IRegistrar"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
     }
-  },
-  "admin": {
-    "address": "0x53EF64F91e0d2f4577807f39760d2D266011cd40",
-    "txHash": "0x724f4625d1603298fc12ae87d98dd516d8692893d8848259413484f73c3fa6f8"
   }
 }

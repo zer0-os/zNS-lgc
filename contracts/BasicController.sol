@@ -61,7 +61,7 @@ contract BasicController is
     string memory metadata,
     uint256 royaltyAmount,
     bool lockOnCreation
-  ) external authorized(parentId) {
+  ) external authorized(parentId) returns (uint256) {
     address minter = _msgSender();
     address controller = address(this);
 
@@ -75,5 +75,7 @@ contract BasicController is
     }
 
     emit RegisteredDomain(label, id, parentId, owner, minter);
+
+    return id;
   }
 }

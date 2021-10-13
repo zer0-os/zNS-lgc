@@ -166,17 +166,12 @@ contract RegistrarWheelsFix is
       ids.length == chunk1.length && ids.length == chunk2.length,
       "invalid arrays"
     );
+    string memory uri;
     for (uint256 i = 0; i < ids.length; ++i) {
-      _setTokenURI(
-        ids[i],
-        string(
-          abi.encodePacked(
-            "https://ipfs.fleek.co/ipfs/Qm",
-            chunk1[i],
-            chunk2[i]
-          )
-        )
-      );
+      uri = string(abi.encodePacked("ipfs://Qm", chunk1[i], chunk2[i]));
+
+      _setTokenURI(ids[i], uri);
+      emit MetadataChanged(ids[i], uri);
     }
   }
 

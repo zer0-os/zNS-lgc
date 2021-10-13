@@ -2,9 +2,11 @@ import { ethers } from "hardhat";
 import { RegistrarWheelsFix__factory } from "../typechain";
 import * as fs from "fs";
 
-const registrarAddress = "0xC613fCc3f81cC2888C5Cccc1620212420FFe4931";
-const updateFilePath = "./domainsToUpdate.json";
+const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+const updateFilePath = "./domainsToUpdate_test.json";
 const checkpointFilePath = "./domainUpdateCheckpoint.json";
+const preCheckpointFilePath = "./pre-domainUpdateCheckpoint.json";
+const chunkSize = 100; // domains to update at a time
 
 interface DomainToUpdate {
   id: string;
@@ -19,22 +21,28 @@ interface CheckpointFile {
   [domainId: string]: boolean | undefined;
 }
 
-const saveCheckpoint = (checkpoint: CheckpointFile) => {
-  fs.writeFileSync(checkpointFilePath, JSON.stringify(checkpoint));
+const saveCheckpoint = (checkpoint: CheckpointFile, pre: boolean) => {
+  const path = pre ? preCheckpointFilePath : checkpointFilePath;
+  fs.writeFileSync(path, JSON.stringify(checkpoint));
 };
 
 const loadCheckpoint = () => {
-  const checkpoint = JSON.parse(
-    fs.readFileSync(checkpointFilePath).toString()
-  ) as CheckpointFile;
-  return checkpoint;
+  try {
+    const checkpoint = JSON.parse(
+      fs.readFileSync(checkpointFilePath).toString()
+    ) as CheckpointFile;
+    return checkpoint;
+  } catch (e) {
+    console.warn(`No checkpoint file?`);
+    return {} as CheckpointFile;
+  }
 };
 
 const loadUpdateFile = () => {
-  const toUpdate = JSON.parse(
-    fs.readFileSync(updateFilePath).toString()
-  ) as UpdateFile;
-  return toUpdate;
+  const toUpdate = JSON.parse(fs.readFileSync(updateFilePath).toString());
+  return {
+    domains: toUpdate,
+  } as UpdateFile;
 };
 
 const main = async () => {
@@ -61,8 +69,6 @@ const main = async () => {
 
   console.log(`There are ${domainsToUpdate.length} domains to update`);
 
-  const chunkSize = 100; // domains to update at a time
-
   const chunks: DomainToUpdate[][] = [];
   let temp: DomainToUpdate[] | undefined;
   let i, j;
@@ -85,10 +91,7 @@ const main = async () => {
 
     for (const domain of chunk) {
       domainIds.push(domain.id);
-      const ipfsHash = domain.metadataUri.replace(
-        "https://ipfs.fleek.co/ipfs/Qm",
-        ""
-      );
+      const ipfsHash = domain.metadataUri.replace("ipfs://Qm", "");
       const uriAsBytes = ethers.utils.toUtf8Bytes(ipfsHash);
       metadataChunk1.push(uriAsBytes.slice(0, 12));
       metadataChunk2.push(uriAsBytes.slice(12, uriAsBytes.length));
@@ -107,9 +110,19 @@ const main = async () => {
       }
     );
 
+    for (const domain of domainIds) {
+      console.log(domain);
+      checkpoint[domain] = true;
+    }
+    saveCheckpoint(checkpoint, true);
+
     console.log(`waiting for tx to confirm`);
     console.debug(`tx hash is: ${tx.hash}`);
-    await tx.wait(5);
+    await tx.wait(4);
+
+    console.log(`finished sending chunk`);
+
+    saveCheckpoint(checkpoint, false);
   }
 };
 

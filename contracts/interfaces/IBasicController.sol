@@ -29,5 +29,5 @@ interface IBasicController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     string memory metadata,
     uint256 royaltyAmount,
     bool lockOnCreation
-  ) external;
+  ) external returns (uint256);
 }

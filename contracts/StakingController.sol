@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
@@ -18,7 +17,6 @@ contract StakingController is
   Initializable,
   ContextUpgradeable,
   ERC165Upgradeable,
-  ERC721HolderUpgradeable,
   OwnableUpgradeable,
   IStakingController
 {
@@ -59,12 +57,19 @@ contract StakingController is
   ) public initializer {
     __ERC165_init();
     __Context_init();
-    __ERC721Holder_init();
     __Ownable_init();
 
     defaultToken = _defaultToken;
     registrar = _registrar;
     tokenSafelist = _tokenSafelist;
+  }
+
+  function setTokenDefaultToken(IERC20Upgradeable _defaultToken)
+    public
+    onlyOwner
+  {
+    require(defaultToken != _defaultToken, "Same Token");
+    defaultToken = _defaultToken;
   }
 
   modifier authorized(uint256 domain) {
@@ -181,7 +186,7 @@ contract StakingController is
     uint256 royaltyAmount,
     string memory metadata,
     bool lockOnCreation
-  ) external override {
+  ) external override returns (uint256) {
     Request storage request = requests[requestId];
 
     // Only allow requestor to fulfill
@@ -260,6 +265,8 @@ contract StakingController is
       request.parentId,
       domainData[domainId].domainToken
     );
+
+    return domainId;
   }
 
   /**

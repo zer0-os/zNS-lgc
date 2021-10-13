@@ -16,7 +16,6 @@ contract BasicController is
   ERC721HolderUpgradeable
 {
   IRegistrar private registrar;
-  uint256 private rootDomain;
 
   modifier authorized(uint256 domain) {
     require(
@@ -32,7 +31,6 @@ contract BasicController is
     __ERC721Holder_init();
 
     registrar = _registrar;
-    rootDomain = 0x0;
   }
 
   function registerSubdomainExtended(
@@ -42,7 +40,7 @@ contract BasicController is
     string memory metadata,
     uint256 royaltyAmount,
     bool lockOnCreation
-  ) external authorized(parentId) returns (uint256) {
+  ) external override authorized(parentId) returns (uint256) {
     address minter = _msgSender();
 
     uint256 id = registrar.registerDomain(

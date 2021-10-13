@@ -6,8 +6,8 @@
   },
   "proxies": [
     {
-      "address": "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443",
-      "txHash": "0x074b986f3c7b665de930703a618d254b6545d2a1a98a8ffa60d722269f6e41f4",
+      "address": "0x86DDaB06A0fDAd60c7d11a1DFEFCbB441d4A4821",
+      "txHash": "0xb495645fdfec3d3393c8b853b4403d18d28448f0f339e57a79034d2b044d94af",
       "kind": "transparent"
     }
   ],
@@ -814,7 +814,7 @@
           {
             "contract": "Registrar",
             "label": "records",
-            "type": "t_mapping(t_uint256,t_struct(DomainRecord)4509_storage)",
+            "type": "t_mapping(t_uint256,t_struct(DomainRecord)4505_storage)",
             "src": "contracts\\Registrar.sol:28"
           }
         ],
@@ -828,13 +828,13 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_mapping(t_uint256,t_struct(DomainRecord)4509_storage)": {
+          "t_mapping(t_uint256,t_struct(DomainRecord)4505_storage)": {
             "label": "mapping(uint256 => struct Registrar.DomainRecord)"
           },
           "t_uint256": {
             "label": "uint256"
           },
-          "t_struct(DomainRecord)4509_storage": {
+          "t_struct(DomainRecord)4505_storage": {
             "label": "struct Registrar.DomainRecord",
             "members": [
               {
@@ -955,6 +955,262 @@
           },
           "t_array(t_uint256)41_storage": {
             "label": "uint256[41]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          }
+        }
+      }
+    },
+    "c25db2758acba28df7dcea8cbeb230d58d4493bcbbc43a1b9fffcb37c59c4648": {
+      "address": "0xB044C229310A0780d228b9aac3F72e37DebfaD00",
+      "txHash": "0xd9af32e4df7b3730553949ea7fd3b0e47c7d06b06f4b34e9c67e4817fec54df2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "BasicController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)5909",
+            "src": "contracts\\BasicController.sol:18"
+          }
+        ],
+        "types": {
+          "t_contract(IRegistrar)5909": {
+            "label": "contract IRegistrar"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "ce120b686dcabd9313d2beada69aa5d61c828eada1348609420cbb2c5638347b": {
+      "address": "0x2EE0a9ec2aa58FFbecec16Fea1fe99c5A3A6BAAE",
+      "txHash": "0xc811c79d4a898376821216726646b2026fb0bb5bf31399d3393d844a9e3a85d7",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "StakingController",
+            "label": "tokenSafelist",
+            "type": "t_contract(ITokenSafelist)6013",
+            "src": "contracts\\StakingController.sol:27"
+          },
+          {
+            "contract": "StakingController",
+            "label": "defaultToken",
+            "type": "t_contract(IERC20Upgradeable)1246",
+            "src": "contracts\\StakingController.sol:28"
+          },
+          {
+            "contract": "StakingController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)5909",
+            "src": "contracts\\StakingController.sol:29"
+          },
+          {
+            "contract": "StakingController",
+            "label": "requestCount",
+            "type": "t_uint256",
+            "src": "contracts\\StakingController.sol:31"
+          },
+          {
+            "contract": "StakingController",
+            "label": "requests",
+            "type": "t_mapping(t_uint256,t_struct(Request)5162_storage)",
+            "src": "contracts\\StakingController.sol:42"
+          },
+          {
+            "contract": "StakingController",
+            "label": "domainData",
+            "type": "t_mapping(t_uint256,t_struct(DomainData)5139_storage)",
+            "src": "contracts\\StakingController.sol:43"
+          }
+        ],
+        "types": {
+          "t_contract(ITokenSafelist)6013": {
+            "label": "contract ITokenSafelist"
+          },
+          "t_contract(IERC20Upgradeable)1246": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IRegistrar)5909": {
+            "label": "contract IRegistrar"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_struct(Request)5162_storage)": {
+            "label": "mapping(uint256 => struct StakingController.Request)"
+          },
+          "t_struct(Request)5162_storage": {
+            "label": "struct StakingController.Request",
+            "members": [
+              {
+                "label": "parentId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "offeredAmount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "requester",
+                "type": "t_address"
+              },
+              {
+                "label": "requestedName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "accepted",
+                "type": "t_bool"
+              },
+              {
+                "label": "domainToken",
+                "type": "t_address"
+              },
+              {
+                "label": "fulfilled",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_struct(DomainData)5139_storage)": {
+            "label": "mapping(uint256 => struct StakingController.DomainData)"
+          },
+          "t_struct(DomainData)5139_storage": {
+            "label": "struct StakingController.DomainData",
+            "members": [
+              {
+                "label": "fulfilledRequestId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "domainToken",
+                "type": "t_address"
+              },
+              {
+                "label": "stakedToken",
+                "type": "t_contract(IERC20Upgradeable)1246"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           },
           "t_mapping(t_bytes4,t_bool)": {
             "label": "mapping(bytes4 => bool)"
@@ -1882,4 +2138,5 @@
       }
     }
   }
+    
 }

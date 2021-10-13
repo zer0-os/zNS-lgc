@@ -2,10 +2,9 @@
 pragma solidity ^0.7.3;
 
 import {IERC165Upgradeable} from "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
-import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
+interface IStakingController is IERC165Upgradeable {
   event DomainRequestPlaced(
     uint256 indexed parentId,
     uint256 indexed requestId,
@@ -67,5 +66,5 @@ interface IStakingController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 royaltyAmount,
     string memory metadata,
     bool lockOnCreation
-  ) external;
+  ) external returns (uint256);
 }

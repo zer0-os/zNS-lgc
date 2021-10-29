@@ -103,8 +103,7 @@ contract StakingController is
       offeredAmount,
       requestUri,
       name,
-      _msgSender(),
-      domainNonce
+      _msgSender()
     );
   }
 
@@ -154,7 +153,7 @@ contract StakingController is
     uint256 royaltyAmount,
     string memory metadata,
     bool lockOnCreation
-  ) external override {
+  ) external override returns (uint256) {
     Request storage request = requests[requestId];
 
     // Only allow requestor to fulfill
@@ -191,7 +190,6 @@ contract StakingController is
       registrar.registerDomain(
         request.parentId,
         request.requestedName,
-        controller,
         request.requester,
         metadata,
         royaltyAmount,
@@ -213,9 +211,10 @@ contract StakingController is
       request.requestedName,
       request.requester,
       domainId,
-      request.parentId,
-      newDomainNonce
+      request.parentId
     );
+
+    return domainId;
   }
 
   /**

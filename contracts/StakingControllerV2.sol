@@ -10,15 +10,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./interfaces/IRegistrar.sol";
-import {IStakingController} from "./interfaces/IStakingController.sol";
+import {IStakingControllerV2} from "./interfaces/IStakingControllerV2.sol";
 import {ITokenSafelist} from "./interfaces/ITokenSafelist.sol";
 
-contract StakingController is
+contract StakingControllerV2 is
   Initializable,
   ContextUpgradeable,
   ERC165Upgradeable,
   OwnableUpgradeable,
-  IStakingController
+  IStakingControllerV2
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 

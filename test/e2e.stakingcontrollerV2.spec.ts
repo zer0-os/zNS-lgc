@@ -7,11 +7,11 @@ import { smock, FakeContract, MockContract } from "@defi-wonderland/smock";
 import {
   Registrar,
   MockToken,
-  StakingController,
-  StakingController__factory,
   Registrar__factory,
   SimpleTokenSafelist__factory,
   SimpleTokenSafelist,
+  StakingControllerV2,
+  StakingControllerV2__factory,
 } from "../typechain";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 
@@ -19,12 +19,12 @@ chai.use(solidity);
 chai.use(smock.matchers);
 const { expect } = chai;
 
-describe("Staking Controller", () => {
+describe("Staking ControllerV2", () => {
   let accounts: SignerWithAddress[];
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
-  let controllerFactory: StakingController__factory;
-  let controller: StakingController;
+  let controllerFactory: StakingControllerV2__factory;
+  let controller: StakingControllerV2;
   let mockTokenSmock: FakeContract<MockToken>;
   let registrar: Registrar | MockContract<Registrar>;
   let tokenSafelist: SimpleTokenSafelist;
@@ -61,7 +61,7 @@ describe("Staking Controller", () => {
 
     await tokenSafelist.safelistToken(mockTokenSmock.address);
 
-    controllerFactory = new StakingController__factory(creator);
+    controllerFactory = new StakingControllerV2__factory(creator);
     controller = await controllerFactory.deploy();
     await controller.initialize(
       registrar.address,

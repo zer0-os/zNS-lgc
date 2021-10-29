@@ -16,6 +16,7 @@ contract BasicController is
   ERC721HolderUpgradeable
 {
   IRegistrar private registrar;
+  uint256 rootDomain; // for upgrade reasons
 
   modifier authorized(uint256 domain) {
     require(

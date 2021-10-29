@@ -47,12 +47,13 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
       forking: {
         url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
+        blockNumber: 13510000,
       },
     },
     mainnet: {
       accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
-      gasPrice: 110000000000,
+      gasPrice: 200000000000,
     },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },

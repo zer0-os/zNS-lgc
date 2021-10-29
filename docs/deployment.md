@@ -6,6 +6,7 @@
 
 Registrar: 0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D
 Basic Controller: 0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a
+Basic Controller v2: 0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443
 Staking Controller: 0x45b13d8e6579d5C3FeC14bB9998A3640CD4F008D
 
 # Kovan Test Deployment

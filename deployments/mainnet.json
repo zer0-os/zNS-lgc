@@ -8,10 +8,10 @@
   },
   "basicController": {
     "name": "BasicController",
-    "address": "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443",
-    "version": "d12a08906a45b190e573336e307c73f6ecfeaf81e10214efb33d1ef164ecc681",
-    "date": "2021-09-30T00:25:55.580Z",
-    "implementation": "0x99eDBc026b806Faac2C0E4E039cFf72205Fe54e3"
+    "address": "0x86DDaB06A0fDAd60c7d11a1DFEFCbB441d4A4821",
+    "version": "c25db2758acba28df7dcea8cbeb230d58d4493bcbbc43a1b9fffcb37c59c4648",
+    "date": "2021-10-12T03:14:31.724Z",
+    "implementation": "0xB044C229310A0780d228b9aac3F72e37DebfaD00"
   },
   "stakingController": {
     "name": "StakingController",

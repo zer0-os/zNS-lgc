@@ -147,7 +147,9 @@ describe("Registrar", () => {
           rootDomainId,
           "myDomain",
           user2.address,
-          user2.address
+          "",
+          0,
+          false
         )
       ).to.be.reverted;
     });
@@ -178,7 +180,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const expectedDomainHash = calculateDomainHash(
@@ -200,7 +204,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       expect(tx).to.emit(registry, "DomainCreated");
@@ -216,7 +222,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -234,7 +242,9 @@ describe("Registrar", () => {
           domainNameHash,
           expectedParentHash,
           user2.address,
-          user1.address
+          user1.address,
+          "",
+          0
         );
     });
 
@@ -248,7 +258,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -276,7 +288,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user3.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -286,7 +300,7 @@ describe("Registrar", () => {
       );
 
       expect(await registryAsUser1.minterOf(expectedDomainHash)).to.eq(
-        user2.address
+        user3.address
       );
     });
 
@@ -300,7 +314,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -324,53 +340,21 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user2.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const tx = registryAsUser1.registerDomain(
         rootDomainId,
         domainName,
         user3.address,
-        user3.address
+        "",
+        0,
+        false
       );
 
       await expect(tx).to.be.reverted;
-    });
-
-    it("returns that a registered domain is not available", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
-
-      const domainName = "myDomain";
-
-      await registryAsUser1.registerDomain(
-        rootDomainId,
-        domainName,
-        user2.address,
-        user2.address
-      );
-
-      const domainNameHash = hashDomainName(domainName);
-      const expectedDomainHash = calculateDomainHash(
-        rootDomainHash,
-        domainNameHash
-      );
-
-      expect(await registry.isAvailable(expectedDomainHash)).to.be.false;
-    });
-
-    it("returns that an unregistered domain is available", async () => {
-      await registry.addController(user1.address);
-
-      const domainName = "myDomain123";
-
-      const domainNameHash = hashDomainName(domainName);
-      const expectedDomainHash = calculateDomainHash(
-        rootDomainHash,
-        domainNameHash
-      );
-
-      expect(await registry.isAvailable(expectedDomainHash)).to.be.true;
     });
 
     it("prevents a domain from being registered if it's parent doesn't exist", async () => {
@@ -387,7 +371,9 @@ describe("Registrar", () => {
           rootHash,
           domainName,
           user2.address,
-          user2.address
+          "",
+          0,
+          false
         )
       ).to.be.revertedWith("Registrar: No parent");
     });
@@ -401,7 +387,9 @@ describe("Registrar", () => {
         rootDomainHash,
         parentName,
         user1.address,
-        user1.address
+        "",
+        0,
+        false
       );
 
       const parentHash = hashDomainName(parentName);
@@ -412,7 +400,9 @@ describe("Registrar", () => {
         rootHash,
         domainName,
         user1.address,
-        user1.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -438,7 +428,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user1.address,
-        user1.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -490,7 +482,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user1.address,
-        user1.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);
@@ -505,7 +499,7 @@ describe("Registrar", () => {
 
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
-        registryAsUser1.unlockDomainMetadata(testDomainId)
+        registryAsUser1.lockDomainMetadata(testDomainId, false)
       ).to.be.revertedWith("Registrar: Not locked");
     });
 
@@ -513,16 +507,16 @@ describe("Registrar", () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(
-        registryAsUser2.lockDomainMetadata(testDomainId)
+        registryAsUser2.lockDomainMetadata(testDomainId, true)
       ).to.be.revertedWith("Registrar: Not owner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
-      const tx = await registryAsUser1.lockDomainMetadata(testDomainId);
+      const tx = await registryAsUser1.lockDomainMetadata(testDomainId, true);
 
       expect(tx)
-        .to.emit(registryAsUser1, "MetadataLocked")
-        .withArgs(testDomainId, user1.address);
+        .to.emit(registryAsUser1, "MetadataLockChanged")
+        .withArgs(testDomainId, user1.address, true);
     });
 
     it("updates state when the metadata is locked", async () => {
@@ -538,7 +532,7 @@ describe("Registrar", () => {
 
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
-        registryAsUser1.lockDomainMetadata(testDomainId)
+        registryAsUser1.lockDomainMetadata(testDomainId, true)
       ).to.be.revertedWith("Registrar: Metadata locked");
     });
 
@@ -546,7 +540,7 @@ describe("Registrar", () => {
       const registryAsUser2 = registryAsUser1.connect(user2);
 
       await expect(
-        registryAsUser2.unlockDomainMetadata(testDomainId)
+        registryAsUser2.lockDomainMetadata(testDomainId, false)
       ).to.be.revertedWith("Registrar: Not locker");
     });
 
@@ -560,38 +554,14 @@ describe("Registrar", () => {
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
-      await expect(registryAsUser1.unlockDomainMetadata(testDomainId))
-        .to.emit(registryAsUser1, "MetadataUnlocked")
-        .withArgs(testDomainId);
+      await expect(registryAsUser1.lockDomainMetadata(testDomainId, false))
+        .to.emit(registryAsUser1, "MetadataLockChanged")
+        .withArgs(testDomainId, user1.address, false);
     });
 
     it("updates state of when metadata is unlocked", async () => {
       expect(await registryAsUser1.isDomainMetadataLocked(testDomainId)).to.be
         .false;
-    });
-
-    it("prevents a non controller from locking metadata on behalf of a user", async () => {
-      const tx = registryAsUser1.lockDomainMetadataForOwner(testDomainId);
-
-      await expect(tx).to.be.revertedWith("Registrar: Not controller");
-    });
-
-    it("allows a controller to lock metadata on behalf of a user", async () => {
-      await registry.lockDomainMetadataForOwner(testDomainId);
-
-      expect(await registry.isDomainMetadataLocked(testDomainId)).to.be.true;
-    });
-
-    it("records that the owner locked metadata if a controller does it", async () => {
-      expect(await registry.domainMetadataLockedBy(testDomainId)).to.eq(
-        user1.address
-      );
-    });
-
-    it("prevents a controller from locking metadata if it is already locked", async () => {
-      const tx = registry.lockDomainMetadataForOwner(testDomainId);
-
-      await expect(tx).to.be.revertedWith("Registrar: Metadata locked");
     });
   });
 
@@ -609,7 +579,9 @@ describe("Registrar", () => {
         rootDomainId,
         domainName,
         user1.address,
-        user2.address
+        "",
+        0,
+        false
       );
 
       const domainNameHash = hashDomainName(domainName);

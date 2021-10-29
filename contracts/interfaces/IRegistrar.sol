@@ -21,14 +21,13 @@ interface IRegistrar is
     uint256 indexed nameHash,
     uint256 indexed parent,
     address minter,
-    address controller
+    address controller,
+    string metadataUri,
+    uint256 royaltyAmount
   );
 
   // Emitted whenever the metadata of a domain is locked
-  event MetadataLocked(uint256 indexed id, address locker);
-
-  // Emitted whenever the metadata of a domain is unlocked
-  event MetadataUnlocked(uint256 indexed id);
+  event MetadataLockChanged(uint256 indexed id, address locker, bool isLocked);
 
   // Emitted whenever the metadata of a domain is changed
   event MetadataChanged(uint256 indexed id, string uri);
@@ -46,18 +45,14 @@ interface IRegistrar is
   function registerDomain(
     uint256 parentId,
     string memory name,
-    address domainOwner,
-    address minter
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked
   ) external returns (uint256);
 
   // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
-  function lockDomainMetadata(uint256 id) external;
-
-  // Utility function to lock a domains metadata, used by controllers instead of a user.
-  function lockDomainMetadataForOwner(uint256 id) external;
-
-  // Unlocks a domains metadata, can only be called by the address that locked the metadata
-  function unlockDomainMetadata(uint256 id) external;
+  function lockDomainMetadata(uint256 id, bool toLock) external;
 
   // Sets a domains metadata uri
   function setDomainMetadataUri(uint256 id, string memory uri) external;
@@ -70,9 +65,6 @@ interface IRegistrar is
 
   // Checks whether or not a domain exists
   function domainExists(uint256 id) external view returns (bool);
-
-  // Whether or not a domain specific by an id is available.
-  function isAvailable(uint256 id) external view returns (bool);
 
   // Returns the original minter of a domain
   function minterOf(uint256 id) external view returns (address);

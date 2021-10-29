@@ -49,9 +49,13 @@ describe("Basic Controller", () => {
       await registrarMock.mock.registerDomain.returns(returnedId);
 
       const controllerAsUser1 = await controller.connect(user1);
-      const tx = await controllerAsUser1.registerDomain(
+      const tx = await controllerAsUser1.registerSubdomainExtended(
+        0,
         domainName,
-        user1.address
+        user1.address,
+        "",
+        0,
+        false
       );
 
       expect(tx)
@@ -67,7 +71,14 @@ describe("Basic Controller", () => {
       await registrarMock.mock.registerDomain.returns(returnedId);
 
       const controllerAsUser2 = await controller.connect(user2);
-      const tx = controllerAsUser2.registerDomain(domainName, user1.address);
+      const tx = controllerAsUser2.registerSubdomainExtended(
+        0,
+        domainName,
+        user1.address,
+        "",
+        0,
+        false
+      );
 
       await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
     });
@@ -101,10 +112,13 @@ describe("Basic Controller", () => {
       await registrarMock.mock.registerDomain.returns(returnedId);
 
       const controllerAsUser2 = await controller.connect(user2);
-      const tx = await controllerAsUser2.registerSubdomain(
+      const tx = await controllerAsUser2.registerSubdomainExtended(
         topLevelDomainId,
         domainName,
-        user2.address
+        user2.address,
+        "",
+        0,
+        false
       );
 
       expect(tx)
@@ -131,10 +145,13 @@ describe("Basic Controller", () => {
       await registrarMock.mock.registerDomain.returns(returnedId);
 
       const controllerAsUser3 = await controller.connect(user3);
-      const tx = controllerAsUser3.registerSubdomain(
+      const tx = controllerAsUser3.registerSubdomainExtended(
         topLevelDomainId,
         domainName,
-        user3.address
+        user3.address,
+        "",
+        0,
+        false
       );
 
       await expect(tx).to.be.revertedWith("Zer0 Controller: Not Authorized");
@@ -152,10 +169,13 @@ describe("Basic Controller", () => {
       await registrarMock.mock.registerDomain.returns(returnedId);
 
       const controllerAsUser2 = await controller.connect(user2);
-      const tx = controllerAsUser2.registerSubdomain(
+      const tx = controllerAsUser2.registerSubdomainExtended(
         parentId,
         domainName,
-        user2.address
+        user2.address,
+        "",
+        0,
+        false
       );
 
       await expect(tx).to.be.revertedWith(

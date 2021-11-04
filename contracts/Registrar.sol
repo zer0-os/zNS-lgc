@@ -164,39 +164,18 @@ contract Registrar is
   }
 
   /**
-   * @notice Sets the domain metadata uri
-   * @param id The domain to set on
-   * @param uri The uri to set
-   */
-  function setDomainMetadataUri(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-
-    _setTokenURI(id, uri);
-    emit MetadataChanged(id, uri);
-  }
-
-  /**
-   * @notice Locks a domains metadata uri
+   * @notice Both sets and locks domain metadata uri in a single call
    * @param id The domain to lock
+   * @param uri The uri to set
    * @param toLock whether the domain should be locked or not
    */
-  function lockDomainMetadata(uint256 id, bool toLock) external override {
-    if (toLock) {
-      require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
-      require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    } else {
-      require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
-      require(
-        domainMetadataLockedBy(id) == msg.sender,
-        "Zer0 Registrar: Not locker"
-      );
-    }
-
-    _setDomainLock(id, msg.sender, toLock);
+  function setAndLockDomainMetadata(
+    uint256 id,
+    string memory uri,
+    bool toLock
+  ) external override onlyOwnerOf(id) {
+    _setDomainMetadataUri(id, uri);
+    _lockDomainMetadata(id, toLock);
   }
 
   /*
@@ -295,6 +274,38 @@ contract Registrar is
   /*
    * Internal Methods
    */
+
+  /**
+   * @notice Sets the domain metadata uri
+   * @param id The domain to set on
+   * @param uri The uri to set
+   */
+  function _setDomainMetadataUri(uint256 id, string memory uri) internal {
+    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+
+    _setTokenURI(id, uri);
+    emit MetadataChanged(id, uri);
+  }
+
+  /**
+   * @notice Locks a domains metadata uri
+   * @param id The domain to lock
+   * @param toLock whether the domain should be locked or not
+   */
+  function _lockDomainMetadata(uint256 id, bool toLock) internal {
+    if (toLock) {
+      require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
+      require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    } else {
+      require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
+      require(
+        domainMetadataLockedBy(id) == msg.sender,
+        "Zer0 Registrar: Not locker"
+      );
+    }
+
+    _setDomainLock(id, msg.sender, toLock);
+  }
 
   // internal - creates a domain
   function _createDomain(

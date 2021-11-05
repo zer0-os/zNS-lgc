@@ -178,6 +178,28 @@ contract Registrar is
     _lockDomainMetadata(id, toLock);
   }
 
+  /**
+   * @notice Sets the domain metadata uri
+   * @param id The domain to set on
+   * @param uri The uri to set
+   */
+  function setDomainMetadataUri(uint256 id, string memory uri)
+    external
+    override
+    onlyOwnerOf(id)
+  {
+    _setDomainMetaDataUri(id, uri);
+  }
+
+  /**
+   * @notice Locks a domains metadata uri
+   * @param id The domain to lock
+   * @param toLock whether the domain should be locked or not
+   */
+  function lockDomainMetadata(uint256 id, bool toLock) external override {
+    _lockDomainMetadata(id, toLock);
+  }
+
   /*
    * Public View
    */
@@ -275,11 +297,6 @@ contract Registrar is
    * Internal Methods
    */
 
-  /**
-   * @notice Sets the domain metadata uri
-   * @param id The domain to set on
-   * @param uri The uri to set
-   */
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
 
@@ -287,11 +304,6 @@ contract Registrar is
     emit MetadataChanged(id, uri);
   }
 
-  /**
-   * @notice Locks a domains metadata uri
-   * @param id The domain to lock
-   * @param toLock whether the domain should be locked or not
-   */
   function _lockDomainMetadata(uint256 id, bool toLock) internal {
     if (toLock) {
       require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");

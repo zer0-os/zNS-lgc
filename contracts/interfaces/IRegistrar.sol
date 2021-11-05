@@ -58,6 +58,12 @@ interface IRegistrar is
     bool toLock
   ) external;
 
+  // Lock a domain's metadata so that it cannot be changed
+  function lockDomainMetadata(uint256 id, bool toLock) external;
+
+  // Update a domain's metadata uri
+  function setDomainMetadataUri(uint256 id, string memory uri) external;
+
   // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)
   function setDomainRoyaltyAmount(uint256 id, uint256 amount) external;
 

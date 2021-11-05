@@ -167,17 +167,16 @@ contract Registrar is
    * @notice Both sets and locks domain metadata uri in a single call
    * @param id The domain to lock
    * @param uri The uri to set
-   * @param toLock whether the domain should be locked or not
    */
-  function setAndLockDomainMetadata(
-    uint256 id,
-    string memory uri,
-    bool toLock
-  ) external override onlyOwnerOf(id) {
+  function setAndLockDomainMetadata(uint256 id, string memory uri)
+    external
+    override
+    onlyOwnerOf(id)
+  {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    _validateLockDomainMetadata(id, toLock);
+    _validateLockDomainMetadata(id, true);
     _setDomainMetadataUri(id, uri);
-    _lockDomainMetadata(id, msg.sender, toLock);
+    _lockDomainMetadata(id, msg.sender, true);
   }
 
   /**

@@ -52,11 +52,7 @@ interface IRegistrar is
   ) external returns (uint256);
 
   // Set a domains metadata uri and lock that domain from being modified
-  function setAndLockDomainMetadata(
-    uint256 id,
-    string memory uri,
-    bool toLock
-  ) external;
+  function setAndLockDomainMetadata(uint256 id, string memory uri) external;
 
   // Lock a domain's metadata so that it cannot be changed
   function lockDomainMetadata(uint256 id, bool toLock) external;

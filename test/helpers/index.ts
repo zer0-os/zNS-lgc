@@ -21,6 +21,20 @@ export const hashDomainName = (name: string): string => {
 
 export const calculateDomainHash = getSubnodeHash;
 
+export const domainNameToId = (name: string): string => {
+  let hashReturn = ethers.constants.HashZero;
+
+  if (name === "" || undefined || null) {
+    return hashReturn;
+  }
+
+  const domains = name.split(".");
+  for (let i = 0; i < domains.length; i++) {
+    hashReturn = getSubnodeHash(hashReturn, ethers.utils.id(domains[i]));
+  }
+  return hashReturn;
+};
+
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any */
 export function filterLogsWithTopics(
   logs: providers.Log[],

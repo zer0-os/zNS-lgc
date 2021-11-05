@@ -175,10 +175,9 @@ contract Registrar is
     bool toLock
   ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    validateLockDomainMetadata(id, toLock);
-
+    _validateLockDomainMetadata(id, toLock);
     _setDomainMetadataUri(id, uri);
-    _lockDomainMetadata(id, toLock);
+    _lockDomainMetadata(id, msg.sender, toLock);
   }
 
   /**
@@ -192,7 +191,7 @@ contract Registrar is
     onlyOwnerOf(id)
   {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    _setDomainMetaDataUri(id, uri);
+    _setDomainMetadataUri(id, uri);
   }
 
   /**
@@ -201,26 +200,8 @@ contract Registrar is
    * @param toLock whether the domain should be locked or not
    */
   function lockDomainMetadata(uint256 id, bool toLock) external override {
-    validateLockDomainMetadata(id, toLock);
-    _lockDomainMetadata(id, toLock);
-  }
-
-  /**
-   * @notice Confirm whether a user can lock a domain
-   * @param id The domain to lock
-   * @param toLock whether the domain should be locked or not
-   */
-  function validateLockDomainMetadata(uint256 id, bool toLock) external {
-    if (toLock) {
-      require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
-      require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    } else {
-      require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
-      require(
-        domainMetadataLockedBy(id) == msg.sender,
-        "Zer0 Registrar: Not locker"
-      );
-    }
+    _validateLockDomainMetadata(id, toLock);
+    _lockDomainMetadata(id, msg.sender, toLock);
   }
 
   /*
@@ -325,8 +306,25 @@ contract Registrar is
     emit MetadataChanged(id, uri);
   }
 
-  function _lockDomainMetadata(uint256 id, bool toLock) internal {
-    _setDomainLock(id, msg.sender, toLock);
+  function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
+    if (toLock) {
+      require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
+      require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    } else {
+      require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
+      require(
+        domainMetadataLockedBy(id) == msg.sender,
+        "Zer0 Registrar: Not locker"
+      );
+    }
+  }
+
+  function _lockDomainMetadata(
+    uint256 id,
+    address locker,
+    bool toLock
+  ) internal {
+    _setDomainLock(id, locker, toLock);
   }
 
   // internal - creates a domain

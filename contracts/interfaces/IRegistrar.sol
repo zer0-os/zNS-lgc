@@ -51,10 +51,13 @@ interface IRegistrar is
     bool locked
   ) external returns (uint256);
 
-  // Lock a domains metadata from being modified, can only be called by domain owner and if the metadata is unlocked
+  // Set a domains metadata uri and lock that domain from being modified
+  function setAndLockDomainMetadata(uint256 id, string memory uri) external;
+
+  // Lock a domain's metadata so that it cannot be changed
   function lockDomainMetadata(uint256 id, bool toLock) external;
 
-  // Sets a domains metadata uri
+  // Update a domain's metadata uri
   function setDomainMetadataUri(uint256 id, string memory uri) external;
 
   // Sets the asked royalty amount on a domain (amount is a percentage with 5 decimal places)

@@ -174,9 +174,8 @@ contract Registrar is
     onlyOwnerOf(id)
   {
     require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
-    _validateLockDomainMetadata(id, true);
     _setDomainMetadataUri(id, uri);
-    _lockDomainMetadata(id, msg.sender, true);
+    _setDomainLock(id, msg.sender, true);
   }
 
   /**
@@ -200,7 +199,7 @@ contract Registrar is
    */
   function lockDomainMetadata(uint256 id, bool toLock) external override {
     _validateLockDomainMetadata(id, toLock);
-    _lockDomainMetadata(id, msg.sender, toLock);
+    _setDomainLock(id, msg.sender, toLock);
   }
 
   /*
@@ -316,14 +315,6 @@ contract Registrar is
         "Zer0 Registrar: Not locker"
       );
     }
-  }
-
-  function _lockDomainMetadata(
-    uint256 id,
-    address locker,
-    bool toLock
-  ) internal {
-    _setDomainLock(id, locker, toLock);
   }
 
   // internal - creates a domain

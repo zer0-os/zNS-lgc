@@ -5,7 +5,7 @@ async function main() {
 
   const proxy = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
 
-  const factory = await ethers.getContractFactory("RegistrarWheelsFix");
+  const factory = await ethers.getContractFactory("Registrar");
   console.log("upgrading");
   await upgrades.upgradeProxy(proxy, factory);
   console.log("upgraded");

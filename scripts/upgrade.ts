@@ -8,22 +8,22 @@ const logger = getLogger("scripts::upgrade");
 async function main() {
   //await run("compile");
 
-  const wheelsBasicController = "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443";
-  const basicController = "0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a";
-  const stakingController = "0x45b13d8e6579d5C3FeC14bB9998A3640CD4F008D";
-  const registrar = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+  // const wheelsBasicController = "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443";
+  const basicController = "0x2EF34C52138781C901Fe9e50B64d80aA9903f730";
+  const stakingController = "0x1E3F8B31b24EC0E938BE45ecF6971584F90A1602";
+  const registrar = "0xC613fCc3f81cC2888C5Cccc1620212420FFe4931";
 
-  // console.log("upgrade bc1");
-  // await upgrades.upgradeProxy(
-  //   basicController,
-  //   await ethers.getContractFactory("BasicController")
-  // );
+  console.log("upgrade bc1");
+  await upgrades.upgradeProxy(
+    basicController,
+    await ethers.getContractFactory("BasicController")
+  );
 
-  // console.log("upgrade reg");
-  // await upgrades.upgradeProxy(
-  //   registrar,
-  //   await ethers.getContractFactory("Registrar")
-  // );
+  console.log("upgrade reg");
+  await upgrades.upgradeProxy(
+    registrar,
+    await ethers.getContractFactory("Registrar")
+  );
 
   // console.log("upgrade wheels bc");
   // await upgrades.upgradeProxy(

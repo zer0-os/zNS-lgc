@@ -3,7 +3,7 @@ import { RegistrarWheelsFix__factory } from "../typechain";
 import * as fs from "fs";
 
 const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
-const updateFilePath = "./domainsToUpdate_test.json";
+const updateFilePath = "./domainsToUpdate_all.json";
 const checkpointFilePath = "./domainUpdateCheckpoint.json";
 const preCheckpointFilePath = "./pre-domainUpdateCheckpoint.json";
 const chunkSize = 100; // domains to update at a time
@@ -111,7 +111,6 @@ const main = async () => {
     );
 
     for (const domain of domainIds) {
-      console.log(domain);
       checkpoint[domain] = true;
     }
     saveCheckpoint(checkpoint, true);

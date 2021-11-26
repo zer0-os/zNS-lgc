@@ -1,722 +1,362 @@
 [
-	{
-		"name": "wilder.wheels.genesis.270",
-		"id": "0x3d7b418578cd411b284d33b9f4628c2c3c8a70243fd77bd4ce4a4cf26fc14037",
-		"metadataUri": "ipfs://QmTit84XLXQxT5fbVoU939YKhsVgzCfEAqQyHXvdk6auC4",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmXgwehz2TTLdHuHni6G9Xme6UHRVoJtsRYY6q8rnAfRBf",
-			"animation_url": "ipfs://QmVkpb2BiA9RprENWoa2gV3eP5ARq7TwTnJzoT6vdkfhDt",
-			"image_full": "ipfs://QmVEs62GNzTKoEhRCyguMeQmVbupagnURWJHpiwNKyjDDW",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Space Time"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "WILD Punk"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 1632"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.482",
-		"id": "0x9cd6bc9812d69f32b2ce779b4fdb46aeb30fa8c6931ac1f97f98020335bce40d",
-		"metadataUri": "ipfs://QmYTYkmSPGh4NLDMVtKcDTADnVD8HiCTVQKHMKNKQXD67n",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmYG4utHEFqjNhXKCUsXRqo6HyqGwA5FCxFrYUPXu5j9tL",
-			"animation_url": "ipfs://QmbLQoKVAF2hC3ZJ1keB1T3GxjKW1154RqC1GVA9sXa4S5",
-			"image_full": "ipfs://QmegNw1jda8G2ui5AKPAs1bAxzDitg51yC8RMx81NkM8fT",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Rorschach"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Smooth Jazz"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 0403"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.499",
-		"id": "0x393cccc8f46b61acd9da12de274f7571873330778906998c0109517152e7e874",
-		"metadataUri": "ipfs://QmUmZRpGa1Dwpix8adzXpmEDSqqgvDXnd4GrdubCetwBee",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmUKM65gYSx21hWXNv9wxGm6HrpxERSAqoBznBxxGWPzJ1",
-			"animation_url": "ipfs://QmZgyuAsUJUSkrWH1w9cEiWFx4BtNXatPLDaGtGP23mBMi",
-			"image_full": "ipfs://QmVGcKxuoxs5dqPHPTVbbvmgQ9ksy4h3X3bd95ai2oCJc7",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Fragment"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Deep Wilderness"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 7042"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Purple"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.852",
-		"id": "0x2aad61e1d511d0de3c40e14e30de3995108d6562c6ff8fc95c05975e731c878c",
-		"metadataUri": "ipfs://QmU9NEeCUwpJDy4XNE16TjfhP1pbBWh9UU5wGYvMCmRKPc",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmXwmaJYjxfDTxvMGPeroewxG8sm9cZK7GM8SFjG8m4tH3",
-			"animation_url": "ipfs://QmPGnSKPDdNUgaPDKLGMdbGdffQRCEJPNk1C97CudG88Vz",
-			"image_full": "ipfs://QmVPedaNieczMUEnGgBLBqsG9dytWNZvusBy37jKiPTYBV",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Techno Weave"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Seabound"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 9502"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.884",
-		"id": "0xb334360cd0abcd636ebda30c90b6db5118a06e2c69720a0e28c08e74b409d596",
-		"metadataUri": "ipfs://QmUvCo41McdGa1VfYC1XHFcmmZJmBKqEuhz3wQzs1StRC9",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmaRsnD6iHnHBJdg2jiykMTrxjXLyRbC5yR9RF6GZ22WFu",
-			"animation_url": "ipfs://Qmd9ZoyjwhqNeWDV8HptFQphcrg3d8fYdXESP6W5c4kgaX",
-			"image_full": "ipfs://QmNyyZWt5XiwbcBzL8wPhCBRc6oeR52P9cQBf5k5A7msZH",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Galactic Collision"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Teal Tones"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 7420"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.431",
-		"id": "0x76a0962c0c239f2bb421ae887b44d02d9fd4e28f78d00b16171d9444c1ab7456",
-		"metadataUri": "ipfs://QmafNXmes3bnk1hg1Ljs5aYo1sayjrSBQrRwsSWUiVswjr",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmTozE7Ju8zPgp3xuKkZjLMh4k8u5ECKpRktA1pmANFwzy",
-			"animation_url": "ipfs://QmVhtCh6fpYccrntCyCYBb3ydiZgk5XkE4TiX5KTE1t5pJ",
-			"image_full": "ipfs://QmXroaqy25T8h8bmVQvc3VvxhFhGLkGexpT9dpizarjszo",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Diamond Hands"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Lightbeam"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Warm White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 0891"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Purple"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.680",
-		"id": "0x27b6f2d078c0881374158a4ff6f5262dfa6a8d806461d07544de95dab5076264",
-		"metadataUri": "ipfs://QmanhxEm44szBwcFLHKZtCqwQ6w6qB2QfoR7vx2J9X4VFx",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmegW1FKUuz3Nc8eWHrpukcW7S5on5zE276TiebM6Q8uuT",
-			"animation_url": "ipfs://QmP8KzVyHYRpZUKpfE6y6odTR3Y3sFx7Z5qEe2QRZLhVBA",
-			"image_full": "ipfs://QmfAQ3DzCNqLo2Z3Pwai1pd2n7a58tT6VkVsybYdFZk6XN",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Diamond Hands"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Teal Tones"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 2072"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Purple"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.868",
-		"id": "0xe8019700548037efaaf337f22527f6133fac7b13a4cf85d44f44944cc20c6e2f",
-		"metadataUri": "ipfs://Qmdo863qMXEfiMYGByVtJcZxCoi5GTz5ZEqnkr5bFwCANH",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmPYZxn7jVh2aPq9aiiwSU3kHjR3BCjJAHztbFfHL278jm",
-			"animation_url": "ipfs://QmbeCF9xkV86qrFdXGmJS9acjtYiwfKMPLxsKhJRFbPQHV",
-			"image_full": "ipfs://QmbWZoQjq5Z4WoyQjoqHCKy9VWL9NRKp7Bz4YXvjDZ49hW",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Error"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Teal Tones"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 5544"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.747",
-		"id": "0xc76f9f7f50ba3ae1b3779b47e06c600552dcdf8af6eae143849f6cac24308538",
-		"metadataUri": "ipfs://QmQwLvNkVBanwv78kNGHRbAF1sdrsTTuPdMBc3wmE46gSy",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://Qmc73zkyrn3hf6XyPCq9u1T7QD6Ta6WKkrzvd4JH4NHyqt",
-			"animation_url": "ipfs://QmXi9Eb41mqoh7tPadMDTCWuZxZTkHWqtWtTeDKZAgui4H",
-			"image_full": "ipfs://QmT1RNFVYW9cCF3RqSVPKnTPZi67Ee7y3xHEjuUpHkvY6j",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Horizon"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Lightbeam"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 6989"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	},
-	{
-		"name": "wilder.wheels.genesis.652",
-		"id": "0xc5592a0cf4e649ca714844131522f2fd8a242f4a13b6f3c40195370fb86700bf",
-		"metadataUri": "ipfs://QmWvEzt75t8M6RXBP4XjQnn28NGsXLdQu7JUVwj4WXJvsZ",
-		"metadata":
-		{
-			"description": "Word",
-			"image": "ipfs://QmPiW4zsGaxNFy3J4GnTpMUieGXEo87mWdoFGh8nWimiqB",
-			"animation_url": "ipfs://QmSKZHob6gYaPN2E6sdwcvnb8B3fggBpF2osoMKwQj2JYs",
-			"image_full": "ipfs://QmSr1Xwt9FCRnpHQecJyGY7svBKmksZkMoVYrAPVgguTd6",
-			"stakingRequests": "disabled",
-			"name": "Wustang King Wilder 1978",
-			"attributes": [
-				{
-					"trait_type": "Car Name",
-					"value": "Word Wustang King Wilder 1978"
-				},
-				{
-					"trait_type": "Rim",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Bonnet",
-					"value": "Type 1"
-				},
-				{
-					"trait_type": "Bull Bar",
-					"value": "Type 2"
-				},
-				{
-					"trait_type": "Rear Bar",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Spoiler",
-					"value": "Stock"
-				},
-				{
-					"trait_type": "Environment",
-					"value": "The Wilder Hideout"
-				},
-				{
-					"trait_type": "Pattern",
-					"value": "Diamond Hands"
-				},
-				{
-					"trait_type": "Wilder Logo Color",
-					"value": "Orange"
-				},
-				{
-					"trait_type": "Tire and Rim Color",
-					"value": "Blue"
-				},
-				{
-					"trait_type": "Color",
-					"value": "Smooth Jazz"
-				},
-				{
-					"trait_type": "Headlight Color",
-					"value": "Cool White"
-				},
-				{
-					"trait_type": "Number Plate",
-					"value": "0500 3250"
-				},
-				{
-					"trait_type": "Number Plate Color",
-					"value": "Blue"
-				}
-			]
-		}
-	}
+  {
+    "name": "wilder.wheels.genesis.482",
+    "id": "0x9cd6bc9812d69f32b2ce779b4fdb46aeb30fa8c6931ac1f97f98020335bce40d",
+    "metadataUri": "ipfs://QmNn9Dm1saotGJDwuHsVJTVKy1efLjRE2xF5XxP84W1KjR",
+    "metadata":
+    {
+      "description": "Word",
+      "image": "ipfs://Qmb2HByUvGNnk1qQLd58wuiRaHmrc6BvoPbnM8bADeqwBX",
+      "animation_url": "ipfs://QmbLQoKVAF2hC3ZJ1keB1T3GxjKW1154RqC1GVA9sXa4S5",
+      "image_full": "ipfs://QmegNw1jda8G2ui5AKPAs1bAxzDitg51yC8RMx81NkM8fT",
+      "stakingRequests": "disabled",
+      "name": "Wustang King Wilder 1978",
+      "attributes": [
+        {
+          "trait_type": "Car Name",
+          "value": "Word Wustang King Wilder 1978"
+        },
+        {
+          "trait_type": "Rim",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Bonnet",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Bull Bar",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Rear Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Spoiler",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Environment",
+          "value": "The Wilder Hideout"
+        },
+        {
+          "trait_type": "Pattern",
+          "value": "Rorschach"
+        },
+        {
+          "trait_type": "Wilder Logo Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Tire and Rim Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Color",
+          "value": "Smooth Jazz"
+        },
+        {
+          "trait_type": "Headlight Color",
+          "value": "Cool White"
+        },
+        {
+          "trait_type": "Number Plate",
+          "value": "0500 0403"
+        },
+        {
+          "trait_type": "Number Plate Color",
+          "value": "Blue"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wilder.wheels.genesis.270",
+    "id": "0x3d7b418578cd411b284d33b9f4628c2c3c8a70243fd77bd4ce4a4cf26fc14037",
+    "metadataUri": "ipfs://QmPsRdQAbL92tU854ecfS15xh8XA3BcFtBLDGDdQ4CbG1Y",
+    "metadata":
+    {
+      "description": "Word",
+      "image": "ipfs://QmQV6GEzWdhiHxjgnCGQ5qy9WpWr4qUzpwGDiBREXDbwRj",
+      "animation_url": "ipfs://QmVkpb2BiA9RprENWoa2gV3eP5ARq7TwTnJzoT6vdkfhDt",
+      "image_full": "ipfs://QmVEs62GNzTKoEhRCyguMeQmVbupagnURWJHpiwNKyjDDW",
+      "stakingRequests": "disabled",
+      "name": "Wustang King Wilder 1978",
+      "attributes": [
+        {
+          "trait_type": "Car Name",
+          "value": "Word Wustang King Wilder 1978"
+        },
+        {
+          "trait_type": "Rim",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Bonnet",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Bull Bar",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Rear Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Spoiler",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Environment",
+          "value": "The Wilder Hideout"
+        },
+        {
+          "trait_type": "Pattern",
+          "value": "Space Time"
+        },
+        {
+          "trait_type": "Wilder Logo Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Tire and Rim Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Color",
+          "value": "WILD Punk"
+        },
+        {
+          "trait_type": "Headlight Color",
+          "value": "Cool White"
+        },
+        {
+          "trait_type": "Number Plate",
+          "value": "0500 1632"
+        },
+        {
+          "trait_type": "Number Plate Color",
+          "value": "Blue"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wilder.wheels.genesis.499",
+    "id": "0x393cccc8f46b61acd9da12de274f7571873330778906998c0109517152e7e874",
+    "metadataUri": "ipfs://QmcurjSX2aeY7iuUdcSHPdXf52azPTw3D1C3xrDyNZQEAb",
+    "metadata":
+    {
+      "description": "Word",
+      "image": "ipfs://QmR8EDQMQk3NKc8M4rCYxxZ82i7sALuTDPKJi3FG88Lh5M",
+      "animation_url": "ipfs://QmZgyuAsUJUSkrWH1w9cEiWFx4BtNXatPLDaGtGP23mBMi",
+      "image_full": "ipfs://QmVGcKxuoxs5dqPHPTVbbvmgQ9ksy4h3X3bd95ai2oCJc7",
+      "stakingRequests": "disabled",
+      "name": "Wustang King Wilder 1978",
+      "attributes": [
+        {
+          "trait_type": "Car Name",
+          "value": "Word Wustang King Wilder 1978"
+        },
+        {
+          "trait_type": "Rim",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Bonnet",
+          "value": "Type 2"
+        },
+        {
+          "trait_type": "Bull Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Rear Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Spoiler",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Environment",
+          "value": "The Wilder Hideout"
+        },
+        {
+          "trait_type": "Pattern",
+          "value": "Fragment"
+        },
+        {
+          "trait_type": "Wilder Logo Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Tire and Rim Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Color",
+          "value": "Deep Wilderness"
+        },
+        {
+          "trait_type": "Headlight Color",
+          "value": "Cool White"
+        },
+        {
+          "trait_type": "Number Plate",
+          "value": "0500 7042"
+        },
+        {
+          "trait_type": "Number Plate Color",
+          "value": "Purple"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wilder.wheels.genesis.680",
+    "id": "0x27b6f2d078c0881374158a4ff6f5262dfa6a8d806461d07544de95dab5076264",
+    "metadataUri": "ipfs://QmRgFxa1ph5CduaLU7xLAxaTTMtoyHbRVLsK4mY2BhpQ68",
+    "metadata":
+    {
+      "description": "Word",
+      "image": "ipfs://QmUSeEpXTrjHns2wTbYeZboAUgGHSbdAB7SriNf4AM2bk5",
+      "animation_url": "ipfs://QmP8KzVyHYRpZUKpfE6y6odTR3Y3sFx7Z5qEe2QRZLhVBA",
+      "image_full": "ipfs://QmfAQ3DzCNqLo2Z3Pwai1pd2n7a58tT6VkVsybYdFZk6XN",
+      "stakingRequests": "disabled",
+      "name": "Wustang King Wilder 1978",
+      "attributes": [
+        {
+          "trait_type": "Car Name",
+          "value": "Word Wustang King Wilder 1978"
+        },
+        {
+          "trait_type": "Rim",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Bonnet",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Bull Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Rear Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Spoiler",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Environment",
+          "value": "The Wilder Hideout"
+        },
+        {
+          "trait_type": "Pattern",
+          "value": "Diamond Hands"
+        },
+        {
+          "trait_type": "Wilder Logo Color",
+          "value": "Blue"
+        },
+        {
+          "trait_type": "Tire and Rim Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Color",
+          "value": "Teal Tones"
+        },
+        {
+          "trait_type": "Headlight Color",
+          "value": "Cool White"
+        },
+        {
+          "trait_type": "Number Plate",
+          "value": "0500 2072"
+        },
+        {
+          "trait_type": "Number Plate Color",
+          "value": "Purple"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wilder.wheels.genesis.431",
+    "id": "0x76a0962c0c239f2bb421ae887b44d02d9fd4e28f78d00b16171d9444c1ab7456",
+    "metadataUri": "ipfs://QmWyFwJEQ6NpXmNkTQt5nrTRS13KHBz8C7k1E45bS8kdVy",
+    "metadata":
+    {
+      "description": "Word",
+      "image": "ipfs://QmWcKpA3T9CTWvjSiRPtkhnsAACXctaXjmqnJmyHhEZb5f",
+      "animation_url": "ipfs://QmVhtCh6fpYccrntCyCYBb3ydiZgk5XkE4TiX5KTE1t5pJ",
+      "image_full": "ipfs://QmXroaqy25T8h8bmVQvc3VvxhFhGLkGexpT9dpizarjszo",
+      "stakingRequests": "disabled",
+      "name": "Wustang King Wilder 1978",
+      "attributes": [
+        {
+          "trait_type": "Car Name",
+          "value": "Word Wustang King Wilder 1978"
+        },
+        {
+          "trait_type": "Rim",
+          "value": "Type 1"
+        },
+        {
+          "trait_type": "Bonnet",
+          "value": "Type 2"
+        },
+        {
+          "trait_type": "Bull Bar",
+          "value": "Type 2"
+        },
+        {
+          "trait_type": "Rear Bar",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Spoiler",
+          "value": "Stock"
+        },
+        {
+          "trait_type": "Environment",
+          "value": "The Wilder Hideout"
+        },
+        {
+          "trait_type": "Pattern",
+          "value": "Diamond Hands"
+        },
+        {
+          "trait_type": "Wilder Logo Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Tire and Rim Color",
+          "value": "Orange"
+        },
+        {
+          "trait_type": "Color",
+          "value": "Lightbeam"
+        },
+        {
+          "trait_type": "Headlight Color",
+          "value": "Warm White"
+        },
+        {
+          "trait_type": "Number Plate",
+          "value": "0500 0891"
+        },
+        {
+          "trait_type": "Number Plate Color",
+          "value": "Purple"
+        }
+      ]
+    }
+  }
 ]

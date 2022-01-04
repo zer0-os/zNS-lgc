@@ -28,6 +28,11 @@ contract BasicController is
     _;
   }
 
+  modifier onlyAdmin(){
+    require(_msgSender() == admin, "Zer0 Controller: Admin Only");
+    _;
+  }
+
   function initialize(IRegistrar _registrar, address _admin) public initializer {
     __ERC165_init();
     __Context_init();
@@ -35,6 +40,10 @@ contract BasicController is
 
     registrar = _registrar;
     admin = _admin;
+  }
+
+  function setAdmin(address newAdmin) public onlyAdmin {
+    admin = newAdmin;
   }
 
   function registerSubdomainExtended(

@@ -17,21 +17,24 @@ contract BasicController is
 {
   IRegistrar private registrar;
   uint256 rootDomain; // for upgrade reasons
+  uint256 controllerAdmin; // not writeable - can mint a domain at any level in zNS
 
   modifier authorized(uint256 domain) {
     require(
-      registrar.ownerOf(domain) == _msgSender(),
+      registrar.ownerOf(domain) == _msgSender() ||
+      registrar.ownerOf(domain) == controllerAdmin,
       "Zer0 Controller: Not Authorized"
     );
     _;
   }
 
-  function initialize(IRegistrar _registrar) public initializer {
+  function initialize(IRegistrar _registrar, uint256 _controllerAdmin) public initializer {
     __ERC165_init();
     __Context_init();
     __ERC721Holder_init();
 
     registrar = _registrar;
+    controllerAdmin = _controllerAdmin;
   }
 
   function registerSubdomainExtended(
@@ -48,6 +51,7 @@ contract BasicController is
       parentId,
       label,
       minter,
+      owner,
       metadata,
       royaltyAmount,
       lockOnCreation

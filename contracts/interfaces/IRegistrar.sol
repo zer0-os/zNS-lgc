@@ -46,6 +46,7 @@ interface IRegistrar is
     uint256 parentId,
     string memory name,
     address minter,
+    address owner,
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked

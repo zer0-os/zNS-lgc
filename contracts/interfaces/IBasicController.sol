@@ -26,6 +26,7 @@ interface IBasicController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
     uint256 parentId,
     string memory label,
     address owner,
+    address minter,
     string memory metadata,
     uint256 royaltyAmount,
     bool lockOnCreation

@@ -104,6 +104,7 @@ contract Registrar is
     uint256 parentId,
     string memory name,
     address minter,
+    address owner,
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked
@@ -121,7 +122,7 @@ contract Registrar is
     uint256 domainId = uint256(
       keccak256(abi.encodePacked(parentId, labelHash))
     );
-    _createDomain(parentId, domainId, minter, controller);
+    _createDomain(parentId, domainId, minter, owner, controller);
     _setTokenURI(domainId, metadataUri);
 
     if (locked) {
@@ -322,10 +323,11 @@ contract Registrar is
     uint256 parentId,
     uint256 domainId,
     address minter,
+    address owner,
     address controller
   ) internal {
     // Create the NFT and register the domain data
-    _safeMint(minter, domainId);
+    _safeMint(owner, domainId);
     records[domainId] = DomainRecord({
       parentId: parentId,
       minter: minter,

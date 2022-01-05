@@ -17,8 +17,8 @@ contract BasicController is
   ERC721HolderUpgradeable
 {
   IRegistrar private registrar;
-  uint256 rootDomain; // for upgrade reasons
-  address admin; // not writeable - can mint a domain at any level in zNS
+  uint256 public rootDomain; // for upgrade reasons
+  address private admin; // not writeable - can mint a domain at any level in zNS
 
   modifier authorized(uint256 domain) {
     require(
@@ -85,6 +85,49 @@ contract BasicController is
       uint256 domainId = this.registerSubdomainExtended(
         parentId,
         toString(startLabelIndex + i),
+        address(this),
+        metadataUris[i],
+        0,
+        true
+      );
+      registrar.transferFrom(address(this), users[i], domainId);
+    }
+  }
+
+  function mintDomainsBulk(
+    uint256 parentId,
+    string[] calldata labels,
+    string[] calldata metadataUris,
+    address user
+  ) external onlyAdmin {
+    uint256 metadataCount = metadataUris.length;
+    require(metadataCount == labels.length, "Zer0 Controller: 1 Label Per Uri");
+    for (uint256 i = 0; i < metadataUris.length; i++) {
+      uint256 domainId = this.registerSubdomainExtended(
+        parentId,
+        labels[i],
+        address(this),
+        metadataUris[i],
+        0,
+        true
+      );
+      registrar.transferFrom(address(this), user, domainId);
+    }
+  }
+
+  function mintDomainsBulk(
+    uint256 parentId,
+    string[] calldata labels,
+    string[] calldata metadataUris,
+    address[] calldata users
+  ) external onlyAdmin {
+    uint256 metadataCount = metadataUris.length;
+    require(metadataCount == labels.length, "Zer0 Controller: 1 Label Per Uri");
+    require(metadataCount == users.length, "Zer0 Controller: 1 Uri Per User");
+    for (uint256 i = 0; i < metadataUris.length; i++) {
+      uint256 domainId = this.registerSubdomainExtended(
+        parentId,
+        labels[i],
         address(this),
         metadataUris[i],
         0,

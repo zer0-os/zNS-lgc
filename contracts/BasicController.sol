@@ -80,7 +80,7 @@ contract BasicController is
         "Zer0 Controller: 1 Uri Per User");
       for(uint i=0; i < metadataUris.length; i++){
         uint256 domainId = registerSubdomainExtended(parentId, startLabelIndex + i, address(this), metadataUris[i], 0, true);
-        zNSRegistrar.transferFrom(address(this), users[i], domainId);
+        registrar.transferFrom(address(this), users[i], domainId);
       }
   }
 }

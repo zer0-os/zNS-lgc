@@ -12,7 +12,6 @@ import "./interfaces/IBasicController.sol";
 import "./interfaces/IRegistrar.sol";
 
 contract OwnableController is
-  IBasicController,
   ContextUpgradeable,
   OwnableUpgradeable,
   ERC165Upgradeable,

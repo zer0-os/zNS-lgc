@@ -38,28 +38,6 @@ contract OwnableController is
     registrar = _registrar;
   }
 
-  function registerSubdomainExtended(
-    uint256 parentId,
-    string memory label,
-    address owner,
-    string memory metadata,
-    uint256 royaltyAmount,
-    bool lockOnCreation
-  ) external override authorized(parentId) returns (uint256) {
-    address minter = _msgSender();
-
-    uint256 id = registrar.registerDomain(
-      parentId,
-      label,
-      _msgSender(),
-      metadata,
-      royaltyAmount,
-      lockOnCreation
-    );
-
-    return id;
-  }
-
   function mintDomainsBulk(
     uint256 parentId,
     uint256 startLabelIndex,

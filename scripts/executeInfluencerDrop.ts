@@ -48,13 +48,13 @@ const royaltyAmount = ethers.utils.parseEther("0");
 const lockOnCreation = true;
 
 //const kovanController = "0x2aaf8385e7285eceb464bdbc7d50cf5c1b7363de";
-const mainnetAdmin = "0x930e6b2aad267a7fa7e6c6dfcf0c70885b03c443";
+const godController = "0x361e74E8fa656a7D9c47307829480DC0Ee92D6b8";
 
 const getControllerInstance = async () => {
   const accounts = await hardhat.ethers.getSigners();
   const deployer = accounts[0];
   const controllerInstance = OwnableController__factory.connect(
-    mainnetAdmin,
+    godController,
     deployer
   );
 
@@ -89,7 +89,7 @@ const executeDrop = async () => {
   const owners: string[] = [];
 
   const chunk_start = 9765;
-  const chunk_size = 100;
+  const chunk_size = 50;
   const items_in_chunk = 0;
 
   Object.values(labelledMetadataAndTags).forEach((value) => {
@@ -107,15 +107,16 @@ const executeDrop = async () => {
     );
     const tx = await controller
       .connect(deployer)
-      ["mintDomainsBulk(uint256,uint256,string[],address[])"](
+      .estimateGas["mintDomainsBulk(uint256,uint256,string[],address[])"](
         parentId,
         chunk_start + j * chunk_size,
         chunkedMetadataUris[j],
         chunkedOwners[j]
       );
-    logger.debug(`tx hash is: ${tx.hash}`);
-    logger.log(`waiting for tx to confirm...`);
-    await tx.wait(2);
+    console.log(tx.toString());
+    // logger.debug(`tx hash is: ${tx.hash}`);
+    // logger.log(`waiting for tx to confirm...`);
+    // await tx.wait(2);
   }
 
   // try {

@@ -11,7 +11,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import "./interfaces/IBasicController.sol";
 import "./interfaces/IRegistrar.sol";
 
-contract OwnedController is
+contract OwnableController is
   IBasicController,
   ContextUpgradeable,
   OwnableUpgradeable,
@@ -51,13 +51,11 @@ contract OwnedController is
     uint256 id = registrar.registerDomain(
       parentId,
       label,
-      minter,
+      _msgSender(),
       metadata,
       royaltyAmount,
       lockOnCreation
     );
-
-    emit RegisteredDomain(label, id, parentId, owner, minter);
 
     return id;
   }
@@ -71,7 +69,7 @@ contract OwnedController is
     uint256 metadataCount = metadataUris.length;
     require(metadataCount == users.length, "Zer0 Controller: 1 Uri Per User");
     for (uint256 i = 0; i < metadataCount; i++) {
-      uint256 domainId = this.registerSubdomainExtended(
+      uint256 domainId = registrar.registerDomain(
         parentId,
         toString(startLabelIndex + i),
         address(this),
@@ -92,7 +90,7 @@ contract OwnedController is
     uint256 metadataCount = metadataUris.length;
     require(metadataCount == labels.length, "Zer0 Controller: 1 Label Per Uri");
     for (uint256 i = 0; i < metadataUris.length; i++) {
-      uint256 domainId = this.registerSubdomainExtended(
+      uint256 domainId = registrar.registerDomain(
         parentId,
         labels[i],
         address(this),
@@ -114,7 +112,7 @@ contract OwnedController is
     require(metadataCount == labels.length, "Zer0 Controller: 1 Label Per Uri");
     require(metadataCount == users.length, "Zer0 Controller: 1 Uri Per User");
     for (uint256 i = 0; i < metadataUris.length; i++) {
-      uint256 domainId = this.registerSubdomainExtended(
+      uint256 domainId = registrar.registerDomain(
         parentId,
         labels[i],
         address(this),

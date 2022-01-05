@@ -19,5 +19,12 @@
     "version": "075a0a7a48acff742ca326b0146332f5e0b13aa0f3a24fa3c0564bbd5d361c08",
     "date": "2021-08-18T00:48:56.807Z",
     "implementation": "0x0cCAf8D2C9218c0C0a1E5A6bcB20E4a61D3a6FD4"
+  },
+  "ownableController": {
+    "name": "OwnableController",
+    "address": "0x361e74E8fa656a7D9c47307829480DC0Ee92D6b8",
+    "version": "d6527e5fc4bcb4fb986aa7f074a8c00079355868a190cb86edf184e2ed91e6df",
+    "date": "2022-01-05T22:53:00.875Z",
+    "implementation": "0xd7775936c5b037B873CCdF27e3E7A53bCB24C61A"
   }
 }

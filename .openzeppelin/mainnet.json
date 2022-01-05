@@ -9,6 +9,11 @@
       "address": "0x86DDaB06A0fDAd60c7d11a1DFEFCbB441d4A4821",
       "txHash": "0xb495645fdfec3d3393c8b853b4403d18d28448f0f339e57a79034d2b044d94af",
       "kind": "transparent"
+    },
+    {
+      "address": "0x361e74E8fa656a7D9c47307829480DC0Ee92D6b8",
+      "txHash": "0x3ae3dff081023be54a3542b0718e338e8183e3c97f1172911d99bb16f4ad4576",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2572,6 +2577,100 @@
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "d6527e5fc4bcb4fb986aa7f074a8c00079355868a190cb86edf184e2ed91e6df": {
+      "address": "0xd7775936c5b037B873CCdF27e3E7A53bCB24C61A",
+      "txHash": "0x686dddc5f33bff49ea8840e2ecf5b25019c8ae85c50db22ac5e2cd0177f032a8",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)6782",
+            "src": "contracts\\OwnableController.sol:20"
+          },
+          {
+            "contract": "OwnableController",
+            "label": "rootDomain",
+            "type": "t_uint256",
+            "src": "contracts\\OwnableController.sol:21"
+          }
+        ],
+        "types": {
+          "t_contract(IRegistrar)6782": {
+            "label": "contract IRegistrar"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_address": {
+            "label": "address"
           }
         }
       }

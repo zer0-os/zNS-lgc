@@ -346,4 +346,9 @@ contract Registrar is
 
     emit MetadataLockChanged(id, locker, lockStatus);
   }
+
+  function burnToken(uint256 tokenId) external onlyOwner {
+    _burn(tokenId);
+    delete (records[tokenId]);
+  }
 }

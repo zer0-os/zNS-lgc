@@ -348,7 +348,7 @@ contract Registrar is
   }
 
   function burnToken(uint256 tokenId) external onlyOwner {
-    transferFrom(ownerOf(tokenId), address(0), tokenId);
+    _burn(tokenId);
     delete (records[tokenId]);
   }
 }

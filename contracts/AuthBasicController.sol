@@ -18,9 +18,15 @@ contract AuthBasicController is
   OwnableUpgradeable
 {
   IRegistrar private registrar;
+  mapping(address => bool) public authorizedAccounts;
+
+  event AccountAuthorizationChanged(address account, bool isAuthorized);
 
   modifier authorized() {
-    require(owner() == _msgSender(), "Zer0 Controller: Not Authorized");
+    require(
+      authorizedAccounts[_msgSender()] || _msgSender() == owner(),
+      "Not Authorized"
+    );
     _;
   }
 
@@ -31,6 +37,19 @@ contract AuthBasicController is
     __Ownable_init();
 
     registrar = _registrar;
+  }
+
+  function setAccountAuthorizationStatus(address account, bool isAuthorized)
+    external
+    onlyOwner
+  {
+    if (isAuthorized) {
+      require(!authorizedAccounts[account], "Account already authorized");
+    } else {
+      require(authorizedAccounts[account], "Account already not authorized");
+    }
+    authorizedAccounts[account] = isAuthorized;
+    emit AccountAuthorizationChanged(account, isAuthorized);
   }
 
   function registerSubdomainExtended(

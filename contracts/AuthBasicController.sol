@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/IBasicController.sol";
 import "./interfaces/IRegistrar.sol";
 
-contract BasicController is
+contract AuthBasicController is
   IBasicController,
   ContextUpgradeable,
   ERC165Upgradeable,

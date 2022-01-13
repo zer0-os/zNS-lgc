@@ -56,7 +56,7 @@ contract AuthBasicController is
     uint256 parentId,
     string memory label,
     address owner,
-    string memory metadata,
+    string memory metadataUri,
     uint256 royaltyAmount,
     bool lockOnCreation
   ) external override authorized returns (uint256) {
@@ -66,7 +66,7 @@ contract AuthBasicController is
       parentId,
       label,
       minter,
-      metadata,
+      metadataUri,
       royaltyAmount,
       lockOnCreation,
       owner

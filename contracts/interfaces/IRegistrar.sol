@@ -51,6 +51,16 @@ interface IRegistrar is
     bool locked
   ) external returns (uint256);
 
+  function registerDomainAndSend(
+    uint256 parentId,
+    string memory name,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    address sendToUser
+  ) external returns (uint256);
+
   // Set a domains metadata uri and lock that domain from being modified
   function setAndLockDomainMetadata(uint256 id, string memory uri) external;
 

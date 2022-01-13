@@ -108,6 +108,50 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked
   ) external override onlyController returns (uint256) {
+    return
+      _registerDomain(
+        parentId,
+        name,
+        minter,
+        metadataUri,
+        royaltyAmount,
+        locked
+      );
+  }
+
+  function registerDomainAndSend(
+    uint256 parentId,
+    string memory name,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    address sendToUser
+  ) external override onlyController returns (uint256) {
+    // Register the domain
+    uint256 id = _registerDomain(
+      parentId,
+      name,
+      minter,
+      metadataUri,
+      royaltyAmount,
+      locked
+    );
+
+    // immediately send domain to user
+    _safeTransfer(minter, sendToUser, id, "");
+
+    return id;
+  }
+
+  function _registerDomain(
+    uint256 parentId,
+    string memory name,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked
+  ) internal returns (uint256) {
     require(bytes(name).length > 0, "Zer0 Registrar: Empty name");
 
     // Create the child domain under the parent domain
@@ -325,7 +369,7 @@ contract Registrar is
     address controller
   ) internal {
     // Create the NFT and register the domain data
-    _safeMint(minter, domainId);
+    _mint(minter, domainId);
     records[domainId] = DomainRecord({
       parentId: parentId,
       minter: minter,

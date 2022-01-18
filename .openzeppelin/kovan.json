@@ -9,6 +9,11 @@
       "address": "0x2AAF8385e7285eCEb464BDbC7D50Cf5C1B7363de",
       "txHash": "0xd794ac43721dca87437db40f4097d4dde9eeefeaef5a2f9359a236573438456d",
       "kind": "transparent"
+    },
+    {
+      "address": "0xeaB7941bb5Fc49fEC70a41d6AD76919639b7Ed68",
+      "txHash": "0xe98db0dbf03cfed4b058f1d275f23c69c859f3e9666c9a3c66c0247fc17bbea1",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2098,6 +2103,103 @@
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "b0380d45eb11d1e7a450ad77ee53d7e28bd9045136383ec414f6b5b20d20a73a": {
+      "address": "0x04bA8a2b5c6879F0054f6Ac9287Bf70d0D6B916E",
+      "txHash": "0x21e3068de3f3f41e3881a5abcf74770d29696eba27f74c9c431d1c1de1c04167",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "AuthBasicController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)7044",
+            "src": "contracts\\AuthBasicController.sol:20"
+          },
+          {
+            "contract": "AuthBasicController",
+            "label": "authorizedAccounts",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\AuthBasicController.sol:21"
+          }
+        ],
+        "types": {
+          "t_contract(IRegistrar)7044": {
+            "label": "contract IRegistrar"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
           }
         }
       }

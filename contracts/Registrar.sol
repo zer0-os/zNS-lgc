@@ -395,4 +395,8 @@ contract Registrar is
     _burn(tokenId);
     delete (records[tokenId]);
   }
+
+  function adminTransfer(address from, address to, uint256 tokenId) external onlyOwner {
+    _transfer(from, to, tokenId);
+  }
 }

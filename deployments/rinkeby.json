@@ -1,0 +1,23 @@
+{
+  "registrar": {
+    "name": "Registrar",
+    "address": "0xa4F6C921f914ff7972D7C55c15f015419326e0Ca",
+    "version": "1467835772c77b70cd50f3d614ff7033544e565d636c763d2135ad7b391fe5d6",
+    "date": "2022-01-20T03:41:30.455Z",
+    "implementation": "0xaEC2F2Dc227401570E87F5F1baEf04Cf8aA8196A"
+  },
+  "basicController": {
+    "name": "BasicController",
+    "address": "0x1188dD1a0F42BA4a117EF1c09D884f5183D40B28",
+    "version": "c25db2758acba28df7dcea8cbeb230d58d4493bcbbc43a1b9fffcb37c59c4648",
+    "date": "2022-01-20T03:48:47.364Z",
+    "implementation": "0xb5eF6582Eb1f72ee0E7cd29274D3C7447c91B268"
+  },
+  "stakingController": {
+    "name": "StakingController",
+    "address": "0x7FDd24f30fB8a3E0021e85Fdb737a3483D3C8135",
+    "version": "78d531bf853dfb664363aa4e53d26187d348231b5e36089c44922cb189b21a1b",
+    "date": "2022-01-20T03:54:33.643Z",
+    "implementation": "0x52a81DfD6B5EA5E3b8133e0c6f48e520db24F456"
+  }
+}

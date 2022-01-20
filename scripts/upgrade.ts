@@ -19,11 +19,11 @@ async function main() {
   //   await ethers.getContractFactory("BasicController")
   // );
 
-  // console.log("upgrade reg");
-  // await upgrades.upgradeProxy(
-  //   registrar,
-  //   await ethers.getContractFactory("Registrar")
-  // );
+  console.log("upgrade reg");
+  await upgrades.upgradeProxy(
+    registrar,
+    await ethers.getContractFactory("Registrar")
+  );
 
   // console.log("upgrade wheels bc");
   // await upgrades.upgradeProxy(
@@ -31,11 +31,11 @@ async function main() {
   //   await ethers.getContractFactory("BasicController")
   // );
 
-  console.log("upgrade sc");
-  await upgrades.upgradeProxy(
-    stakingController,
-    await ethers.getContractFactory("StakingController")
-  );
+  // console.log("upgrade sc");
+  // await upgrades.upgradeProxy(
+  //   stakingController,
+  //   await ethers.getContractFactory("StakingController")
+  // );
 
   // await hre.network.provider.request({
   //   method: "hardhat_impersonateAccount",

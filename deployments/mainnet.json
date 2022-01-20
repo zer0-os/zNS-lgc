@@ -19,5 +19,12 @@
     "version": "075a0a7a48acff742ca326b0146332f5e0b13aa0f3a24fa3c0564bbd5d361c08",
     "date": "2021-08-18T00:48:56.807Z",
     "implementation": "0x0cCAf8D2C9218c0C0a1E5A6bcB20E4a61D3a6FD4"
+  },
+  "authController": {
+    "name": "AuthBasicController",
+    "address": "0x0347fb4268dDa1345c93308E9AFe3F0bc2312CE0",
+    "version": "b0380d45eb11d1e7a450ad77ee53d7e28bd9045136383ec414f6b5b20d20a73a",
+    "date": "2022-01-18T20:44:21.451Z",
+    "implementation": "0xe2BDE32D332e190C7f235611fe17cbA820D9D362"
   }
 }

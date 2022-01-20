@@ -10,7 +10,7 @@ async function main() {
 
   // await network.provider.request({
   //   method: "hardhat_impersonateAccount",
-  //   params: ["0x37358aa5d051b434c23bad744e56e6a484107272"],
+  //   params: ["0x7829afa127494ca8b4ceef4fb81b78fee9d0e471"],
   // });
 
   // const signer = await ethers.getSigner(
@@ -21,6 +21,7 @@ async function main() {
   //   "0x37358aa5d051b434c23bad744e56e6a484107272",
   //   "0x56BC75E2D63100000",
   // ]);
+  console.log(signer.address);
 
   const registrarFactory = await ethers.getContractFactory("Registrar", signer);
 

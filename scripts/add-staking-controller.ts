@@ -53,7 +53,6 @@ async function main() {
     deploymentData.stakingController.address
   );
 
-  // const alreadyController = await registrar["controllers(address)"] ???
   const alreadyController = await registrar.controllers(controller.address);
 
   if (alreadyController) {

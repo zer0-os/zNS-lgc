@@ -1,7 +1,6 @@
 import { ethers, upgrades, network, run } from "hardhat";
 import {
   AuthBasicController__factory,
-  BasicController__factory,
   Registrar,
   Registrar__factory,
 } from "../typechain";

@@ -500,7 +500,7 @@
           {
             "contract": "BasicController",
             "label": "registrar",
-            "type": "t_contract(IRegistrar)1014",
+            "type": "t_contract(IRegistrar)7062",
             "src": "contracts\\BasicController.sol:18"
           },
           {
@@ -511,7 +511,7 @@
           }
         ],
         "types": {
-          "t_contract(IRegistrar)1014": {
+          "t_contract(IRegistrar)7062": {
             "label": "contract IRegistrar"
           },
           "t_uint256": {
@@ -885,6 +885,85 @@
           },
           "t_bool": {
             "label": "bool"
+          }
+        }
+      }
+    },
+    "07b797482646b16027a0251cea6d55beea71714adf3fd9b5accf81ab80556556": {
+      "address": "0x8CCC39985BB460A62678e5f1Ed04B08c2D02E2C0",
+      "txHash": "0x5d713bbc9d91fb8b464fa6ddb972e46156dec6fa32d82fdd2ce3b12429aa06e4",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\introspection\\ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721HolderUpgradeable.sol:30"
+          },
+          {
+            "contract": "BasicController",
+            "label": "registrar",
+            "type": "t_contract(IRegistrar)7055",
+            "src": "contracts\\BasicController.sol:18"
+          },
+          {
+            "contract": "BasicController",
+            "label": "rootDomain",
+            "type": "t_uint256",
+            "src": "contracts\\BasicController.sol:19"
+          }
+        ],
+        "types": {
+          "t_contract(IRegistrar)7055": {
+            "label": "contract IRegistrar"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           }
         }
       }

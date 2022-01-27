@@ -1,9 +1,14 @@
 import * as hardhat from "hardhat";
-import { BasicController, BasicController__factory, Registrar, Registrar__factory } from "../typechain";
+import {
+  BasicController,
+  BasicController__factory,
+  // Registrar,
+  // Registrar__factory,
+} from "../typechain";
 import * as fs from "fs";
 
 const basicControllerAddress = "0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a";
-const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+// const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
 const parentDomainId =
   "0x68975dd5a9af8e36c74f770836840e20ba1a15ca1114837fd5c54eca9a4d3533";
 
@@ -21,16 +26,15 @@ const main = async () => {
     deployer
   );
 
-  const registrarInstance:Registrar =  Registrar__factory.connect(
-    registrarAddress,
-    deployer
-  )
+  // const registrarInstance: Registrar = Registrar__factory.connect(
+  //   registrarAddress,
+  //   deployer
+  // );
 
   const domainsToMint = JSON.parse(
     fs.readFileSync(domainsToMintFilepath).toString()
   ) as DomainsToMintDto;
 
-  let counter = 0;
   for (const [label, metadata] of Object.entries(domainsToMint)) {
     console.log(`minting .${label}`);
 
@@ -48,9 +52,10 @@ const main = async () => {
       console.log(`Waiting to be confirmed...`);
       await tx.wait(2);
 
-      const tx2 = registrarInstance["safeTransferFrom(address,address,uint256)"](
-        from: deployer
-      )
+      // const tx2 =
+      //   registrarInstance["safeTransferFrom(address,address,uint256)"](
+      //     deployer
+      //   );
     } catch (e) {
       console.error(`Failed to mint .${label}: ${e}`);
     }

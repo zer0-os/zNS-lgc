@@ -1,6 +1,4 @@
-import { ethers, upgrades, network, run } from "hardhat";
-import { Registrar__factory } from "../typechain";
-import { getLogger } from "../utilities";
+import { ethers, upgrades } from "hardhat";
 
 //const logger = getLogger("scripts::deploy-registrar");
 

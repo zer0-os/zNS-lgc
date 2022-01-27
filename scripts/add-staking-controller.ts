@@ -53,9 +53,7 @@ async function main() {
     deploymentData.stakingController.address
   );
 
-  const alreadyController = await registrar["controllers(address)"](
-    controller.address
-  );
+  const alreadyController = await registrar.controllers(controller.address);
 
   if (alreadyController) {
     logger.error(`${controller.address} is already a controller`);

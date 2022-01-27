@@ -1,4 +1,4 @@
-import { Registrar, Registrar__factory } from "../typechain";
+import { Registrar__factory } from "../typechain";
 import * as fs from "fs";
 
 interface TransactionResponse {
@@ -7,8 +7,6 @@ interface TransactionResponse {
   topics: string[];
   data: string;
 }
-
-const idToLabel: { [id: string]: string } = {};
 
 interface Domain {
   parent: string;

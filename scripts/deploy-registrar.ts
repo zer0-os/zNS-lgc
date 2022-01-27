@@ -77,7 +77,10 @@ async function main() {
 
   if (implementationContract) {
     logger.log(`Waiting for 3 confirmations`);
-    await instance.deployTransaction.wait(3);
+    // infinite loops on homestead / hardhat network
+    if (network.name !== "hardhat" && network.name !== "homestead") {
+      await instance.deployTransaction.wait(5);
+    }
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

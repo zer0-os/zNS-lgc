@@ -26,7 +26,7 @@ async function main() {
 
   logger.log(`Implementation version is ${bytecodeHash}`);
 
-  const instance = await upgrades.deployProxy(factory, [], {
+  const instance = await upgrades.deployProxy(factory, ["Mock Wild", "mWILD"], {
     initializer: "initialize",
   });
   await instance.deployed();
@@ -39,7 +39,9 @@ async function main() {
 
   if (implementationContract) {
     logger.log(`Waiting for 5 confirmations`);
-    await instance.deployTransaction.wait(5);
+    if (network.name !== "hardhat" && network.name !== "homestead") {
+      await instance.deployTransaction.wait(5); // infinite loops on homestead / hardhat network
+    }
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

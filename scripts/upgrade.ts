@@ -1,16 +1,16 @@
-import { ethers, upgrades, network, run } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { getLogger } from "../utilities";
 
-import * as hre from "hardhat";
+// import * as hre from "hardhat";
 
 const logger = getLogger("scripts::upgrade");
 
 async function main() {
   //await run("compile");
 
-  const wheelsBasicController = "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443";
-  const basicController = "0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a";
-  const stakingController = "0x45b13d8e6579d5C3FeC14bB9998A3640CD4F008D";
+  // const wheelsBasicController = "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443";
+  // const basicController = "0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a";
+  // const stakingController = "0x45b13d8e6579d5C3FeC14bB9998A3640CD4F008D";
   const registrar = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
 
   // console.log("upgrade bc1");

@@ -44,16 +44,15 @@ contract BasicController is
   ) external override authorized(parentId) returns (uint256) {
     address minter = _msgSender();
 
-    uint256 id = registrar.registerDomain(
+    uint256 id = registrar.registerDomainAndSend(
       parentId,
       label,
       minter,
       metadata,
       royaltyAmount,
-      lockOnCreation
+      lockOnCreation,
+      owner
     );
-
-    emit RegisteredDomain(label, id, parentId, owner, minter);
 
     return id;
   }

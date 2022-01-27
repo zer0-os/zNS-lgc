@@ -55,6 +55,10 @@ async function main() {
     deploymentData.registrar.address
   );
 
+  logger.log(
+    `Deploying with registrar address : ${deploymentData.registrar.address}`
+  );
+
   const controllerFactory = new BasicController__factory(deploymentAccount);
   const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
 
@@ -96,8 +100,10 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
-    logger.log(`Waiting for 5 confirmations`);
-    await instance.deployTransaction.wait(5);
+    // infinite loops on homestead / hardhat network
+    if (network.name !== "hardhat" && network.name !== "homestead") {
+      await instance.deployTransaction.wait(5);
+    }
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

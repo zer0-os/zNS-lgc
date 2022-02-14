@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721HolderUpgradeable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "./oz/proxy/Initializable.sol";
+import "./oz/utils/ContextUpgradeable.sol";
+import "./oz/introspection/ERC165Upgradeable.sol";
+import "./oz/token/ERC721/ERC721HolderUpgradeable.sol";
+import {OwnableUpgradeable} from "./oz/access/OwnableUpgradeable.sol";
 
 import "./interfaces/IBasicController.sol";
 import "./interfaces/IRegistrar.sol";

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "../oz/proxy/Initializable.sol";
+import "../oz/token/ERC20/ERC20Upgradeable.sol";
 
 contract MockToken is Initializable, ERC20Upgradeable {
   function initialize(string calldata name, string calldata symbol)

@@ -5,7 +5,7 @@ import "./oz/access/OwnableUpgradeable.sol";
 import "./oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import "./interfaces/IRegistrar.sol";
 
-contract Registrar is
+contract SubRegistrar is
   IRegistrar,
   OwnableUpgradeable,
   ERC721PausableUpgradeable
@@ -27,6 +27,8 @@ contract Registrar is
   // This essentially expands the internal ERC721's token storage to additional fields
   mapping(uint256 => DomainRecord) public records;
 
+  string public rootDomainId;
+
   modifier onlyController() {
     require(controllers[msg.sender], "Zer0 Registrar: Not controller");
     _;
@@ -37,14 +39,16 @@ contract Registrar is
     _;
   }
 
-  function initialize() public initializer {
+  function initialize(
+    string calldata rootDomainId_,
+    string calldata collectionName,
+    string calldata collectionSymbol
+  ) public initializer {
     __Ownable_init();
 
     __ERC721Pausable_init();
-    __ERC721_init("Zer0 Name Service", "ZNS");
-
-    // create the root domain
-    _createDomain(0, 0, msg.sender, address(0));
+    __ERC721_init(collectionName, collectionSymbol);
+    rootDomainId = rootDomainId_;
   }
 
   /*

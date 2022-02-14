@@ -9,8 +9,6 @@ async function main() {
 
   console.log(registrar.filters.DomainCreated());
 
-  registrar.interface.events[
-    "DomainCreated(uint256,string,uint256,uint256,address,address,string,uint256)"
-  ];
+  registrar.interface.events["Transfer(address,address,uint256)"];
 }
 main().catch(console.log);

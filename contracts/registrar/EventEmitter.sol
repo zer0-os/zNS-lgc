@@ -4,11 +4,13 @@ pragma solidity ^0.8.11;
 import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
 import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
+import {IEventEmitter} from "../interfaces/IEventEmitter.sol";
 
 contract RegistrarEventEmitter is
   ContextUpgradeable,
   ERC165Upgradeable,
-  OwnableUpgradeable
+  OwnableUpgradeable,
+  IEventEmitter
 {
   event RegistrarAdded(address registrar);
 

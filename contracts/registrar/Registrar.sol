@@ -6,6 +6,7 @@ import "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import "../interfaces/IRegistrar.sol";
 import "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
+import {IEventEmitter} from "../interfaces/IEventEmitter.sol";
 
 contract Registrar is
   IRegistrar,
@@ -40,8 +41,13 @@ contract Registrar is
 
   // The beacon address
   address public beacon;
+
+  // If this is a subdomain contract these will be set
   uint256 public rootDomainId;
   address public parentRegistrar;
+
+  // The event emitter
+  IEventEmitter public eventEmitter;
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
@@ -63,7 +69,8 @@ contract Registrar is
     string calldata collectionName,
     string calldata collectionSymbol,
     address beacon_,
-    address owner_
+    address owner_,
+    address eventEmitter_
   ) public initializer {
     __Ownable_init();
     transferOwnership(owner_);
@@ -78,14 +85,19 @@ contract Registrar is
       parentRegistrar = parentRegistrar_;
     }
 
+    eventEmitter = IEventEmitter(eventEmitter_);
+
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
   }
 
   // Used to upgrade existing registrar to new registrar
-  function upgradeFromNormalRegistrar(address beacon_) public {
+  function upgradeFromNormalRegistrar(address beacon_, address eventEmitter_)
+    public
+  {
     require(msg.sender == _getAdmin(), "Not Proxy Admin");
     beacon = beacon_;
+    eventEmitter = IEventEmitter(eventEmitter_);
   }
 
   /*
@@ -278,6 +290,17 @@ contract Registrar is
       royaltyAmount
     );
 
+    eventEmitter.emitDomainCreatedEvent(
+      domainId,
+      name,
+      labelHash,
+      parentId,
+      minter,
+      controller,
+      metadataUri,
+      royaltyAmount
+    );
+
     return domainId;
   }
 
@@ -295,6 +318,7 @@ contract Registrar is
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
+    eventEmitter.emitRoyaltiesAmountChanged(id, amount);
   }
 
   /**
@@ -448,9 +472,20 @@ contract Registrar is
    * Internal Methods
    */
 
+  function _transfer(
+    address from,
+    address to,
+    uint256 tokenId
+  ) internal virtual override {
+    super._transfer(from, to, tokenId);
+    // Need to emit transfer events on event emitter
+    eventEmitter.emitTransferEvent(from, to, tokenId);
+  }
+
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
+    eventEmitter.emitMetadataChanged(id, uri);
   }
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
@@ -492,6 +527,7 @@ contract Registrar is
     records[id].metadataLocked = lockStatus;
 
     emit MetadataLockChanged(id, locker, lockStatus);
+    eventEmitter.emitMetadataLockChanged(id, locker, lockStatus);
   }
 
   function burnToken(uint256 tokenId) external onlyOwner {

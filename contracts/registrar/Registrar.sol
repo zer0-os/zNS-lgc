@@ -18,6 +18,7 @@ contract Registrar is
     address controller;
     uint256 royaltyAmount;
     uint256 parentId;
+    address subdomainContract;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -28,12 +29,12 @@ contract Registrar is
   mapping(uint256 => DomainRecord) public records;
 
   modifier onlyController() {
-    require(controllers[msg.sender], "Zer0 Registrar: Not controller");
+    require(controllers[msg.sender], "ZR: Not controller");
     _;
   }
 
   modifier onlyOwnerOf(uint256 id) {
-    require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
+    require(ownerOf(id) == msg.sender, "ZR: Not owner");
     _;
   }
 
@@ -56,10 +57,7 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function addController(address controller) external override onlyOwner {
-    require(
-      !controllers[controller],
-      "Zer0 Registrar: Controller is already added"
-    );
+    require(!controllers[controller], "ZR: Controller is already added");
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -69,10 +67,7 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
-    require(
-      controllers[controller],
-      "Zer0 Registrar: Controller does not exist"
-    );
+    require(controllers[controller], "ZR: Controller does not exist");
     controllers[controller] = false;
     emit ControllerRemoved(controller);
   }
@@ -152,14 +147,17 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked
   ) internal returns (uint256) {
-    require(bytes(name).length > 0, "Zer0 Registrar: Empty name");
+    // Domain parents must exist
+    require(_exists(parentId), "ZR: No parent");
+    require(bytes(name).length > 0, "ZR: Empty name");
+    require(
+      records[parentId].subdomainContract == address(0),
+      "ZR: Use Subdomain Contract"
+    );
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
     address controller = msg.sender;
-
-    // Domain parents must exist
-    require(_exists(parentId), "Zer0 Registrar: No parent");
 
     // Calculate the new domain's id and create it
     uint256 domainId = uint256(
@@ -201,7 +199,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
@@ -217,7 +215,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
     _setDomainLock(id, msg.sender, true);
   }
@@ -232,7 +230,7 @@ contract Registrar is
     override
     onlyOwnerOf(id)
   {
-    require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
   }
 
@@ -333,7 +331,7 @@ contract Registrar is
    * @param id The domain
    */
   function parentOf(uint256 id) public view override returns (uint256) {
-    require(_exists(id), "Zer0 Registrar: Does not exist");
+    require(_exists(id), "ZR: Does not exist");
 
     uint256 parentId = records[id].parentId;
     return parentId;
@@ -350,14 +348,11 @@ contract Registrar is
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
     if (toLock) {
-      require(ownerOf(id) == msg.sender, "Zer0 Registrar: Not owner");
-      require(!isDomainMetadataLocked(id), "Zer0 Registrar: Metadata locked");
+      require(ownerOf(id) == msg.sender, "ZR: Not owner");
+      require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     } else {
-      require(isDomainMetadataLocked(id), "Zer0 Registrar: Not locked");
-      require(
-        domainMetadataLockedBy(id) == msg.sender,
-        "Zer0 Registrar: Not locker"
-      );
+      require(isDomainMetadataLocked(id), "ZR: Not locked");
+      require(domainMetadataLockedBy(id) == msg.sender, "ZR: Not locker");
     }
   }
 
@@ -376,7 +371,8 @@ contract Registrar is
       metadataLocked: false,
       metadataLockedBy: address(0),
       controller: controller,
-      royaltyAmount: 0
+      royaltyAmount: 0,
+      subdomainContract: address(0)
     });
   }
 

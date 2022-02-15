@@ -5,13 +5,12 @@ import "../oz/proxy/Initializable.sol";
 import "../oz/utils/ContextUpgradeable.sol";
 import "../oz/introspection/ERC165Upgradeable.sol";
 
-import "../interfaces/IBasicController.sol";
 import "../interfaces/IRegistrar.sol";
 
 contract SubdomainController is ContextUpgradeable, ERC165Upgradeable {
-  modifier authorized(IRegistrar registrar, uint256 domain) {
+  modifier authorized(address registrar, uint256 domain) {
     require(
-      registrar.ownerOf(domain) == _msgSender(),
+      IRegistrar(registrar).ownerOf(domain) == _msgSender(),
       "Zer0 Controller: Not Authorized"
     );
     _;
@@ -23,23 +22,21 @@ contract SubdomainController is ContextUpgradeable, ERC165Upgradeable {
   }
 
   function registerSubdomainExtended(
-    IRegistrar registrar,
+    address registrar,
     uint256 parentId,
     string memory label,
     address owner,
-    string memory metadata,
-    uint256 royaltyAmount,
-    bool lockOnCreation
+    string memory metadata
   ) external authorized(registrar, parentId) returns (uint256) {
     address minter = _msgSender();
 
-    uint256 id = registrar.registerDomainAndSend(
+    uint256 id = IRegistrar(registrar).registerDomainAndSend(
       parentId,
       label,
       minter,
       metadata,
-      royaltyAmount,
-      lockOnCreation,
+      0,
+      true,
       owner
     );
 
@@ -47,23 +44,21 @@ contract SubdomainController is ContextUpgradeable, ERC165Upgradeable {
   }
 
   function registerSubdomainContractExtended(
-    IRegistrar registrar,
+    address registrar,
     uint256 parentId,
     string memory label,
     address owner,
-    string memory metadata,
-    uint256 royaltyAmount,
-    bool lockOnCreation
+    string memory metadata
   ) external authorized(registrar, parentId) returns (uint256) {
     address minter = _msgSender();
 
-    uint256 id = registrar.registerSubdomainContract(
+    uint256 id = IRegistrar(registrar).registerSubdomainContract(
       parentId,
       label,
       minter,
       metadata,
-      royaltyAmount,
-      lockOnCreation,
+      0,
+      true,
       owner
     );
 

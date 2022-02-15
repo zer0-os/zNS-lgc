@@ -41,7 +41,7 @@ contract ERC721Upgradeable is
   mapping(address => EnumerableSetUpgradeable.UintSet) private _holderTokens;
 
   // Enumerable mapping from token ids to their owners
-  EnumerableMapUpgradeable.UintToAddressMap private _tokenOwners;
+  EnumerableMapUpgradeable.UintToAddressMap internal _tokenOwners;
 
   // Mapping from token ID to approved address
   mapping(uint256 => address) private _tokenApprovals;

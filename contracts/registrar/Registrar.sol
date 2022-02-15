@@ -13,6 +13,8 @@ contract Registrar is
   OwnableUpgradeable,
   ERC721PausableUpgradeable
 {
+  using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
+
   // Data recorded for each domain
   struct DomainRecord {
     address minter;
@@ -371,12 +373,19 @@ contract Registrar is
     override(ERC721Upgradeable, IERC721Upgradeable)
     returns (address)
   {
-    // Route `ownerOf` requests to the parent registrar
-    if (tokenId == rootDomainId) {
-      return Registrar(parentRegistrar).ownerOf(tokenId);
+    // Check if the token is in this contract
+    if (_tokenOwners.contains(tokenId)) {
+      return
+        _tokenOwners.get(tokenId, "ERC721: owner query for nonexistent token");
     }
 
-    return ERC721Upgradeable.ownerOf(tokenId);
+    if (parentRegistrar == address(0)) {
+      revert("ERC721: owner query for nonexistent token");
+    }
+
+    // Maybe it's in the parent registrar
+    // @TODO: This could run out of gas, think of solutions
+    return Registrar(parentRegistrar).ownerOf(tokenId);
   }
 
   /**

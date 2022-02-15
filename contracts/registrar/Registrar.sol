@@ -4,6 +4,8 @@ pragma solidity ^0.8.11;
 import "../oz/access/OwnableUpgradeable.sol";
 import "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import "../interfaces/IRegistrar.sol";
+import "../oz/utils/StorageSlot.sol";
+import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 
 contract Registrar is
   IRegistrar,
@@ -28,6 +30,23 @@ contract Registrar is
   // This essentially expands the internal ERC721's token storage to additional fields
   mapping(uint256 => DomainRecord) public records;
 
+  /**
+   * @dev Storage slot with the admin of the contract.
+   * This is the keccak-256 hash of "eip1967.proxy.admin" subtracted by 1, and is
+   * validated in the constructor.
+   */
+  bytes32 internal constant _ADMIN_SLOT =
+    0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+
+  // The beacon address
+  address public beacon;
+  uint256 public rootDomainId;
+  address public parentRegistrar;
+
+  function _getAdmin() internal view returns (address) {
+    return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
+  }
+
   modifier onlyController() {
     require(controllers[msg.sender], "ZR: Not controller");
     _;
@@ -38,14 +57,35 @@ contract Registrar is
     _;
   }
 
-  function initialize() public initializer {
+  function initialize(
+    address parentRegistrar_,
+    uint256 rootDomainId_,
+    string calldata collectionName,
+    string calldata collectionSymbol,
+    address beacon_,
+    address owner_
+  ) public initializer {
     __Ownable_init();
+    transferOwnership(owner_);
+
+    beacon = beacon_;
+
+    if (parentRegistrar_ == address(0)) {
+      // create the root domain
+      _createDomain(0, 0, msg.sender, address(0));
+    } else {
+      rootDomainId = rootDomainId_;
+      parentRegistrar = parentRegistrar_;
+    }
 
     __ERC721Pausable_init();
-    __ERC721_init("Zer0 Name Service", "ZNS");
+    __ERC721_init(collectionName, collectionSymbol);
+  }
 
-    // create the root domain
-    _createDomain(0, 0, msg.sender, address(0));
+  // Used to upgrade existing registrar to new registrar
+  function upgradeFromNormalRegistrar(address beacon_) public {
+    require(msg.sender == _getAdmin(), "Not Proxy Admin");
+    beacon = beacon_;
   }
 
   /*
@@ -56,7 +96,11 @@ contract Registrar is
    * @notice Authorizes a controller to control the registrar
    * @param controller The address of the controller
    */
-  function addController(address controller) external override onlyOwner {
+  function addController(address controller) external {
+    require(
+      msg.sender == owner() || msg.sender == parentRegistrar,
+      "ZR: Not authorized"
+    );
     require(!controllers[controller], "ZR: Controller is already added");
     controllers[controller] = true;
     emit ControllerAdded(controller);
@@ -67,6 +111,10 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
+    require(
+      msg.sender == owner() || msg.sender == parentRegistrar,
+      "ZR: Not authorized"
+    );
     require(controllers[controller], "ZR: Controller does not exist");
     controllers[controller] = false;
     emit ControllerRemoved(controller);
@@ -139,6 +187,48 @@ contract Registrar is
     return id;
   }
 
+  function registerSubdomainContract(
+    uint256 parentId,
+    string memory name,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    address sendToUser
+  ) external onlyController returns (uint256) {
+    // Register the domain
+    uint256 id = _registerDomain(
+      parentId,
+      name,
+      minter,
+      metadataUri,
+      royaltyAmount,
+      locked
+    );
+
+    // create subdomain contract
+    // We encode the initialize function so that the beacon proxy
+    // will call it on creation, thus initializing the proxy
+    bytes memory data = abi.encodeWithSignature(
+      "initialize(address,uint256,string,string,address)",
+      this,
+      id,
+      "Zer0 Name Service",
+      "ZNS",
+      beacon,
+      owner()
+    );
+    address subdomainContract = address(new BeaconProxy(beacon, data));
+
+    // Indicate that the subdomain has a contract
+    records[id].subdomainContract = subdomainContract;
+
+    // immediately send domain to user
+    _safeTransfer(minter, sendToUser, id, "");
+
+    return id;
+  }
+
   function _registerDomain(
     uint256 parentId,
     string memory name,
@@ -147,13 +237,15 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked
   ) internal returns (uint256) {
-    // Domain parents must exist
-    require(_exists(parentId), "ZR: No parent");
     require(bytes(name).length > 0, "ZR: Empty name");
     require(
       records[parentId].subdomainContract == address(0),
-      "ZR: Use Subdomain Contract"
+      "ZR: Parent is subcontract"
     );
+    if (parentId != rootDomainId) {
+      // Domain parents must exist
+      require(_exists(parentId), "ZR: No parent");
+    }
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(name)));
@@ -247,6 +339,21 @@ contract Registrar is
   /*
    * Public View
    */
+
+  function ownerOf(uint256 tokenId)
+    public
+    view
+    virtual
+    override(ERC721Upgradeable, IERC721Upgradeable)
+    returns (address)
+  {
+    // Route `ownerOf` requests to the parent registrar
+    if (tokenId == rootDomainId) {
+      return Registrar(parentRegistrar).ownerOf(tokenId);
+    }
+
+    return ERC721Upgradeable.ownerOf(tokenId);
+  }
 
   /**
    * @notice Returns whether or not an account is a a controller

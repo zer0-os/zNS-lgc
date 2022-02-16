@@ -24,8 +24,8 @@ contract RegistrarEventEmitter is
   event EEDomainCreatedV2(
     address registrar,
     uint256 indexed id,
-    string name,
-    uint256 indexed nameHash,
+    string label,
+    uint256 indexed labelHash,
     uint256 indexed parent,
     address minter,
     address controller,
@@ -90,8 +90,8 @@ contract RegistrarEventEmitter is
 
   function emitDomainCreatedEvent(
     uint256 id,
-    string calldata name,
-    uint256 nameHash,
+    string calldata label,
+    uint256 labelHash,
     uint256 parent,
     address minter,
     address controller,
@@ -101,8 +101,8 @@ contract RegistrarEventEmitter is
     emit EEDomainCreatedV2(
       _msgSender(),
       id,
-      name,
-      nameHash,
+      label,
+      labelHash,
       parent,
       minter,
       controller,

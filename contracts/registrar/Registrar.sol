@@ -151,7 +151,7 @@ contract Registrar is
   /**
    * @notice Registers a new (sub) domain
    * @param parentId The parent domain
-   * @param name The name of the domain
+   * @param label The label of the domain
    * @param minter the minter of the new domain
    * @param metadataUri The uri of the metadata
    * @param royaltyAmount The amount of royalty this domain pays
@@ -159,7 +159,7 @@ contract Registrar is
    */
   function registerDomain(
     uint256 parentId,
-    string memory name,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,
@@ -168,7 +168,7 @@ contract Registrar is
     return
       _registerDomain(
         parentId,
-        name,
+        label,
         minter,
         metadataUri,
         royaltyAmount,
@@ -178,7 +178,7 @@ contract Registrar is
 
   function registerDomainAndSend(
     uint256 parentId,
-    string memory name,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,
@@ -188,7 +188,7 @@ contract Registrar is
     // Register the domain
     uint256 id = _registerDomain(
       parentId,
-      name,
+      label,
       minter,
       metadataUri,
       royaltyAmount,
@@ -203,24 +203,23 @@ contract Registrar is
 
   function registerSubdomainContract(
     uint256 parentId,
-    string memory name,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked,
     address sendToUser
   ) external onlyController returns (uint256) {
-    // Register the domain
+    // Register domain, `minter` is the minter
     uint256 id = _registerDomain(
       parentId,
-      name,
+      label,
       minter,
       metadataUri,
       royaltyAmount,
       locked
     );
 
-    // create subdomain contract
     // We encode the initialize function so that the beacon proxy
     // will call it on creation, thus initializing the proxy
     bytes memory data = abi.encodeWithSignature(
@@ -232,12 +231,14 @@ contract Registrar is
       beacon,
       owner()
     );
+
+    // Create subdomain contract, `data` is a function call to init
     address subdomainContract = address(new BeaconProxy(beacon, data));
 
     // Indicate that the subdomain has a contract
     records[id].subdomainContract = subdomainContract;
 
-    // immediately send domain to user
+    // immediately send the domain to the user (from the minter)
     _safeTransfer(minter, sendToUser, id, "");
 
     return id;
@@ -245,13 +246,14 @@ contract Registrar is
 
   function _registerDomain(
     uint256 parentId,
-    string memory name,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked
   ) internal returns (uint256) {
-    require(bytes(name).length > 0, "ZR: Empty name");
+    require(bytes(label).length > 0, "ZR: Empty name");
+    // subdomain cannot be minted on domains which are subdomain contracts
     require(
       records[parentId].subdomainContract == address(0),
       "ZR: Parent is subcontract"
@@ -262,7 +264,7 @@ contract Registrar is
     }
 
     // Create the child domain under the parent domain
-    uint256 labelHash = uint256(keccak256(bytes(name)));
+    uint256 labelHash = uint256(keccak256(bytes(label)));
     address controller = msg.sender;
 
     // Calculate the new domain's id and create it
@@ -283,7 +285,7 @@ contract Registrar is
 
     emit DomainCreated(
       domainId,
-      name,
+      label,
       labelHash,
       parentId,
       minter,
@@ -294,7 +296,7 @@ contract Registrar is
 
     eventEmitter.emitDomainCreatedEvent(
       domainId,
-      name,
+      label,
       labelHash,
       parentId,
       minter,

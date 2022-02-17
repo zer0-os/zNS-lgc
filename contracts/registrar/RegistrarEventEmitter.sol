@@ -12,8 +12,6 @@ contract RegistrarEventEmitter is
   OwnableUpgradeable,
   IEventEmitter
 {
-  event RegistrarAdded(address registrar);
-
   event EETransferV1(
     address registrar,
     address indexed from,
@@ -48,11 +46,20 @@ contract RegistrarEventEmitter is
     uint256 amount
   );
 
+  event EENewSubdomainRegistrar(
+    address emitter,
+    uint256 rootId,
+    address newRegistrar
+  );
+
   // Contains all zNS Registrars that are authentic
   mapping(address => bool) public authorizedRegistrars;
 
   modifier onlyRegistrar() {
-    require(authorizedRegistrars[_msgSender()], "Not authorized registrar");
+    require(
+      authorizedRegistrars[_msgSender()],
+      "REE: Not authorized registrar"
+    );
     _;
   }
 
@@ -67,15 +74,17 @@ contract RegistrarEventEmitter is
    Only the contract owner or an already registered registrar may
    add new registrars.
    */
-  function addRegistrar(address registrar) external {
+  function addRegistrar(uint256 rootDomainId, address registrar) external {
     require(
       _msgSender() == owner() || authorizedRegistrars[_msgSender()],
-      "Not Authorized"
+      "REE: Not Authorized"
     );
 
-    emit RegistrarAdded(registrar);
+    require(!authorizedRegistrars[registrar], "REE: Already Registered");
 
     authorizedRegistrars[registrar] = true;
+
+    emit EENewSubdomainRegistrar(_msgSender(), rootDomainId, registrar);
   }
 
   // Used by registrars to emit transfer events so that we can pick it

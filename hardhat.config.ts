@@ -8,6 +8,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
+import { ethers } from "ethers";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -44,7 +45,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
+      accounts: [
+        {
+          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+          balance: ethers.utils.parseEther("100000").toString(),
+        },
+      ],
       forking: {
         url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
       },

@@ -220,23 +220,24 @@ contract Registrar is
       locked
     );
 
-    // We encode the initialize function so that the beacon proxy
-    // will call it on creation, thus initializing the proxy
-    bytes memory data = abi.encodeWithSignature(
-      "initialize(address,uint256,string,string,address)",
-      this,
+    // Create subdomain contract as a beacon proxy
+    address subdomainContract = address(new BeaconProxy(beacon, ""));
+
+    // More maintainable instead of using `data` in constructor
+    Registrar(subdomainContract).initialize(
+      address(this),
       id,
       "Zer0 Name Service",
       "ZNS",
       beacon,
-      owner()
+      owner(),
+      address(eventEmitter)
     );
-
-    // Create subdomain contract, `data` is a function call to init
-    address subdomainContract = address(new BeaconProxy(beacon, data));
 
     // Indicate that the subdomain has a contract
     records[id].subdomainContract = subdomainContract;
+
+    eventEmitter.addRegistrar(id, subdomainContract);
 
     // immediately send the domain to the user (from the minter)
     _safeTransfer(minter, sendToUser, id, "");

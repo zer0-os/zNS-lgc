@@ -1,10 +1,15 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
-import { Registrar, Registrar__factory } from "../typechain";
+import {
+  Registrar,
+  RegistrarEventEmitter__factory,
+  Registrar__factory,
+} from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
+import * as smock from "@defi-wonderland/smock";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -13,6 +18,7 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
+  let eventEmitter: smock.FakeContract;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -23,10 +29,18 @@ describe("Registrar", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    registry = (await upgrades.deployProxy(registryFactory, [], {
-      initializer: "initialize",
-    })) as Registrar;
-    registry = await registry.deployed();
+    eventEmitter = await smock.smock.fake(RegistrarEventEmitter__factory);
+
+    registry = await registryFactory.deploy();
+    await registry.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.Zero,
+      "Zer0 Name Service",
+      "ZNS",
+      ethers.constants.AddressZero,
+      creator.address,
+      eventEmitter.address
+    );
   };
 
   before(async () => {
@@ -375,7 +389,7 @@ describe("Registrar", () => {
           0,
           false
         )
-      ).to.be.revertedWith("Registrar: No parent");
+      ).to.be.revertedWith("ZR: No parent");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
@@ -465,7 +479,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainMetadataUri(testDomainId, newMetadataUri)
-      ).to.be.revertedWith("Registrar: Not owner");
+      ).to.be.revertedWith("ZR: Not owner");
     });
   });
 
@@ -500,7 +514,7 @@ describe("Registrar", () => {
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, false)
-      ).to.be.revertedWith("Registrar: Not locked");
+      ).to.be.revertedWith("ZR: Not locked");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -508,7 +522,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, true)
-      ).to.be.revertedWith("Registrar: Not owner");
+      ).to.be.revertedWith("ZR: Not owner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
@@ -533,7 +547,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, true)
-      ).to.be.revertedWith("Registrar: Metadata locked");
+      ).to.be.revertedWith("ZR: Metadata locked");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -541,7 +555,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, false)
-      ).to.be.revertedWith("Registrar: Not locker");
+      ).to.be.revertedWith("ZR: Not locker");
     });
 
     it("prevents metadata from being set if it is locked", async () => {
@@ -550,7 +564,7 @@ describe("Registrar", () => {
           testDomainId,
           "https://www.chuckecheese.com/"
         )
-      ).to.be.revertedWith("Registrar: Metadata locked");
+      ).to.be.revertedWith("ZR: Metadata locked");
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
@@ -619,7 +633,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWith("Registrar: Not owner");
+      ).to.be.revertedWith("ZR: Not owner");
     });
   });
 });

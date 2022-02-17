@@ -2,7 +2,7 @@
 pragma solidity ^0.8.11;
 
 interface IEventEmitter {
-  function addRegistrar(address registrar) external;
+  function addRegistrar(uint256 rootDomainId, address registrar) external;
 
   function emitTransferEvent(
     address from,

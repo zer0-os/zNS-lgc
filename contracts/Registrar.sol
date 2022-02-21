@@ -403,4 +403,9 @@ contract Registrar is
   ) external onlyOwner {
     _transfer(from, to, tokenId);
   }
+
+  function adminSetMetadata(uint256 id, string memory uri) external onlyOwner {
+    _setTokenURI(id, uri);
+    emit MetadataChanged(id, uri);
+  }
 }

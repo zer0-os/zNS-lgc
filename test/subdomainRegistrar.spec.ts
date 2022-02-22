@@ -2,8 +2,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers, upgrades } from "hardhat";
 import {
   Registrar,
-  RegistrarEventEmitter,
-  RegistrarEventEmitter__factory,
+  ZNSHub,
+  ZNSHub__factory,
   Registrar__factory,
 } from "../typechain";
 import chai from "chai";
@@ -17,7 +17,6 @@ import {
 } from "./helpers";
 import * as smock from "@defi-wonderland/smock";
 import { MockContract } from "@defi-wonderland/smock";
-import { RegistrarMDFix } from "../typechain/RegistrarMDFix";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -26,7 +25,7 @@ describe("Subdomain Registrar Functionality", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let eventEmitter: smock.MockContract<RegistrarEventEmitter>;
+  let eventEmitter: smock.MockContract<ZNSHub>;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -35,10 +34,9 @@ describe("Subdomain Registrar Functionality", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    const emitterMockFactory =
-      await smock.smock.mock<RegistrarEventEmitter__factory>(
-        "RegistrarEventEmitter"
-      );
+    const emitterMockFactory = await smock.smock.mock<ZNSHub__factory>(
+      "ZNSHub"
+    );
     eventEmitter = await emitterMockFactory.deploy();
     await eventEmitter.initialize();
 

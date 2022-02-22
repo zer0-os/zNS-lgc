@@ -4,13 +4,13 @@ pragma solidity ^0.8.11;
 import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
 import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {IEventEmitter} from "../interfaces/IEventEmitter.sol";
+import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
-contract RegistrarEventEmitter is
+contract ZNSHub is
   ContextUpgradeable,
   ERC165Upgradeable,
   OwnableUpgradeable,
-  IEventEmitter
+  IZNSHub
 {
   event EETransferV1(
     address registrar,
@@ -47,13 +47,16 @@ contract RegistrarEventEmitter is
   );
 
   event EENewSubdomainRegistrar(
-    address emitter,
+    address parentRegistrar,
     uint256 rootId,
-    address newRegistrar
+    address childRegistrar
   );
 
   // Contains all zNS Registrars that are authentic
   mapping(address => bool) public authorizedRegistrars;
+
+  // Contains all authorized global zNS controllers
+  mapping(address => bool) public controllers;
 
   modifier onlyRegistrar() {
     require(
@@ -80,11 +83,25 @@ contract RegistrarEventEmitter is
       "REE: Not Authorized"
     );
 
-    require(!authorizedRegistrars[registrar], "REE: Already Registered");
+    require(!authorizedRegistrars[registrar], "ZH: Already Registered");
 
     authorizedRegistrars[registrar] = true;
 
     emit EENewSubdomainRegistrar(_msgSender(), rootDomainId, registrar);
+  }
+
+  function isController(address controller) external view returns (bool) {
+    return controllers[controller];
+  }
+
+  function addController(address controller) external onlyOwner {
+    require(!controllers[controller], "ZH: Already controller");
+    controllers[controller] = true;
+  }
+
+  function removeController(address controller) external onlyOwner {
+    require(controllers[controller], "ZH: Not a controller");
+    controllers[controller] = false;
   }
 
   // Used by registrars to emit transfer events so that we can pick it

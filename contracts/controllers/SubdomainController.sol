@@ -1,24 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-import "../oz/proxy/Initializable.sol";
-import "../oz/utils/ContextUpgradeable.sol";
-import "../oz/introspection/ERC165Upgradeable.sol";
+import {Initializable} from "../oz/proxy/Initializable.sol";
+import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
+import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
+import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
 
 import "../interfaces/IRegistrar.sol";
 
-contract SubdomainController is ContextUpgradeable, ERC165Upgradeable {
-  modifier authorized(address registrar, uint256 domain) {
-    require(
-      IRegistrar(registrar).ownerOf(domain) == _msgSender(),
-      "Zer0 Controller: Not Authorized"
-    );
+contract SubdomainController is
+  Initializable,
+  ContextUpgradeable,
+  ERC165Upgradeable,
+  OwnableUpgradeable
+{
+  mapping(address => bool) public authorizedAccounts;
+
+  modifier authorized(address registrar, uint256 parentId) {
+    // Currently only authorized users are allowed to mint
+    isAuthorized();
     _;
   }
 
   function initialize() public initializer {
-    __ERC165_init();
     __Context_init();
+    __ERC165_init();
+    __Ownable_init();
   }
 
   function registerSubdomainExtended(
@@ -63,5 +70,12 @@ contract SubdomainController is ContextUpgradeable, ERC165Upgradeable {
     );
 
     return id;
+  }
+
+  function isAuthorized() private view {
+    require(
+      authorizedAccounts[_msgSender()] || _msgSender() == owner(),
+      "ZC: Not Authorized"
+    );
   }
 }

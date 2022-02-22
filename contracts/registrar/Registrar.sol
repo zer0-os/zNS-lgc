@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-import "../oz/access/OwnableUpgradeable.sol";
-import "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
-import "../interfaces/IRegistrar.sol";
-import "../oz/utils/StorageSlot.sol";
+import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
+import {ERC721PausableUpgradeable, EnumerableMapUpgradeable, ERC721Upgradeable, IERC721Upgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import {IRegistrar} from "../interfaces/IRegistrar.sol";
+import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
-import {IEventEmitter} from "../interfaces/IEventEmitter.sol";
+import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
 contract Registrar is
   IRegistrar,
@@ -35,8 +35,6 @@ contract Registrar is
 
   /**
    * @dev Storage slot with the admin of the contract.
-   * This is the keccak-256 hash of "eip1967.proxy.admin" subtracted by 1, and is
-   * validated in the constructor.
    */
   bytes32 internal constant _ADMIN_SLOT =
     0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
@@ -49,14 +47,16 @@ contract Registrar is
   address public parentRegistrar;
 
   // The event emitter
-  IEventEmitter public eventEmitter;
+  IZNSHub public zNSHub;
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
   }
 
   modifier onlyController() {
-    require(controllers[msg.sender], "ZR: Not controller");
+    if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
+      revert("ZR: Not controller");
+    }
     _;
   }
 
@@ -72,7 +72,7 @@ contract Registrar is
     string calldata collectionSymbol,
     address beacon_,
     address owner_,
-    address eventEmitter_
+    address zNSHub_
   ) public initializer {
     __Ownable_init();
     transferOwnership(owner_);
@@ -87,19 +87,17 @@ contract Registrar is
       parentRegistrar = parentRegistrar_;
     }
 
-    eventEmitter = IEventEmitter(eventEmitter_);
+    zNSHub = IZNSHub(zNSHub_);
 
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
   }
 
   // Used to upgrade existing registrar to new registrar
-  function upgradeFromNormalRegistrar(address beacon_, address eventEmitter_)
-    public
-  {
+  function upgradeFromNormalRegistrar(address beacon_, address zNSHub_) public {
     require(msg.sender == _getAdmin(), "Not Proxy Admin");
     beacon = beacon_;
-    eventEmitter = IEventEmitter(eventEmitter_);
+    zNSHub = IZNSHub(zNSHub_);
   }
 
   /*
@@ -231,13 +229,13 @@ contract Registrar is
       "ZNS",
       beacon,
       owner(),
-      address(eventEmitter)
+      address(zNSHub)
     );
 
     // Indicate that the subdomain has a contract
     records[id].subdomainContract = subdomainContract;
 
-    eventEmitter.addRegistrar(id, subdomainContract);
+    zNSHub.addRegistrar(id, subdomainContract);
 
     // immediately send the domain to the user (from the minter)
     _safeTransfer(minter, sendToUser, id, "");
@@ -295,7 +293,7 @@ contract Registrar is
       royaltyAmount
     );
 
-    eventEmitter.emitDomainCreatedEvent(
+    zNSHub.emitDomainCreatedEvent(
       domainId,
       label,
       labelHash,
@@ -323,7 +321,7 @@ contract Registrar is
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
-    eventEmitter.emitRoyaltiesAmountChanged(id, amount);
+    zNSHub.emitRoyaltiesAmountChanged(id, amount);
   }
 
   /**
@@ -491,13 +489,13 @@ contract Registrar is
   ) internal virtual override {
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
-    eventEmitter.emitTransferEvent(from, to, tokenId);
+    zNSHub.emitTransferEvent(from, to, tokenId);
   }
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
-    eventEmitter.emitMetadataChanged(id, uri);
+    zNSHub.emitMetadataChanged(id, uri);
   }
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
@@ -539,7 +537,7 @@ contract Registrar is
     records[id].metadataLocked = lockStatus;
 
     emit MetadataLockChanged(id, locker, lockStatus);
-    eventEmitter.emitMetadataLockChanged(id, locker, lockStatus);
+    zNSHub.emitMetadataLockChanged(id, locker, lockStatus);
   }
 
   function burnToken(uint256 tokenId) external onlyOwner {

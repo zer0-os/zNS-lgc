@@ -1,10 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
-import {
-  Registrar,
-  RegistrarEventEmitter__factory,
-  Registrar__factory,
-} from "../typechain";
+import { Registrar, ZNSHub__factory, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
@@ -29,7 +25,7 @@ describe("Registrar", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    eventEmitter = await smock.smock.fake(RegistrarEventEmitter__factory);
+    eventEmitter = await smock.smock.fake(ZNSHub__factory);
 
     registry = await registryFactory.deploy();
     await registry.initialize(

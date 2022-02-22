@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-interface IEventEmitter {
+interface IZNSHub {
   function addRegistrar(uint256 rootDomainId, address registrar) external;
+
+  function isController(address controller) external returns (bool);
 
   function emitTransferEvent(
     address from,

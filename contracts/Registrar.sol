@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.3;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721PausableUpgradeable.sol";
@@ -402,5 +403,15 @@ contract Registrar is
     uint256 tokenId
   ) external onlyOwner {
     _transfer(from, to, tokenId);
+  }
+
+  function adminSetMetadata(uint256[] memory ids, string[] memory uris)
+    external
+    onlyOwner
+  {
+    require(ids.length == uris.length, "One URI per ID.");
+    for (uint256 i = 0; i < ids.length; i++) {
+      _setDomainMetadataUri(ids[i], uris[i]);
+    }
   }
 }

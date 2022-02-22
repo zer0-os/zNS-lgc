@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {ERC721PausableUpgradeable, EnumerableMapUpgradeable, ERC721Upgradeable, IERC721Upgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import "../oz/access/OwnableUpgradeable.sol";
+import "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
-import {StorageSlot} from "../oz/utils/StorageSlot.sol";
+import "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 

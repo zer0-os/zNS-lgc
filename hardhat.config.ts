@@ -45,12 +45,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      accounts: [
-        {
-          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
-          balance: ethers.utils.parseEther("100000").toString(),
-        },
-      ],
+      // accounts: [
+      //   {
+      //     privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+      //     balance: ethers.utils.parseEther("100000").toString(),
+      //   },
+      // ],
       forking: {
         url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
       },

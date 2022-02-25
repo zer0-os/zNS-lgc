@@ -1,6 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
-import { Registrar, ZNSHub__factory, Registrar__factory } from "../typechain";
+import {
+  Registrar,
+  ZNSHub__factory,
+  Registrar__factory,
+  ZNSHub,
+} from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
@@ -14,7 +19,7 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let eventEmitter: smock.FakeContract;
+  let eventEmitter: smock.FakeContract<ZNSHub>;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -26,6 +31,7 @@ describe("Registrar", () => {
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
     eventEmitter = await smock.smock.fake(ZNSHub__factory);
+    eventEmitter.owner.returns(creator.address);
 
     registry = await registryFactory.deploy();
     await registry.initialize(
@@ -34,7 +40,6 @@ describe("Registrar", () => {
       "Zer0 Name Service",
       "ZNS",
       ethers.constants.AddressZero,
-      creator.address,
       eventEmitter.address
     );
   };

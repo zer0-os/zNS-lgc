@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-import "../oz/access/OwnableUpgradeable.sol";
-import "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+// This is only kept for backward compatability / upgrading
+import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
+import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
-import "../oz/utils/StorageSlot.sol";
+import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
@@ -70,14 +71,9 @@ contract Registrar is
     uint256 rootDomainId_,
     string calldata collectionName,
     string calldata collectionSymbol,
-    address beacon_,
-    address owner_,
     address zNSHub_
   ) public initializer {
-    __Ownable_init();
-    transferOwnership(owner_);
-
-    beacon = beacon_;
+    // __Ownable_init(); // Purposely not initializing ownable since we override owner()
 
     if (parentRegistrar_ == address(0)) {
       // create the root domain
@@ -94,10 +90,13 @@ contract Registrar is
   }
 
   // Used to upgrade existing registrar to new registrar
-  function upgradeFromNormalRegistrar(address beacon_, address zNSHub_) public {
+  function upgradeFromNormalRegistrar(address zNSHub_) public {
     require(msg.sender == _getAdmin(), "Not Proxy Admin");
-    beacon = beacon_;
     zNSHub = IZNSHub(zNSHub_);
+  }
+
+  function owner() public view override returns (address) {
+    return zNSHub.owner();
   }
 
   /*
@@ -219,7 +218,9 @@ contract Registrar is
     );
 
     // Create subdomain contract as a beacon proxy
-    address subdomainContract = address(new BeaconProxy(beacon, ""));
+    address subdomainContract = address(
+      new BeaconProxy(zNSHub.registrarBeacon(), "")
+    );
 
     // More maintainable instead of using `data` in constructor
     Registrar(subdomainContract).initialize(
@@ -227,8 +228,6 @@ contract Registrar is
       id,
       "Zer0 Name Service",
       "ZNS",
-      beacon,
-      owner(),
       address(zNSHub)
     );
 
@@ -282,7 +281,7 @@ contract Registrar is
       emit RoyaltiesAmountChanged(domainId, royaltyAmount);
     }
 
-    emit DomainCreated(
+    zNSHub.domainCreated(
       domainId,
       label,
       labelHash,
@@ -293,7 +292,7 @@ contract Registrar is
       royaltyAmount
     );
 
-    zNSHub.emitDomainCreatedEvent(
+    emit DomainCreated(
       domainId,
       label,
       labelHash,
@@ -321,7 +320,7 @@ contract Registrar is
 
     records[id].royaltyAmount = amount;
     emit RoyaltiesAmountChanged(id, amount);
-    zNSHub.emitRoyaltiesAmountChanged(id, amount);
+    zNSHub.royaltiesAmountChanged(id, amount);
   }
 
   /**
@@ -380,17 +379,11 @@ contract Registrar is
         _tokenOwners.get(tokenId, "ERC721: owner query for nonexistent token");
     }
 
-    if (parentRegistrar == address(0)) {
-      revert("ERC721: owner query for nonexistent token");
-    }
-
-    // Maybe it's in the parent registrar
-    // @TODO: This could run out of gas, think of solutions
-    return Registrar(parentRegistrar).ownerOf(tokenId);
+    return zNSHub.ownerOf(tokenId);
   }
 
   /**
-   * @notice Returns whether or not an account is a a controller
+   * @notice Returns whether or not an account is a a controller registered on this contract
    * @param account Address of account to check
    */
   function isController(address account) external view override returns (bool) {
@@ -489,13 +482,13 @@ contract Registrar is
   ) internal virtual override {
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
-    zNSHub.emitTransferEvent(from, to, tokenId);
+    zNSHub.domainTransferred(from, to, tokenId);
   }
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     _setTokenURI(id, uri);
     emit MetadataChanged(id, uri);
-    zNSHub.emitMetadataChanged(id, uri);
+    zNSHub.metadataChanged(id, uri);
   }
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
@@ -537,10 +530,10 @@ contract Registrar is
     records[id].metadataLocked = lockStatus;
 
     emit MetadataLockChanged(id, locker, lockStatus);
-    zNSHub.emitMetadataLockChanged(id, locker, lockStatus);
+    zNSHub.metadataLockChanged(id, locker, lockStatus);
   }
 
-  function burnToken(uint256 tokenId) external onlyOwner {
+  function adminBurnToken(uint256 tokenId) external onlyOwner {
     _burn(tokenId);
     delete (records[tokenId]);
   }

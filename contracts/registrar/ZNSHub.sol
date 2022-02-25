@@ -5,12 +5,13 @@ import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
 import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import {IRegistrar} from "../interfaces/IRegistrar.sol";
 
 contract ZNSHub is
   ContextUpgradeable,
   ERC165Upgradeable,
-  OwnableUpgradeable,
-  IZNSHub
+  IZNSHub,
+  OwnableUpgradeable
 {
   event EETransferV1(
     address registrar,
@@ -58,6 +59,18 @@ contract ZNSHub is
   // Contains all authorized global zNS controllers
   mapping(address => bool) public controllers;
 
+  // The original default registrar
+  address public defaultRegistrar;
+
+  // Contains mapping of domain id to contract
+  mapping(uint256 => address) public domainToContract;
+
+  // Subdomain Contracts (root id => contract)
+  mapping(uint256 => address) public subdomainRegistrars;
+
+  // Beacon Proxy used by zNS Registrars
+  address public registrarBeacon;
+
   modifier onlyRegistrar() {
     require(
       authorizedRegistrars[_msgSender()],
@@ -66,10 +79,15 @@ contract ZNSHub is
     _;
   }
 
-  function initialize() public initializer {
+  function initialize(address defaultRegistrar_, address registrarBeacon_)
+    public
+    initializer
+  {
     __ERC165_init();
     __Context_init();
     __Ownable_init();
+    defaultRegistrar = defaultRegistrar_;
+    registrarBeacon = registrarBeacon_;
   }
 
   /**
@@ -86,6 +104,7 @@ contract ZNSHub is
     require(!authorizedRegistrars[registrar], "ZH: Already Registered");
 
     authorizedRegistrars[registrar] = true;
+    subdomainRegistrars[rootDomainId] = registrar;
 
     emit EENewSubdomainRegistrar(_msgSender(), rootDomainId, registrar);
   }
@@ -104,9 +123,32 @@ contract ZNSHub is
     controllers[controller] = false;
   }
 
+  function getRegistrarForDomain(uint256 domainId)
+    public
+    view
+    returns (IRegistrar)
+  {
+    address registrar = domainToContract[domainId];
+    if (registrar == address(0)) {
+      registrar = defaultRegistrar;
+    }
+    return IRegistrar(registrar);
+  }
+
+  function ownerOf(uint256 domainId) public view returns (address) {
+    IRegistrar reg = getRegistrarForDomain(domainId);
+    require(reg.domainExists(domainId), "ZH: Domain doesn't exist");
+    return reg.ownerOf(domainId);
+  }
+
+  function domainExists(uint256 domainId) public view returns (bool) {
+    IRegistrar reg = getRegistrarForDomain(domainId);
+    return reg.domainExists(domainId);
+  }
+
   // Used by registrars to emit transfer events so that we can pick it
   // up on subgraph
-  function emitTransferEvent(
+  function domainTransferred(
     address from,
     address to,
     uint256 tokenId
@@ -114,7 +156,7 @@ contract ZNSHub is
     emit EETransferV1(_msgSender(), from, to, tokenId);
   }
 
-  function emitDomainCreatedEvent(
+  function domainCreated(
     uint256 id,
     string calldata label,
     uint256 labelHash,
@@ -135,9 +177,10 @@ contract ZNSHub is
       metadataUri,
       royaltyAmount
     );
+    domainToContract[id] = _msgSender();
   }
 
-  function emitMetadataLockChanged(
+  function metadataLockChanged(
     uint256 id,
     address locker,
     bool isLocked
@@ -145,17 +188,26 @@ contract ZNSHub is
     emit EEMetadataLockChanged(_msgSender(), id, locker, isLocked);
   }
 
-  function emitMetadataChanged(uint256 id, string calldata uri)
+  function metadataChanged(uint256 id, string calldata uri)
     external
     onlyRegistrar
   {
     emit EEMetadataChanged(_msgSender(), id, uri);
   }
 
-  function emitRoyaltiesAmountChanged(uint256 id, uint256 amount)
+  function royaltiesAmountChanged(uint256 id, uint256 amount)
     external
     onlyRegistrar
   {
     emit EERoyaltiesAmountChanged(_msgSender(), id, amount);
+  }
+
+  function owner()
+    public
+    view
+    override(OwnableUpgradeable, IZNSHub)
+    returns (address)
+  {
+    return super.owner();
   }
 }

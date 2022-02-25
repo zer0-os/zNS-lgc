@@ -1,18 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
+import {IRegistrar} from "./IRegistrar.sol";
+
 interface IZNSHub {
   function addRegistrar(uint256 rootDomainId, address registrar) external;
 
   function isController(address controller) external returns (bool);
 
-  function emitTransferEvent(
+  function getRegistrarForDomain(uint256 domainId)
+    external
+    view
+    returns (IRegistrar);
+
+  function ownerOf(uint256 domainId) external view returns (address);
+
+  function domainExists(uint256 domainId) external view returns (bool);
+
+  function owner() external view returns (address);
+
+  function registrarBeacon() external view returns (address);
+
+  function domainTransferred(
     address from,
     address to,
     uint256 tokenId
   ) external;
 
-  function emitDomainCreatedEvent(
+  function domainCreated(
     uint256 id,
     string calldata name,
     uint256 nameHash,
@@ -23,13 +38,13 @@ interface IZNSHub {
     uint256 royaltyAmount
   ) external;
 
-  function emitMetadataLockChanged(
+  function metadataLockChanged(
     uint256 id,
     address locker,
     bool isLocked
   ) external;
 
-  function emitMetadataChanged(uint256 id, string calldata uri) external;
+  function metadataChanged(uint256 id, string calldata uri) external;
 
-  function emitRoyaltiesAmountChanged(uint256 id, uint256 amount) external;
+  function royaltiesAmountChanged(uint256 id, uint256 amount) external;
 }

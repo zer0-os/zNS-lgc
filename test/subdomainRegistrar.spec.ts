@@ -8,7 +8,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import { BigNumber, ContractTransaction } from "ethers";
+import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
 import {
   calculateDomainHash,
   domainNameToId,
@@ -25,35 +25,63 @@ describe("Subdomain Registrar Functionality", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let eventEmitter: smock.MockContract<ZNSHub>;
+  let hub: smock.MockContract<ZNSHub>;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
   const rootDomainHash = ethers.constants.HashZero;
   const rootDomainId = BigNumber.from(0);
 
+  const createSubdomainContract = async (
+    contract: Registrar,
+    minter: SignerWithAddress,
+    parentId: BigNumberish,
+    label: string
+  ) => {
+    const tx = await contract.registerSubdomainContract(
+      parentId,
+      label,
+      minter.address,
+      "metadata",
+      0,
+      true,
+      minter.address
+    );
+    const event = await getEvent(
+      tx,
+      "EENewSubdomainRegistrar",
+      hub.address,
+      hub.interface
+    );
+    return Registrar__factory.connect(
+      event.args["childRegistrar"],
+      contract.signer
+    );
+  };
+
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
     const emitterMockFactory = await smock.smock.mock<ZNSHub__factory>(
       "ZNSHub"
     );
-    eventEmitter = await emitterMockFactory.deploy();
-    await eventEmitter.initialize();
+    hub = await emitterMockFactory.deploy();
 
     const beacon = await upgrades.deployBeacon(registryFactory);
 
     registry = await registryFactory.deploy();
+
+    await hub.initialize(registry.address);
+
     await registry.initialize(
       ethers.constants.AddressZero,
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
       beacon.address,
-      creator.address,
-      eventEmitter.address
+      hub.address
     );
 
-    await eventEmitter.addRegistrar(rootDomainId, registry.address);
+    await hub.addRegistrar(rootDomainId, registry.address);
   };
 
   before(async () => {
@@ -62,7 +90,7 @@ describe("Subdomain Registrar Functionality", () => {
     user1 = accounts[1];
   });
 
-  describe("Create", () => {
+  describe("Subdomain contract creation", () => {
     before(async () => {
       await deployRegistry(creator);
       await registry.addController(creator.address);
@@ -83,16 +111,15 @@ describe("Subdomain Registrar Functionality", () => {
         creator.address
       );
 
-      expect(tx).to.emit(eventEmitter, "EENewSubdomainRegistrar");
+      expect(tx).to.emit(hub, "EENewSubdomainRegistrar");
       const event = await getEvent(
         tx,
         "EENewSubdomainRegistrar",
-        eventEmitter.address,
-        eventEmitter.interface
+        hub.address,
+        hub.interface
       );
-      console.log(tx.gasLimit.toString());
       subdomainRegistrar = Registrar__factory.connect(
-        event.args["newRegistrar"],
+        event.args["childRegistrar"],
         creator
       );
     });
@@ -130,6 +157,27 @@ describe("Subdomain Registrar Functionality", () => {
         0,
         true
       );
+    });
+  });
+
+  describe("ownerOf", () => {
+    let subdomainRegistrar: Registrar;
+    let domainName = "foo";
+    let domainId = domainNameToId(domainName);
+    before(async () => {
+      await deployRegistry(creator);
+      await registry.addController(creator.address);
+    });
+
+    it("ownerOf returns owner of root domain in subdomain contract", async () => {
+      const childRegistrar = await createSubdomainContract(
+        registry,
+        creator,
+        0,
+        "foo"
+      );
+
+      expect(await childRegistrar.ownerOf(0)).to.eq(await registry.ownerOf(0));
     });
   });
 });

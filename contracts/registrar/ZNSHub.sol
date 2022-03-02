@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 
 import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
 import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
@@ -69,7 +69,7 @@ contract ZNSHub is
   mapping(uint256 => address) public subdomainRegistrars;
 
   // Beacon Proxy used by zNS Registrars
-  address public registrarBeacon;
+  address public beacon;
 
   modifier onlyRegistrar() {
     require(
@@ -87,7 +87,11 @@ contract ZNSHub is
     __Context_init();
     __Ownable_init();
     defaultRegistrar = defaultRegistrar_;
-    registrarBeacon = registrarBeacon_;
+    beacon = registrarBeacon_;
+  }
+
+  function registrarBeacon() external view returns (address) {
+    return beacon;
   }
 
   /**

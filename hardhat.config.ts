@@ -8,7 +8,6 @@ import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
-import { ethers } from "ethers";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -22,7 +21,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.11",
+        version: "0.8.9",
         settings: {
           outputSelection: {
             "*": {
@@ -85,6 +84,9 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
+  },
+  typechain: {
+    outDir: "typechain",
   },
 };
 export default config;

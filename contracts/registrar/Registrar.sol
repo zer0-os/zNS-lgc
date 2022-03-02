@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";

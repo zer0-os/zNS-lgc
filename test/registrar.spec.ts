@@ -19,7 +19,7 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let eventEmitter: smock.FakeContract<ZNSHub>;
+  let hub: smock.FakeContract<ZNSHub>;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -30,8 +30,8 @@ describe("Registrar", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    eventEmitter = await smock.smock.fake(ZNSHub__factory);
-    eventEmitter.owner.returns(creator.address);
+    hub = await smock.smock.fake(ZNSHub__factory);
+    hub.owner.returns(creator.address);
 
     registry = await registryFactory.deploy();
     await registry.initialize(
@@ -39,8 +39,7 @@ describe("Registrar", () => {
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      ethers.constants.AddressZero,
-      eventEmitter.address
+      hub.address
     );
   };
 
@@ -74,13 +73,6 @@ describe("Registrar", () => {
       expect(await registry.domainController(rootDomainId)).to.eq(
         ethers.constants.AddressZero
       );
-    });
-  });
-
-  describe("ownership", () => {
-    it("allows the contract owner to be transferred", async () => {
-      await registry.transferOwnership(user1.address);
-      expect(await registry.owner()).to.be.eq(user1.address);
     });
   });
 

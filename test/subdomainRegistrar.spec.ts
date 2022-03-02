@@ -8,15 +8,9 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
-import { BigNumber, BigNumberish, ContractTransaction } from "ethers";
-import {
-  calculateDomainHash,
-  domainNameToId,
-  getEvent,
-  hashDomainName,
-} from "./helpers";
+import { BigNumber, BigNumberish } from "ethers";
+import { domainNameToId, getEvent } from "./helpers";
 import * as smock from "@defi-wonderland/smock";
-import { MockContract } from "@defi-wonderland/smock";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -29,7 +23,6 @@ describe("Subdomain Registrar Functionality", () => {
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
-  const rootDomainHash = ethers.constants.HashZero;
   const rootDomainId = BigNumber.from(0);
 
   const createSubdomainContract = async (
@@ -70,14 +63,13 @@ describe("Subdomain Registrar Functionality", () => {
 
     registry = await registryFactory.deploy();
 
-    await hub.initialize(registry.address);
+    await hub.initialize(registry.address, beacon.address);
 
     await registry.initialize(
       ethers.constants.AddressZero,
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      beacon.address,
       hub.address
     );
 

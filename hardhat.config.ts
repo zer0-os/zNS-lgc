@@ -2,11 +2,12 @@
 require("dotenv").config();
 
 import { task, HardhatUserConfig } from "hardhat/config";
+
+import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -30,6 +31,7 @@ const config: HardhatUserConfig = {
           },
           optimizer: {
             enabled: true,
+            runs: 200,
           },
         },
       },
@@ -51,7 +53,7 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
+        url: "https://eth-rinkeby.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
       },
     },
     mainnet: {

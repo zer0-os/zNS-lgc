@@ -44,6 +44,7 @@ describe("Registrar", () => {
   };
 
   before(async () => {
+    console.log("before");
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
     user1 = accounts[1];

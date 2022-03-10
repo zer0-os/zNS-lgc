@@ -214,4 +214,9 @@ contract ZNSHub is
   {
     return super.owner();
   }
+
+  function parentOf(uint256 domainId) external view returns (uint256) {
+    IRegistrar registrar = getRegistrarForDomain(domainId);
+    return registrar.parentOf(domainId);
+  }
 }

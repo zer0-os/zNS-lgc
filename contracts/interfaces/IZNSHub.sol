@@ -47,4 +47,7 @@ interface IZNSHub {
   function metadataChanged(uint256 id, string calldata uri) external;
 
   function royaltiesAmountChanged(uint256 id, uint256 amount) external;
+
+  // Returns the parent domain of a child domain
+  function parentOf(uint256 id) external view returns (uint256);
 }

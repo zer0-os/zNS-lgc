@@ -50,16 +50,20 @@ const config: HardhatUserConfig = {
       },
     },
     mainnet: {
-      accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
+      accounts: [`${process.env.MAINNET_PRIVATE_KEY}`],
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       gasPrice: 130000000000,
     },
+    arbitrum: {
+      accounts: [`${process.env.TESTNET_PRIVATE_KEY}`],
+      url: `https://arbitrum-rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e`,
+    },
     kovan: {
-      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
+      accounts: [`${process.env.TESTNET_PRIVATE_KEY}`],
       url: `https://kovan.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
     },
     ropsten: {
-      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
+      accounts: [`${process.env.TESTNET_PRIVATE_KEY}`],
       url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
     rinkeby: {

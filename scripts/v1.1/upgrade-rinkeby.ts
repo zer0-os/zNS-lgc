@@ -14,7 +14,7 @@ then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./
 
 */
 
-// Mainnet Registrar
+// Rinkeby Registrar
 const registrarAddress = "0xa4F6C921f914ff7972D7C55c15f015419326e0Ca";
 
 const main = async () => {

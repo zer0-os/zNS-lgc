@@ -429,11 +429,11 @@ contract Registrar is
 
   function registerDomainAndSendBulk(
     uint256 parentId,
-    uint256 namingOffset,
+    uint256 namingOffset, // e.g., the IPFS node refers to the metadata as x. the zNS label will be x + namingOffset
     uint256 totalToRegister,
     address minter,
     address sendToUser,
-    string memory folderWithIPFSPrefix,
+    string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
     uint256 royaltyAmount,
     bool locked
   ) external onlyController returns (uint256[] memory) {

@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721PausableUpgradeable.sol";
 import "./interfaces/IRegistrar.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Registrar is
   IRegistrar,
@@ -422,7 +423,7 @@ contract Registrar is
     for (uint256 i = 0; i < orderedIds.length; i++) {
       _setDomainMetadataUri(
         orderedIds[i],
-        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i)))
+        string(abi.encodePacked(folderWithIPFSPrefix, Strings.toString(i)))
       );
     }
   }
@@ -441,7 +442,7 @@ contract Registrar is
     for (uint256 i = 0; i < totalToRegister; i++) {
       results[i] = _registerDomain(
         parentId,
-        uint2str(i + namingOffset),
+        Strings.toString(i + namingOffset),
         minter,
         string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
         royaltyAmount,
@@ -452,31 +453,5 @@ contract Registrar is
     }
 
     return results;
-  }
-
-  function uint2str(uint256 _i)
-    internal
-    pure
-    returns (string memory _uintAsString)
-  {
-    if (_i == 0) {
-      return "0";
-    }
-    uint256 j = _i;
-    uint256 len;
-    while (j != 0) {
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint256 k = len;
-    while (_i != 0) {
-      k = k - 1;
-      uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
-      bytes1 b1 = bytes1(temp);
-      bstr[k] = b1;
-      _i /= 10;
-    }
-    return string(bstr);
   }
 }

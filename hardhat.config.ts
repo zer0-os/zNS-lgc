@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.9",
+        version: "0.8.11",
         settings: {
           outputSelection: {
             "*": {
@@ -57,7 +57,7 @@ const config: HardhatUserConfig = {
       },
     },
     mainnet: {
-      accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
+      accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       gasPrice: 130000000000,
     },
@@ -70,7 +70,7 @@ const config: HardhatUserConfig = {
       url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
     rinkeby: {
-      accounts: [`${process.env.TESTNET_PRIVATE_KEY}`],
+      accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     localhost: {

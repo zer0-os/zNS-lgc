@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
@@ -8,6 +8,7 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Registrar is
   IRegistrar,
@@ -49,6 +50,7 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
+  uint8 public test;
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
@@ -544,5 +546,32 @@ contract Registrar is
     uint256 tokenId
   ) external onlyOwner {
     _transfer(from, to, tokenId);
+  }
+
+  function registerDomainAndSendBulk(
+    uint256 parentId,
+    uint256 namingOffset, // e.g., the IPFS node refers to the metadata as x. the zNS label will be x + namingOffset
+    uint256 totalToRegister,
+    address minter,
+    address sendToUser,
+    string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
+    uint256 royaltyAmount,
+    bool locked
+  ) external onlyController returns (uint256[] memory) {
+    uint256[] memory results;
+    for (uint256 i = 0; i < totalToRegister; i++) {
+      results[i] = _registerDomain(
+        parentId,
+        Strings.toString(i + namingOffset),
+        minter,
+        string(abi.encodePacked(folderWithIPFSPrefix, Strings.toString(i))),
+        royaltyAmount,
+        locked
+      );
+
+      _safeTransfer(minter, sendToUser, results[i], "");
+    }
+
+    return results;
   }
 }

@@ -416,7 +416,7 @@ contract Registrar is
   }
 
   function adminSetMetadataBulk(
-    string memory folderWithIPFSPrefix,
+    string memory folderWithIPFSPrefix, // e.g., ipfs://Qm..../
     uint256[] memory orderedIds
   ) external onlyOwner {
     for (uint256 i = 0; i < orderedIds.length; i++) {
@@ -425,6 +425,33 @@ contract Registrar is
         string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i)))
       );
     }
+  }
+
+  function registerDomainAndSendBulk(
+    uint256 parentId,
+    uint256 namingOffset,
+    uint256 totalToRegister,
+    address minter,
+    address sendToUser,
+    string memory folderWithIPFSPrefix,
+    uint256 royaltyAmount,
+    bool locked
+  ) external onlyController returns (uint256[] memory) {
+    uint256[] memory results;
+    for (uint256 i = 0; i < totalToRegister; i++) {
+      results[i] = _registerDomain(
+        parentId,
+        uint2str(i + namingOffset),
+        minter,
+        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
+        royaltyAmount,
+        locked
+      );
+
+      _safeTransfer(minter, sendToUser, results[i], "");
+    }
+
+    return results;
   }
 
   function uint2str(uint256 _i)

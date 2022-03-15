@@ -444,7 +444,7 @@ contract Registrar is
         parentId,
         Strings.toString(i + namingOffset),
         minter,
-        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
+        string(abi.encodePacked(folderWithIPFSPrefix, Strings.toString(i))),
         royaltyAmount,
         locked
       );

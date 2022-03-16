@@ -8,7 +8,7 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
 
 contract Registrar is
   IRegistrar,
@@ -551,20 +551,24 @@ contract Registrar is
   function registerDomainAndSendBulk(
     uint256 parentId,
     uint256 namingOffset, // e.g., the IPFS node refers to the metadata as x. the zNS label will be x + namingOffset
-    uint256 totalToRegister,
+    uint256 startingIndex,
+    uint256 endingIndex,
     address minter,
     address sendToUser,
     string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
     uint256 royaltyAmount,
     bool locked
   ) external onlyController returns (uint256[] memory) {
-    uint256[] memory results;
-    for (uint256 i = 0; i < totalToRegister; i++) {
+    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+    uint256[] memory results = new uint256[](endingIndex - startingIndex);
+    for (uint256 i = startingIndex; i < endingIndex; i++) {
       results[i] = _registerDomain(
         parentId,
-        Strings.toString(i + namingOffset),
+        StringsUpgradeable.toString(i + namingOffset),
         minter,
-        string(abi.encodePacked(folderWithIPFSPrefix, Strings.toString(i))),
+        string(
+          abi.encodePacked(folderWithIPFSPrefix, StringsUpgradeable.toString(i))
+        ),
         royaltyAmount,
         locked
       );

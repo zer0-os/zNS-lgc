@@ -22,6 +22,7 @@ const main = async () => {
     const tx = await instance.estimateGas.registerDomainAndSendBulk(
       parentDomainId,
       5517,
+      0,
       1,
       deployerWallet,
       deployerWallet,

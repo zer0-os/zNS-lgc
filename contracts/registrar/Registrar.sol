@@ -49,7 +49,8 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
-  uint8 public test;
+  uint8 private test; // ignore
+  uint256 private gap; // ignore
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;

@@ -16,13 +16,18 @@ then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./
 
 // Mainnet Registrar
 const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+const mainnetDeployer = "0x7829afa127494ca8b4ceef4fb81b78fee9d0e471";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
 
-  if (hre.ethers.provider.network.chainId == 31337) {
-    const mainnetDeployer = "0x7829afa127494ca8b4ceef4fb81b78fee9d0e471";
+  console.log(`Deployer is ${deployer.address}`);
 
+  if (deployer.address.toLowerCase() != mainnetDeployer.toLowerCase()) {
+    throw Error(`Wrong deployment account!`);
+  }
+
+  if ((await hre.ethers.provider.getNetwork()).chainId == 31337) {
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [mainnetDeployer],

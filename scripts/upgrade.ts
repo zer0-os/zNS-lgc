@@ -1,85 +1,58 @@
-import { ethers, upgrades } from "hardhat";
-import { getLogger } from "../utilities";
+import * as hre from "hardhat";
+import { Registrar__factory } from "../typechain";
 
-// import * as hre from "hardhat";
+/*
+Script to upgrade (and test) zNS Registrar to v1.1
 
-const logger = getLogger("scripts::upgrade");
+- Deploys a zNS Registrar Beacon (used by beacon proxies)
+  - We need this because sub domain registrars will use the beacon
+- Deploys the zNS Hub
+- Upgrades the existing zNS Registrar
 
-async function main() {
-  //await run("compile");
+If you get a `Deployment at address 0xA677906024550c800fa881FDD638AaBd5a7E5b09 is not registered` error
+then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./.openzeppelin/unknown-31337.json`
 
-  // const wheelsBasicController = "0x930E6b2AAd267A7Fa7e6C6dFcf0c70885B03C443";
-  // const basicController = "0xa05Ae774Da859943B7B859cd2A6aD9F5f1651d6a";
-  // const stakingController = "0x45b13d8e6579d5C3FeC14bB9998A3640CD4F008D";
-  const registrar = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+*/
 
-  // console.log("upgrade bc1");
-  // await upgrades.upgradeProxy(
-  //   basicController,
-  //   await ethers.getContractFactory("BasicController")
-  // );
+// Mainnet Registrar
+const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+const beaconAddress = "0x4CD06F23e9Cc5658acCa6D5d681511f3d5616bc9";
+const mainnetDeployer = "0x7829afa127494ca8b4ceef4fb81b78fee9d0e471";
 
-  console.log("upgrade reg");
-  await upgrades.upgradeProxy(
-    registrar,
-    await ethers.getContractFactory("Registrar")
+const main = async () => {
+  let deployer = (await hre.ethers.getSigners())[0];
+
+  console.log(`Deployer is ${deployer.address}`);
+
+  if (deployer.address.toLowerCase() != mainnetDeployer.toLowerCase()) {
+    throw Error(`Wrong deployment account!`);
+  }
+
+  if ((await hre.ethers.provider.getNetwork()).chainId == 31337) {
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [mainnetDeployer],
+    });
+
+    deployer = await hre.ethers.getSigner(mainnetDeployer);
+
+    await hre.network.provider.send("hardhat_setBalance", [
+      mainnetDeployer,
+      "0x56BC75E2D63100000", // some big number
+    ]);
+  }
+
+  console.log(`upgrading root registrar`);
+  await hre.upgrades.upgradeProxy(
+    registrarAddress,
+    new Registrar__factory(deployer)
   );
 
-  // console.log("upgrade wheels bc");
-  // await upgrades.upgradeProxy(
-  //   wheelsBasicController,
-  //   await ethers.getContractFactory("BasicController")
-  // );
+  console.log(`upgrading registrar beacon`);
+  await hre.upgrades.upgradeBeacon(
+    beaconAddress,
+    new Registrar__factory(deployer)
+  );
+};
 
-  // console.log("upgrade sc");
-  // await upgrades.upgradeProxy(
-  //   stakingController,
-  //   await ethers.getContractFactory("StakingController")
-  // );
-
-  // await hre.network.provider.request({
-  //   method: "hardhat_impersonateAccount",
-  //   params: ["0x00181436F7dB266D4B5EA6bD6E97d726Af35fc6C"],
-  // });
-
-  // const signer = await ethers.getSigner(
-  //   "0x00181436F7dB266D4B5EA6bD6E97d726Af35fc6C"
-  // );
-
-  // await hre.network.provider.send("hardhat_setBalance", [
-  //   "0x00181436F7dB266D4B5EA6bD6E97d726Af35fc6C",
-  //   "0xA688906BD8B00000",
-  // ]);
-
-  // const sale = await ethers.getContractFactory("WhitelistSimpleSale");
-
-  // const instance = sale
-  //   .attach("0x19a55608f360f6Df69B7932dC2F65EDEFAa88Dc2")
-  //   .connect(signer);
-
-  // const tx = await instance.purchaseDomainsWhitelisted(
-  //   1,
-  //   0,
-  //   [
-  //     "0x8da8a19ecb053e7e17a6b6f5da2769d30fe9a0f56e0560e1f7ae8db05eeabf3e",
-  //     "0xe0205120f15a22e3ff93e1c30a19dd7baae835696c7d8db90f487c668753cb1f",
-  //     "0xb7f7cbd1b2f8060199f073e2d87b975e9ddbad4f42d4c42c01920d02f65470f8",
-  //     "0x6927bdbde899ecb1d8c29f23a008b470ce6734382ded117b7e4595382e31918f",
-  //     "0xf78ee29dc81fe57e6c4ce4b77c72edc0517a3561471e173c1d3e22d5ccd07510",
-  //     "0x7108910b86287167a5c717d63bb841bde1b4bb675eed89d95f24e35362939bf0",
-  //     "0x0e9b0783cd8c6efcdc8ac453dbcbb38c71413ac0b726e88973986443ee5e53fa",
-  //     "0x1dfe9c586fb5138995f8bac8bad0014a4e21210a1eab5aa1efaefaf9467b347d",
-  //     "0x771b3624643685d2d7e2162b3466fdd78dc7296fecf0e079548b30c298fa0a12",
-  //     "0x2c046f51d8245eff4765ffd598f558a4822dee3964d7698a988469ca15979759",
-  //     "0xaf032d1523e099c43ffbccf0157b0b8093f438b965bbf4e7f84f6ffaef95ae9d",
-  //     "0x6eab588cc71434eb082c3b6d4126ae70e043516cafbadb606810680e6fd117df",
-  //     "0x131d5030128b58c176a29f907cf06fa82cce362598e77f8a5188194a10ad6f3e",
-  //   ],
-  //   {
-  //     value: ethers.utils.parseEther("0.369"),
-  //   }
-  // );
-
-  logger.log("finished!");
-}
-main();
+main().catch(console.error);

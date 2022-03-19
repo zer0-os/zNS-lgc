@@ -46,12 +46,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      // accounts: [
-      //   {
-      //     privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
-      //     balance: ethers.utils.parseEther("100000").toString(),
-      //   },
-      // ],
+      accounts: [
+        {
+          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+          balance: "10000000000000000000000",
+        },
+      ],
       forking: {
         url: "https://eth-rinkeby.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
       },
@@ -59,7 +59,7 @@ const config: HardhatUserConfig = {
     mainnet: {
       accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
-      gasPrice: 130000000000,
+      gasPrice: 60000000000,
     },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },

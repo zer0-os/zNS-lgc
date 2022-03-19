@@ -1,20 +1,30 @@
 import { ethers, network, run } from "hardhat";
-import {
-  BasicController,
-  BasicController__factory,
-  Registrar,
-  Registrar__factory,
-} from "../typechain";
+import { Registrar, Registrar__factory } from "../typechain";
 import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 
 const logger = getLogger("scripts::add-basic-controller");
+
+const deployerNew = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
+const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
 
 async function main() {
   await run("compile");
 
   const accounts = await ethers.getSigners();
   const deploymentAccount = accounts[0];
+
+  if ((await ethers.provider.getNetwork()).chainId == 31337) {
+    await network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [deploymentAccount.address],
+    });
+  }
+
+  const instance: Registrar = Registrar__factory.connect(
+    registrarAddress,
+    deploymentAccount
+  );
 
   const fileName = `${network.name}.json`;
   const filepath = `${deploymentsFolder}/${fileName}`;
@@ -28,19 +38,9 @@ async function main() {
     deploymentData = {};
   }
 
-  if (!deploymentData.registrar || !deploymentData.basicController) {
-    logger.error(`Registrar and Controller are not deployed.`);
-    process.exit(1);
-  }
+  logger.log(`Targeting Registrar at ${instance.address}`);
 
-  const registrarFactory = new Registrar__factory(deploymentAccount);
-  const registrar: Registrar = await registrarFactory.attach(
-    deploymentData.registrar.address
-  );
-
-  logger.log(`Targeting Registrar at ${registrar.address}`);
-
-  const registrarOwner = await registrar.owner();
+  const registrarOwner = await instance.owner();
   if (
     registrarOwner.toLocaleLowerCase() !=
     deploymentAccount.address.toLocaleLowerCase()
@@ -49,20 +49,15 @@ async function main() {
     process.exit(1);
   }
 
-  const controllerFactory = new BasicController__factory(deploymentAccount);
-  const controller: BasicController = await controllerFactory.attach(
-    deploymentData.basicController.address
-  );
-
-  const alreadyController = await registrar.controllers(controller.address);
+  const alreadyController = await instance.controllers(deployerNew);
 
   if (alreadyController) {
-    logger.error(`${controller.address} is already a controller`);
+    logger.error(`${deployerNew} is already a controller`);
     return;
   }
 
-  logger.log(`Adding ${controller.address} as a controller.`);
-  await registrar.addController(controller.address);
+  logger.log(`Adding ${deployerNew} as a controller.`);
+  await instance.addController(deployerNew);
 }
 
 main();

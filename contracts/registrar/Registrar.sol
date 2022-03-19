@@ -8,7 +8,6 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
 
 contract Registrar is
   IRegistrar,
@@ -558,24 +557,46 @@ contract Registrar is
     string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
     uint256 royaltyAmount,
     bool locked
-  ) external onlyController returns (uint256[] memory) {
+  ) external onlyController {
     require(endingIndex - startingIndex > 0, "Invalid number of domains");
-    uint256[] memory results = new uint256[](endingIndex - startingIndex);
+    uint256 result;
     for (uint256 i = startingIndex; i < endingIndex; i++) {
-      results[i] = _registerDomain(
+      result = _registerDomain(
         parentId,
-        StringsUpgradeable.toString(i + namingOffset),
+        uint2str(i + namingOffset),
         minter,
-        string(
-          abi.encodePacked(folderWithIPFSPrefix, StringsUpgradeable.toString(i))
-        ),
+        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
         royaltyAmount,
         locked
       );
 
-      _safeTransfer(minter, sendToUser, results[i], "");
+      _transfer(minter, sendToUser, result);
     }
+  }
 
-    return results;
+  function uint2str(uint256 _i)
+    internal
+    pure
+    returns (string memory _uintAsString)
+  {
+    if (_i == 0) {
+      return "0";
+    }
+    uint256 j = _i;
+    uint256 len;
+    while (j != 0) {
+      len++;
+      j /= 10;
+    }
+    bytes memory bstr = new bytes(len);
+    uint256 k = len;
+    while (_i != 0) {
+      k = k - 1;
+      uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
+      bytes1 b1 = bytes1(temp);
+      bstr[k] = b1;
+      _i /= 10;
+    }
+    return string(bstr);
   }
 }

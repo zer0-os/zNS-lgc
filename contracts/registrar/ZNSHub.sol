@@ -65,8 +65,7 @@ contract ZNSHub is
   // Contains mapping of domain id to contract
   mapping(uint256 => address) public domainToContract;
 
-  // Subdomain Contracts (root id => contract)
-  mapping(uint256 => address) public subdomainRegistrars;
+  mapping(uint256 => address) private subdomainRegistrars; // deprecated
 
   // Beacon Proxy used by zNS Registrars
   address public beacon;
@@ -108,7 +107,6 @@ contract ZNSHub is
     require(!authorizedRegistrars[registrar], "ZH: Already Registered");
 
     authorizedRegistrars[registrar] = true;
-    subdomainRegistrars[rootDomainId] = registrar;
 
     emit EENewSubdomainRegistrar(_msgSender(), rootDomainId, registrar);
   }

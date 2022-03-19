@@ -14,25 +14,13 @@ then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./
 
 */
 
-//0x90098737eB7C3e73854daF1Da20dFf90d521929a
-
-// Rinkeby Registrar
-const registrarAddress = "0xa4F6C921f914ff7972D7C55c15f015419326e0Ca";
+// Rinkeby Hub
+const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
 
-  await hre.upgrades.upgradeProxy(
-    "0x90098737eB7C3e73854daF1Da20dFf90d521929a",
-    new ZNSHub__factory(deployer)
-  );
-
-  // Upgrade the existing registrar
-  console.log(`Upgrading existing zNS Registrar`);
-  await hre.upgrades.upgradeProxy(
-    registrarAddress,
-    new Registrar__factory(deployer)
-  );
+  await hre.upgrades.upgradeProxy(hubAddress, new ZNSHub__factory(deployer));
 };
 
 main().catch(console.error);

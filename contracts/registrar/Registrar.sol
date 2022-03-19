@@ -275,26 +275,15 @@ contract Registrar is
     _setTokenURI(domainId, metadataUri);
 
     if (locked) {
-      _setDomainLock(domainId, minter, true);
+      records[domainId].metadataLockedBy = minter;
+      records[domainId].metadataLocked = true;
     }
 
     if (royaltyAmount > 0) {
       records[domainId].royaltyAmount = royaltyAmount;
-      emit RoyaltiesAmountChanged(domainId, royaltyAmount);
     }
 
     zNSHub.domainCreated(
-      domainId,
-      label,
-      labelHash,
-      parentId,
-      minter,
-      controller,
-      metadataUri,
-      royaltyAmount
-    );
-
-    emit DomainCreated(
       domainId,
       label,
       labelHash,
@@ -321,7 +310,6 @@ contract Registrar is
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
 
     records[id].royaltyAmount = amount;
-    emit RoyaltiesAmountChanged(id, amount);
     zNSHub.royaltiesAmountChanged(id, amount);
   }
 
@@ -489,7 +477,6 @@ contract Registrar is
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     _setTokenURI(id, uri);
-    emit MetadataChanged(id, uri);
     zNSHub.metadataChanged(id, uri);
   }
 
@@ -531,7 +518,6 @@ contract Registrar is
     records[id].metadataLockedBy = locker;
     records[id].metadataLocked = lockStatus;
 
-    emit MetadataLockChanged(id, locker, lockStatus);
     zNSHub.metadataLockChanged(id, locker, lockStatus);
   }
 
@@ -554,7 +540,6 @@ contract Registrar is
     uint256 startingIndex,
     uint256 endingIndex,
     address minter,
-    address sendToUser,
     string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
     uint256 royaltyAmount,
     bool locked
@@ -570,8 +555,6 @@ contract Registrar is
         royaltyAmount,
         locked
       );
-
-      _transfer(minter, sendToUser, result);
     }
   }
 

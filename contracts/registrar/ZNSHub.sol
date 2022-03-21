@@ -71,10 +71,7 @@ contract ZNSHub is
   address public beacon;
 
   modifier onlyRegistrar() {
-    require(
-      authorizedRegistrars[_msgSender()],
-      "REE: Not authorized registrar"
-    );
+    require(authorizedRegistrars[msg.sender], "REE: Not authorized registrar");
     _;
   }
 

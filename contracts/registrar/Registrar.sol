@@ -534,6 +534,13 @@ contract Registrar is
     _transfer(from, to, tokenId);
   }
 
+  function adminSetMetadataUri(uint256 id, string memory uri)
+    external
+    onlyOwner
+  {
+    _setDomainMetadataUri(id, uri);
+  }
+
   function registerDomainAndSendBulk(
     uint256 parentId,
     uint256 namingOffset, // e.g., the IPFS node refers to the metadata as x. the zNS label will be x + namingOffset

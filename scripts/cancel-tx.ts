@@ -7,7 +7,7 @@ async function main() {
   await signer.sendTransaction({
     to: signer.address,
     value: 0,
-    nonce: 62,
+    nonce: 913,
     gasPrice: 100000000000,
   });
 }

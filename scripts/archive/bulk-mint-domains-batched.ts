@@ -32,12 +32,6 @@ const main = async () => {
     );
   }
 
-  console.log(`Upgrading to ensure proper version`);
-  await hre.upgrades.upgradeProxy(
-    registrarAddress,
-    new Registrar__factory(deployer)
-  );
-
   const instance: Registrar = Registrar__factory.connect(
     registrarAddress,
     deployer
@@ -46,7 +40,7 @@ const main = async () => {
   console.log(`Registering bulk`);
   const startIndex = 0;
   const endIndex = 547;
-  const batchSize = 25;
+  const batchSize = 40;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);
     const tx = await instance.registerDomainAndSendBulk(
@@ -64,7 +58,7 @@ const main = async () => {
     console.log(tx);
 
     console.log(`tx hash: ${tx.hash}`);
-    // console.log(`Waiting to be confirmed...`);
+    console.log(`Waiting to be confirmed...`);
     const res = await tx.wait();
     console.log(res);
     console.log(`finished`);

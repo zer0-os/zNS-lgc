@@ -48,12 +48,12 @@ const config: HardhatUserConfig = {
     hardhat: {
       accounts: [
         {
-          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+          privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
           balance: "10000000000000000000000",
         },
       ],
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
+        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {

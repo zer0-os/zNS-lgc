@@ -1,13 +1,13 @@
 import * as hre from "hardhat";
-import { Registrar, Registrar__factory } from "../typechain";
+import { Registrar, Registrar__factory } from "../../typechain";
 
-const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+const registrarAddress = "0xfb8787e418744aa521e629039b6a40777ce591a8";
 const parentDomainId =
-  "0x68975dd5a9af8e36c74f770836840e20ba1a15ca1114837fd5c54eca9a4d3533";
+  "0x73215dea134a9becfe394e33fbd2fe01bfa00017b9bcf2048a87b2fb867b3a9b";
 
-const deployerWallet = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
-const minterWallet = "0xEe7Ad892Fdf8d95223d7E94E4fF42E9d0cfeCAFA";
-const sendToWallet = "0xEe7Ad892Fdf8d95223d7E94E4fF42E9d0cfeCAFA";
+const deployerWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+const minterWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+const sendToWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -40,7 +40,7 @@ const main = async () => {
   console.log(`Registering bulk`);
   const startIndex = 0;
   const endIndex = 547;
-  const batchSize = 40;
+  const batchSize = 20;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);
     const tx = await instance.registerDomainAndSendBulk(
@@ -49,8 +49,7 @@ const main = async () => {
       i,
       batchEnd,
       minterWallet,
-      sendToWallet,
-      "ipfs://QmZfmi2Du3uykHu7XT7EuLh4f2oP6RLK8JvbCBB21vx4jS/",
+      "ipfs://QmeZB47dFzBu4CNg6FqZCtX79Ezoop8429UXDQtpmqCRPc/",
       0,
       true
     );

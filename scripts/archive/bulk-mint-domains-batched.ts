@@ -1,7 +1,13 @@
 import * as hre from "hardhat";
-import { Registrar, Registrar__factory } from "../../typechain";
+import {
+  BeaconProxy__factory,
+  Registrar,
+  Registrar__factory,
+  ZNSHub__factory,
+} from "../../typechain";
 
-const registrarAddress = "0xfb8787e418744aa521e629039b6a40777ce591a8";
+const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
+const registrarAddress = "0xf2f1c79E1b2Ed2B14f3bd577248f9780e50c9BEa";
 const parentDomainId =
   "0x73215dea134a9becfe394e33fbd2fe01bfa00017b9bcf2048a87b2fb867b3a9b";
 

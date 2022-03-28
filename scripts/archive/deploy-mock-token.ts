@@ -1,11 +1,11 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import { MockToken__factory } from "../typechain";
-import { getLogger } from "../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
   Manifest,
 } from "@openzeppelin/upgrades-core";
+import { getLogger } from "../../utilities";
+import { MockToken__factory } from "../../typechain";
 
 const logger = getLogger("scripts::deploy-mock-token");
 
@@ -26,9 +26,13 @@ async function main() {
 
   logger.log(`Implementation version is ${bytecodeHash}`);
 
-  const instance = await upgrades.deployProxy(factory, ["Mock Wild", "mWILD"], {
-    initializer: "initialize",
-  });
+  const instance = await upgrades.deployProxy(
+    factory,
+    ["Mock zDAO Voting Token", "mzVOTE"],
+    {
+      initializer: "initialize",
+    }
+  );
   await instance.deployed();
 
   logger.log(`Deployed to '${instance.address}'`);

@@ -15,7 +15,7 @@ then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./
 */
 
 // Rinkeby Hub
-const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
+const hubAddress = "0x6141d5Cb3517215A03519A464bF9C39814df7479";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];

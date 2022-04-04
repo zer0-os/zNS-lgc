@@ -4,11 +4,14 @@ async function main() {
   const accounts = await ethers.getSigners();
   const signer = accounts[0];
 
+  const nonce = await signer.getTransactionCount();
+  console.log(`cancel nonce ${nonce}`);
+
   await signer.sendTransaction({
     to: signer.address,
     value: 0,
-    nonce: 914,
-    gasPrice: 100000000000,
+    nonce,
+    gasPrice: 999000000000,
   });
 }
 

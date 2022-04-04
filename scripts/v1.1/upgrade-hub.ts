@@ -1,21 +1,8 @@
 import * as hre from "hardhat";
 import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 
-/*
-Script to upgrade (and test) zNS Registrar to v1.1
-
-- Deploys a zNS Registrar Beacon (used by beacon proxies)
-  - We need this because sub domain registrars will use the beacon
-- Deploys the zNS Hub
-- Upgrades the existing zNS Registrar
-
-If you get a `Deployment at address 0xA677906024550c800fa881FDD638AaBd5a7E5b09 is not registered` error
-then make sure to copy/paste `./.openzeppelin/mainnet.json` and rename it to `./.openzeppelin/unknown-31337.json`
-
-*/
-
-// Rinkeby Hub
-const hubAddress = "0x6141d5Cb3517215A03519A464bF9C39814df7479";
+// mainnet Hub
+const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];

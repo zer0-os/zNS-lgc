@@ -91,12 +91,6 @@ contract Registrar is
     __ERC721_init(collectionName, collectionSymbol);
   }
 
-  // Used to upgrade existing registrar to new registrar
-  function upgradeFromNormalRegistrar(address zNSHub_) public {
-    require(msg.sender == _getAdmin(), "Not Proxy Admin");
-    zNSHub = IZNSHub(zNSHub_);
-  }
-
   function owner() public view override returns (address) {
     return zNSHub.owner();
   }
@@ -539,6 +533,10 @@ contract Registrar is
     onlyOwner
   {
     _setDomainMetadataUri(id, uri);
+  }
+
+  function setZNSHub(IZNSHub hub) external onlyOwner {
+    zNSHub = hub;
   }
 
   function registerDomainAndSendBulk(

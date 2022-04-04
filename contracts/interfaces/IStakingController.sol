@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.9;
 
-import {IERC165Upgradeable} from "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IERC165Upgradeable} from "../oz/introspection/IERC165Upgradeable.sol";
+import {IERC20Upgradeable} from "../oz/token/ERC20/IERC20Upgradeable.sol";
 
 interface IStakingController is IERC165Upgradeable {
   event DomainRequestPlaced(

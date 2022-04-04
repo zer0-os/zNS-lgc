@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/introspection/IERC165Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import "../oz/introspection/IERC165Upgradeable.sol";
+import "../oz/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
 interface IBasicController is IERC165Upgradeable, IERC721ReceiverUpgradeable {
   event RegisteredDomain(

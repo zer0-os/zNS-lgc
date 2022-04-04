@@ -2,11 +2,12 @@
 require("dotenv").config();
 
 import { task, HardhatUserConfig } from "hardhat/config";
+
+import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -21,7 +22,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.7.3",
+        version: "0.8.11",
         settings: {
           outputSelection: {
             "*": {
@@ -30,6 +31,7 @@ const config: HardhatUserConfig = {
           },
           optimizer: {
             enabled: true,
+            runs: 200,
           },
         },
       },
@@ -44,15 +46,20 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      accounts: { mnemonic: process.env.MAINNET_MNEMONIC || "" },
+      accounts: [
+        {
+          privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+          balance: "10000000000000000000000",
+        },
+      ],
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/MnO3SuHlzuCydPWE1XhsYZM_pHZP8_ix",
+        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {
       accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
-      gasPrice: 130000000000,
+      gasPrice: 170000000000,
     },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
@@ -63,7 +70,7 @@ const config: HardhatUserConfig = {
       url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
     rinkeby: {
-      accounts: [`${process.env.TESTNET_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.TESTNET_PRIVATE_KEY}`],
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     localhost: {
@@ -79,6 +86,9 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
+  },
+  typechain: {
+    outDir: "typechain",
   },
 };
 export default config;

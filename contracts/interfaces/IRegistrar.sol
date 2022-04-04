@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721MetadataUpgradeable.sol";
+import "../oz/token/ERC721/IERC721EnumerableUpgradeable.sol";
+import "../oz/token/ERC721/IERC721MetadataUpgradeable.sol";
 
 interface IRegistrar is
   IERC721MetadataUpgradeable,
@@ -17,8 +17,8 @@ interface IRegistrar is
   // Emitted whenever a new domain is created
   event DomainCreated(
     uint256 indexed id,
-    string name,
-    uint256 indexed nameHash,
+    string label,
+    uint256 indexed labelHash,
     uint256 indexed parent,
     address minter,
     address controller,
@@ -44,7 +44,7 @@ interface IRegistrar is
   // Registers a new sub domain
   function registerDomain(
     uint256 parentId,
-    string memory name,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,
@@ -53,7 +53,17 @@ interface IRegistrar is
 
   function registerDomainAndSend(
     uint256 parentId,
-    string memory name,
+    string memory label,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    address sendToUser
+  ) external returns (uint256);
+
+  function registerSubdomainContract(
+    uint256 parentId,
+    string memory label,
     address minter,
     string memory metadataUri,
     uint256 royaltyAmount,

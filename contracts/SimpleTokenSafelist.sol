@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.9;
 
 import {ITokenSafelist} from "./interfaces/ITokenSafelist.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {OwnableUpgradeable} from "./oz/access/OwnableUpgradeable.sol";
 
 contract SimpleTokenSafelist is ITokenSafelist, OwnableUpgradeable {
   // Safelisted tokens

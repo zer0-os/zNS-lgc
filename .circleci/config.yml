@@ -1,32 +1,38 @@
-version: 2
+version: 2.1
+
+orbs:
+  node: circleci/node@4.7.0
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:14.17.5
+
 jobs:
-  build:
-    docker:
-      - image: circleci/node
+  test:
+    <<: *defaults
     steps:
       - checkout
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
+      - node/install-packages:
+          pkg-manager: yarn
+      - run: yarn build
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
       - run:
-          name: Install Dependencies
-          command: yarn install --immutable
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
-      - run:
-          name: "JavaScript Linter"
-          command: yarn run lint --format junit -o reports/junit/js-lint-results.xml
-      # TO-DO: get test running & reporting working
-      #- run:
-      #    name: "JavaScript Test Suite"
-      #    environment:
-      #      JEST_JUNIT_OUTPUT: reports/junit/js-test-results.xml
-      #    command: yarn test --ci --testresultsprocessor="jest-junit"
-      - store_test_results:
-          path: reports/junit
-      - store_artifacts:
-          path: reports/junit
+          name: Publish to NPM
+          command: yarn publish --access public --non-interactive
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: master

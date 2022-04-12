@@ -6,14 +6,14 @@ import {
   ZNSHub__factory,
 } from "../../typechain";
 
-const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
-const registrarAddress = "0xf2f1c79E1b2Ed2B14f3bd577248f9780e50c9BEa";
+const registrarAddress = "0x1a178cfd768f74b3308cbca9998c767f4e5b2cf8"; // wilder.beasts.wolf reg?
 const parentDomainId =
-  "0x73215dea134a9becfe394e33fbd2fe01bfa00017b9bcf2048a87b2fb867b3a9b";
+  "0xfdfffccca231538c87645cf3b8eb5169d6945d18e1aeb7e642ed6ee75bfbd2f3";
 
-const deployerWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
-const minterWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
-const sendToWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+const deployerWallet = "0xadfe719d34736792956ce8dca8a325922812bbbe";
+const minterWallet = "0xadfe719d34736792956ce8dca8a325922812bbbe"; //TODO: Verify
+
+const ipfsFolder = "ipfs://QmNpqMLmyoX886F6AFxCD7wSGgPy4HSoiVwya2SjgM9NTL/";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -45,17 +45,18 @@ const main = async () => {
 
   console.log(`Registering bulk`);
   const startIndex = 0;
-  const endIndex = 547;
-  const batchSize = 20;
+  const endIndex = 3332;
+  const batchSize = 50;
+  const namingOffset = 1;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);
     const tx = await instance.registerDomainAndSendBulk(
       parentDomainId,
-      5517,
+      namingOffset,
       i,
       batchEnd,
       minterWallet,
-      "ipfs://QmeZB47dFzBu4CNg6FqZCtX79Ezoop8429UXDQtpmqCRPc/",
+      ipfsFolder,
       0,
       true
     );

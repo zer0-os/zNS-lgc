@@ -1,19 +1,15 @@
 import * as hre from "hardhat";
-import {
-  BeaconProxy__factory,
-  Registrar,
-  Registrar__factory,
-  ZNSHub__factory,
-} from "../../typechain";
+import { Registrar, Registrar__factory } from "../../typechain";
 
-const registrarAddress = "0x1a178cfd768f74b3308cbca9998c767f4e5b2cf8"; // wilder.beasts.wolf reg?
+const registrarAddress = "0x1A178CFD768F74b3308cbca9998C767F4E5B2CF8"; // "0x1A178CFD768F74b3308cbca9998C767F4E5B2CF8"; // wilder.beasts.wolf reg
 const parentDomainId =
   "0xfdfffccca231538c87645cf3b8eb5169d6945d18e1aeb7e642ed6ee75bfbd2f3";
+// "0xfdfffccca231538c87645cf3b8eb5169d6945d18e1aeb7e642ed6ee75bfbd2f3"; wilder.beasts.wolf
 
-const deployerWallet = "0xadfe719d34736792956ce8dca8a325922812bbbe";
-const minterWallet = "0xadfe719d34736792956ce8dca8a325922812bbbe"; //TODO: Verify
+const deployerWallet = "0xadFe719d34736792956cE8dCa8A325922812BBBE"; //"0xadFe719d34736792956cE8dCa8A325922812BBBE";
+const minterWallet = "0xadFe719d34736792956cE8dCa8A325922812BBBE"; // "0xadFe719d34736792956cE8dCa8A325922812BBBE";
 
-const ipfsFolder = "ipfs://QmNpqMLmyoX886F6AFxCD7wSGgPy4HSoiVwya2SjgM9NTL/";
+const ipfsFolder = "ipfs://QmfWuoR2Cxezerynjjknhmus1qgGdwLRcBLQVFSrdHAwnJ/";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -44,30 +40,29 @@ const main = async () => {
   );
 
   console.log(`Registering bulk`);
-  const startIndex = 0;
-  const endIndex = 3332;
+  const startIndex = 1100;
+  const endIndex = 3333;
   const batchSize = 50;
   const namingOffset = 1;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);
+
+    console.log(`Registering bulk, startIndex=${startIndex} i=${i}`);
     const tx = await instance.registerDomainAndSendBulk(
       parentDomainId,
-      namingOffset,
-      i,
-      batchEnd,
+      namingOffset, // folder /0 becomes /(0 + namingOffset)
+      i, // start of folder /0
+      batchEnd, // end of folder /30 (if amount is 30)
       minterWallet,
       ipfsFolder,
-      0,
+      0, // royalty
       true
     );
-
-    console.log(tx);
 
     console.log(`tx hash: ${tx.hash}`);
     console.log(`Waiting to be confirmed...`);
     const res = await tx.wait();
-    console.log(res);
-    console.log(`finished`);
+    console.log(`used ${res.gasUsed.toString()} gas`);
   }
 };
 

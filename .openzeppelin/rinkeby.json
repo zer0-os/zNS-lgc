@@ -4615,6 +4615,130 @@
           }
         }
       }
+    },
+    "2f1026dd80932df3d817a5ddc2d7ab31a5817a2a91b9f6a6df055f0e585e8335": {
+      "address": "0xF1Acc0cd9c76A86687b6F8D9E3E4DFF46233E2dA",
+      "txHash": "0xe2bda211aca66810299df4c53e77d715bfe06fab52222c42c5c8b595e4036be6",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\oz\\proxy\\Initializable.sol:24"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "contracts\\oz\\proxy\\Initializable.sol:29"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts\\oz\\utils\\ContextUpgradeable.sol:32"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "contracts\\oz\\introspection\\ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts\\oz\\introspection\\ERC165Upgradeable.sol:66"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "contracts\\oz\\access\\OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts\\oz\\access\\OwnableUpgradeable.sol:79"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "authorizedRegistrars",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\registrar\\ZNSHub.sol:57"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "controllers",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\registrar\\ZNSHub.sol:60"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "defaultRegistrar",
+            "type": "t_address",
+            "src": "contracts\\registrar\\ZNSHub.sol:63"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "domainToContract",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts\\registrar\\ZNSHub.sol:66"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "subdomainRegistrars",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts\\registrar\\ZNSHub.sol:69"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "beacon",
+            "type": "t_address",
+            "src": "contracts\\registrar\\ZNSHub.sol:72"
+          },
+          {
+            "contract": "ZNSHub",
+            "label": "test",
+            "type": "t_uint8",
+            "src": "contracts\\registrar\\ZNSHub.sol:74"
+          }
+        ],
+        "types": {
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
     }
   }
 }

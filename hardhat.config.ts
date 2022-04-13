@@ -48,18 +48,18 @@ const config: HardhatUserConfig = {
     hardhat: {
       accounts: [
         {
-          privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
           balance: "10000000000000000000000",
         },
       ],
       forking: {
-        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {
       accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
       url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
-      gasPrice: 170000000000,
+      gasPrice: 55000000000,
     },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },

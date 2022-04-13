@@ -520,6 +520,24 @@ contract Registrar is
     delete (records[tokenId]);
   }
 
+  function adminSetMetadataBulk(
+    string memory folderWithIPFSPrefix,
+    uint256[] memory orderedIds,
+    uint256 ipfsFolderIndexOffset
+  ) external onlyOwner {
+    for (uint256 i = 0; i < orderedIds.length; i++) {
+      _setDomainMetadataUri(
+        orderedIds[i],
+        string(
+          abi.encodePacked(
+            folderWithIPFSPrefix,
+            uint2str(ipfsFolderIndexOffset + i)
+          )
+        )
+      );
+    }
+  }
+
   function adminTransfer(
     address from,
     address to,

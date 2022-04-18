@@ -38,7 +38,7 @@ const main = async () => {
   console.log(`ZNS Registrar beacon is at ${beaconAddress}`);
 
   console.log(`Upgrading root zNS Registrar`);
-  const tx = await hre.upgrades.upgradeProxy(
+  let tx = await hre.upgrades.upgradeProxy(
     registrarAddress,
     new Registrar__factory(deployer),
     {
@@ -47,8 +47,11 @@ const main = async () => {
   );
   console.log(`finished....`);
 
+  console.log("waiting for confirmations");
+  await tx.deployTransaction.wait(3);
+
   console.log(`Upgrading zNS Sub-Registrar Beacon`);
-  await hre.upgrades.upgradeBeacon(
+  tx = await hre.upgrades.upgradeBeacon(
     beaconAddress,
     new Registrar__factory(deployer),
     {

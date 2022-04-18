@@ -346,6 +346,28 @@ contract Registrar is
     _setDomainLock(id, msg.sender, toLock);
   }
 
+  /**
+   * @notice transferFrom but many at a time
+   * @param from Current owner of token
+   * @param to New desired owner of token
+   * @param tokenIds The tokens to ransfer
+   */
+  function transferFromBulk(
+    address from,
+    address to,
+    uint256[] calldata tokenIds
+  ) public {
+    for (uint256 i = 0; i < tokenIds.length; ++i) {
+      uint256 tokenId = tokenIds[i];
+      require(
+        _isApprovedOrOwner(_msgSender(), tokenId),
+        "ERC721: transfer caller is not owner nor approved"
+      );
+
+      _transfer(from, to, tokenId);
+    }
+  }
+
   /*
    * Public View
    */
@@ -518,6 +540,24 @@ contract Registrar is
   function adminBurnToken(uint256 tokenId) external onlyOwner {
     _burn(tokenId);
     delete (records[tokenId]);
+  }
+
+  function adminSetMetadataBulk(
+    string memory folderWithIPFSPrefix,
+    uint256[] memory orderedIds,
+    uint256 ipfsFolderIndexOffset
+  ) external onlyOwner {
+    for (uint256 i = 0; i < orderedIds.length; i++) {
+      _setDomainMetadataUri(
+        orderedIds[i],
+        string(
+          abi.encodePacked(
+            folderWithIPFSPrefix,
+            uint2str(ipfsFolderIndexOffset + i)
+          )
+        )
+      );
+    }
   }
 
   function adminTransfer(

@@ -1,7 +1,7 @@
 import * as hre from "hardhat";
 
-const proxy = "0xf2f1c79E1b2Ed2B14f3bd577248f9780e50c9BEa";
-const beacon = "0x366e9e375b772a6fe1141e5dc02a99da8eafb1d7";
+const proxy = "0x23682326C87D079F73bd88402efD341E07731aE8";
+const beacon = "0x4CD06F23e9Cc5658acCa6D5d681511f3d5616bc9";
 
 const main = async () => {
   await hre.run("verify:verify", {

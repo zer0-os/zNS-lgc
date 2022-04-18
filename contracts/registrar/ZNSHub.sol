@@ -53,6 +53,12 @@ contract ZNSHub is
     address childRegistrar
   );
 
+  event EEFolderGroupUpdatedV1(
+    address parentRegistrar,
+    uint256 folderGroupId,
+    string baseUri
+  );
+
   // Contains all zNS Registrars that are authentic
   mapping(address => bool) public authorizedRegistrars;
 
@@ -203,6 +209,13 @@ contract ZNSHub is
     onlyRegistrar
   {
     emit EERoyaltiesAmountChanged(_msgSender(), id, amount);
+  }
+
+  function folderGroupUpdated(uint256 folderGroupId, string calldata baseUri)
+    external
+    onlyRegistrar
+  {
+    emit EEFolderGroupUpdatedV1(_msgSender(), folderGroupId, baseUri);
   }
 
   function owner()

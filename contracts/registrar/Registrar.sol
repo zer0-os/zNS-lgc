@@ -3,7 +3,7 @@ pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
@@ -25,6 +25,10 @@ contract Registrar is
     uint256 royaltyAmount;
     uint256 parentId;
     address subdomainContract;
+  }
+
+  struct FolderGroup {
+    string baseUri;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -51,6 +55,41 @@ contract Registrar is
   IZNSHub public zNSHub;
   uint8 private test; // ignore
   uint256 private gap; // ignore
+
+  // 0 is the null case
+  mapping(uint256 => FolderGroup) public folderGroups;
+  uint256 public numFolderGroups;
+
+  /**
+   * Creates a new folder group
+   * @param baseUri The entire base uri (include ipfs://.../)
+   */
+  function createFolderGroup(string memory baseUri) public onlyController {
+    folderGroups[numFolderGroups + 1] = FolderGroup({baseUri: baseUri});
+    numFolderGroups++; // increment number of folders
+
+    zNSHub.folderGroupUpdated(numFolderGroups, baseUri);
+  }
+
+  /**
+   * Updates a folder group
+   * @param id The id of the folder group
+   * @param baseUri The entire base uri (include ipfs://.../)
+   */
+  function updateFolderGroup(uint256 id, string memory baseUri)
+    private
+    onlyController
+  {
+    require(id != 0 && id <= numFolderGroups, "Folder group invalid");
+    require(
+      keccak256(abi.encodePacked(folderGroups[id].baseUri)) !=
+        keccak256(abi.encodePacked(baseUri)),
+      "Folder groups are the same"
+    );
+    folderGroups[id].baseUri = baseUri;
+
+    zNSHub.folderGroupUpdated(id, baseUri);
+  }
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
@@ -475,6 +514,35 @@ contract Registrar is
 
     uint256 parentId = records[id].parentId;
     return parentId;
+  }
+
+  function tokenURI(uint256 tokenId)
+    public
+    view
+    virtual
+    override(IERC721MetadataUpgradeable, ERC721Upgradeable)
+    returns (string memory)
+  {
+    require(
+      _exists(tokenId),
+      "ERC721Metadata: URI query for nonexistent token"
+    );
+
+    // string memory _tokenURI = _tokenURIs[tokenId];
+    // string memory base = baseURI();
+
+    // // If there is no base URI, return the token URI.
+    // if (bytes(base).length == 0) {
+    //   return _tokenURI;
+    // }
+    // // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
+    // if (bytes(_tokenURI).length > 0) {
+    //   return string(abi.encodePacked(base, _tokenURI));
+    // }
+    // // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
+    // return string(abi.encodePacked(base, tokenId.toString()));
+
+    return super.tokenURI(tokenId);
   }
 
   /*

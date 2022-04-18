@@ -50,4 +50,7 @@ interface IZNSHub {
 
   // Returns the parent domain of a child domain
   function parentOf(uint256 id) external view returns (uint256);
+
+  function folderGroupUpdated(uint256 folderGroupId, string calldata baseUri)
+    external;
 }

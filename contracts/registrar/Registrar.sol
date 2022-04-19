@@ -122,7 +122,7 @@ contract Registrar is
 
     if (parentRegistrar_ == address(0)) {
       // create the root domain
-      _createDomain(0, 0, msg.sender, address(0));
+      _createDomain(0, 0, msg.sender, address(0), 0, 0);
     } else {
       rootDomainId = rootDomainId_;
       parentRegistrar = parentRegistrar_;
@@ -289,6 +289,29 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked
   ) internal returns (uint256) {
+    return
+      _registerDomainV2(
+        parentId,
+        label,
+        minter,
+        metadataUri,
+        royaltyAmount,
+        locked,
+        0,
+        0
+      );
+  }
+
+  function _registerDomainV2(
+    uint256 parentId,
+    string memory label,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    uint256 groupId, // 0 is null
+    uint256 groupFileIndex // ignored if groupId is 0
+  ) internal returns (uint256) {
     require(bytes(label).length > 0, "ZR: Empty name");
     // subdomain cannot be minted on domains which are subdomain contracts
     require(
@@ -302,15 +325,21 @@ contract Registrar is
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(label)));
-    address controller = msg.sender;
 
     // Calculate the new domain's id and create it
     uint256 domainId = uint256(
       keccak256(abi.encodePacked(parentId, labelHash))
     );
-    _createDomain(parentId, domainId, minter, controller);
-    _setTokenURI(domainId, metadataUri);
 
+    // Create not inside of a domain group
+    _createDomain(
+      parentId,
+      domainId,
+      minter,
+      msg.sender,
+      groupId,
+      groupFileIndex
+    );
     if (locked) {
       records[domainId].metadataLockedBy = minter;
       records[domainId].metadataLocked = true;
@@ -320,15 +349,22 @@ contract Registrar is
       records[domainId].royaltyAmount = royaltyAmount;
     }
 
+    // No domain group was defined
+    if (groupId == 0) {
+      _setTokenURI(domainId, metadataUri);
+    }
+
     zNSHub.domainCreated(
       domainId,
       label,
       labelHash,
       parentId,
       minter,
-      controller,
+      msg.sender,
       metadataUri,
-      royaltyAmount
+      royaltyAmount,
+      groupId,
+      groupFileIndex
     );
 
     return domainId;
@@ -582,7 +618,9 @@ contract Registrar is
     uint256 parentId,
     uint256 domainId,
     address minter,
-    address controller
+    address controller,
+    uint256 domainGroupId,
+    uint256 domainGroupFileIndex
   ) internal {
     // Create the NFT and register the domain data
     _mint(minter, domainId);
@@ -594,8 +632,8 @@ contract Registrar is
       controller: controller,
       royaltyAmount: 0,
       subdomainContract: address(0),
-      domainGroup: 0,
-      domainGroupFileIndex: 0
+      domainGroup: domainGroupId,
+      domainGroupFileIndex: domainGroupFileIndex
     });
   }
 
@@ -698,6 +736,31 @@ contract Registrar is
         string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
         royaltyAmount,
         locked
+      );
+    }
+  }
+
+  function registerDomainInGroupBulk(
+    uint256 parentId,
+    uint256 groupId,
+    uint256 namingOffset,
+    uint256 startingIndex,
+    uint256 endingIndex,
+    address minter,
+    uint256 royaltyAmount,
+    bool locked
+  ) external onlyController {
+    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+    for (uint256 i = startingIndex; i < endingIndex; i++) {
+      _registerDomainV2(
+        parentId,
+        uint2str(i + namingOffset),
+        minter,
+        "",
+        royaltyAmount,
+        locked,
+        groupId,
+        i
       );
     }
   }

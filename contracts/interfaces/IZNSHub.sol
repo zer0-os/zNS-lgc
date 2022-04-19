@@ -35,7 +35,9 @@ interface IZNSHub {
     address minter,
     address controller,
     string calldata metadataUri,
-    uint256 royaltyAmount
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
   ) external;
 
   function metadataLockChanged(

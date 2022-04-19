@@ -39,6 +39,7 @@ const main = async () => {
   );
   console.log(tx2.hash);
   tx.wait();
+
   console.log("All done!");
 };
 

@@ -532,19 +532,18 @@ contract Registrar is
       "ERC721Metadata: URI query for nonexistent token"
     );
 
-    // string memory _tokenURI = _tokenURIs[tokenId];
-    // string memory base = baseURI();
+    DomainRecord memory domain = records[tokenId];
 
-    // // If there is no base URI, return the token URI.
-    // if (bytes(base).length == 0) {
-    //   return _tokenURI;
-    // }
-    // // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-    // if (bytes(_tokenURI).length > 0) {
-    //   return string(abi.encodePacked(base, _tokenURI));
-    // }
-    // // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
-    // return string(abi.encodePacked(base, tokenId.toString()));
+    if (domain.domainGroup != 0) {
+      // figure out uri based on domain group
+      return
+        string(
+          abi.encodePacked(
+            domainGroups[domain.domainGroup].baseUri,
+            uint2str(domain.domainGroupFileIndex)
+          )
+        );
+    }
 
     return super.tokenURI(tokenId);
   }
@@ -594,7 +593,9 @@ contract Registrar is
       metadataLockedBy: address(0),
       controller: controller,
       royaltyAmount: 0,
-      subdomainContract: address(0)
+      subdomainContract: address(0),
+      domainGroup: 0,
+      domainGroupFileIndex: 0
     });
   }
 

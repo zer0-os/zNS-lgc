@@ -53,7 +53,7 @@ contract ZNSHub is
     address childRegistrar
   );
 
-  event EEFolderGroupUpdatedV1(
+  event EEDomainGroupUpdatedV1(
     address parentRegistrar,
     uint256 folderGroupId,
     string baseUri
@@ -215,7 +215,7 @@ contract ZNSHub is
     external
     onlyRegistrar
   {
-    emit EEFolderGroupUpdatedV1(_msgSender(), folderGroupId, baseUri);
+    emit EEDomainGroupUpdatedV1(_msgSender(), folderGroupId, baseUri);
   }
 
   function owner()

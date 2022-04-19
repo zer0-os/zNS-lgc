@@ -25,9 +25,13 @@ contract Registrar is
     uint256 royaltyAmount;
     uint256 parentId;
     address subdomainContract;
+    // This is the folder group the domain belongs to
+    uint256 domainGroup;
+    // This is the index in that group (/0, /1, /2, /3)
+    uint256 domainGroupFileIndex;
   }
 
-  struct FolderGroup {
+  struct DomainGroup {
     string baseUri;
   }
 
@@ -57,18 +61,18 @@ contract Registrar is
   uint256 private gap; // ignore
 
   // 0 is the null case
-  mapping(uint256 => FolderGroup) public folderGroups;
-  uint256 public numFolderGroups;
+  mapping(uint256 => DomainGroup) public domainGroups;
+  uint256 public numDomainGroups;
 
   /**
    * Creates a new folder group
    * @param baseUri The entire base uri (include ipfs://.../)
    */
-  function createFolderGroup(string memory baseUri) public onlyController {
-    folderGroups[numFolderGroups + 1] = FolderGroup({baseUri: baseUri});
-    numFolderGroups++; // increment number of folders
+  function createDomainGroup(string memory baseUri) public onlyController {
+    domainGroups[numDomainGroups + 1] = DomainGroup({baseUri: baseUri});
+    numDomainGroups++; // increment number of folders
 
-    zNSHub.folderGroupUpdated(numFolderGroups, baseUri);
+    zNSHub.domainGroupUpdated(numDomainGroups, baseUri);
   }
 
   /**
@@ -76,19 +80,19 @@ contract Registrar is
    * @param id The id of the folder group
    * @param baseUri The entire base uri (include ipfs://.../)
    */
-  function updateFolderGroup(uint256 id, string memory baseUri)
+  function updateDomainGroup(uint256 id, string memory baseUri)
     private
     onlyController
   {
-    require(id != 0 && id <= numFolderGroups, "Folder group invalid");
+    require(id != 0 && id <= numDomainGroups, "Folder group invalid");
     require(
-      keccak256(abi.encodePacked(folderGroups[id].baseUri)) !=
+      keccak256(abi.encodePacked(domainGroups[id].baseUri)) !=
         keccak256(abi.encodePacked(baseUri)),
       "Folder groups are the same"
     );
-    folderGroups[id].baseUri = baseUri;
+    domainGroups[id].baseUri = baseUri;
 
-    zNSHub.folderGroupUpdated(id, baseUri);
+    zNSHub.domainGroupUpdated(id, baseUri);
   }
 
   function _getAdmin() internal view returns (address) {

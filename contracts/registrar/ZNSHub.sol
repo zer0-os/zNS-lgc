@@ -32,6 +32,20 @@ contract ZNSHub is
     uint256 royaltyAmount
   );
 
+  event EEDomainCreatedV3(
+    address registrar,
+    uint256 indexed id,
+    string label,
+    uint256 indexed labelHash,
+    uint256 indexed parent,
+    address minter,
+    address controller,
+    string metadataUri,
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
+  );
+
   event EEMetadataLockChanged(
     address registrar,
     uint256 indexed id,
@@ -173,9 +187,11 @@ contract ZNSHub is
     address minter,
     address controller,
     string calldata metadataUri,
-    uint256 royaltyAmount
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
   ) external onlyRegistrar {
-    emit EEDomainCreatedV2(
+    emit EEDomainCreatedV3(
       _msgSender(),
       id,
       label,
@@ -184,7 +200,9 @@ contract ZNSHub is
       minter,
       controller,
       metadataUri,
-      royaltyAmount
+      royaltyAmount,
+      groupId,
+      groupFileIndex
     );
     domainToContract[id] = _msgSender();
   }

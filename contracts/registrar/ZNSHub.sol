@@ -211,7 +211,7 @@ contract ZNSHub is
     emit EERoyaltiesAmountChanged(_msgSender(), id, amount);
   }
 
-  function folderGroupUpdated(uint256 folderGroupId, string calldata baseUri)
+  function domainGroupUpdated(uint256 folderGroupId, string calldata baseUri)
     external
     onlyRegistrar
   {

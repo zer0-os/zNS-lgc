@@ -560,6 +560,32 @@ contract Registrar is
     }
   }
 
+  /**
+   * Sets metadata via IPFS folder in a bulk fashion via token index (not token ID)
+   * @param folderWithIPFSPrefix the IPFS Folder (ie: "ipfs://QmABCDEFG/")
+   * @param tokenIndexStart The token index starting point
+   * @param ipfsFolderIndexStart The IPFS folder index starting point
+   * @param count The number of tokens to modify [start index -> start index + count]
+   */
+  function adminSetMetadataBulkByIndex(
+    string memory folderWithIPFSPrefix,
+    uint256 tokenIndexStart,
+    uint256 ipfsFolderIndexStart,
+    uint256 count
+  ) external onlyOwner {
+    for (uint256 i = 0; i < count; i++) {
+      _setDomainMetadataUri(
+        tokenByIndex(tokenIndexStart + i),
+        string(
+          abi.encodePacked(
+            folderWithIPFSPrefix,
+            uint2str(ipfsFolderIndexStart + i)
+          )
+        )
+      );
+    }
+  }
+
   function adminTransfer(
     address from,
     address to,

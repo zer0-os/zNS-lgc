@@ -81,7 +81,7 @@ contract Registrar is
    * @param baseUri The entire base uri (include ipfs://.../)
    */
   function updateDomainGroup(uint256 id, string memory baseUri)
-    private
+    external
     onlyController
   {
     require(id != 0 && id <= numDomainGroups, "Folder group invalid");
@@ -327,8 +327,11 @@ contract Registrar is
     uint256 labelHash = uint256(keccak256(bytes(label)));
 
     // Calculate the new domain's id and create it
+    // We must include a domain's group ID to avoid
+    // this hash creating conflicts with other domains
+    // at the same index in a different group.
     uint256 domainId = uint256(
-      keccak256(abi.encodePacked(parentId, labelHash))
+      keccak256(abi.encodePacked(parentId, labelHash, groupId))
     );
 
     // Create not inside of a domain group

@@ -89,6 +89,10 @@ contract ZNSHub is
     beacon = registrarBeacon_;
   }
 
+  function setDefaultRegistrar(address defaultRegistrar_) public onlyOwner {
+    defaultRegistrar = defaultRegistrar_;
+  }
+
   function registrarBeacon() external view returns (address) {
     return beacon;
   }

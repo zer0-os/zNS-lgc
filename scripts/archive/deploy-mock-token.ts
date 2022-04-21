@@ -28,7 +28,7 @@ async function main() {
 
   const instance = await upgrades.deployProxy(
     factory,
-    ["Mock zDAO Voting Token", "mzVOTE"],
+    ["Mock WILD/ETH LP", "mLP"],
     {
       initializer: "initialize",
     }

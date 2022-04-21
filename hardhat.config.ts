@@ -73,6 +73,10 @@ const config: HardhatUserConfig = {
       accounts: [`0x${process.env.TESTNET_PRIVATE_KEY}`],
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
+    goerli: {
+      accounts: [`0x${process.env.TESTNET_PRIVATE_KEY}`],
+      url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+    },
     localhost: {
       gas: "auto",
       gasPrice: "auto",

@@ -48,9 +48,13 @@ const config: HardhatUserConfig = {
     hardhat: {
       accounts: [
         {
-          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+          privateKey: `0x${process.env.ASTRO_PRIVATE_KEY}`,
           balance: "10000000000000000000000",
         },
+        {
+          privateKey: `0x${process.env.MAIN_PRIVATE_KEY}`,
+          balance: "10000000000000000000000"
+        }
       ],
       forking: {
         url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",

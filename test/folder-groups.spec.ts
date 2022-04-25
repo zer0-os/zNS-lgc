@@ -1,15 +1,18 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
+import chai from "chai";
+import { solidity } from "ethereum-waffle";
+import { BigNumber } from "ethers";
+import * as smock from "@defi-wonderland/smock";
+
 import {
   Registrar,
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
 } from "../typechain";
-import chai from "chai";
-import { solidity } from "ethereum-waffle";
-import { BigNumber } from "ethers";
-import * as smock from "@defi-wonderland/smock";
+
+import { domainNameToId } from "./helpers";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -123,25 +126,19 @@ describe("Folder groups functionality", () => {
     // There are 2 logs for every domain created
     expect(receipt.logs.length === 6)
   });
-  it("Gets a baseUri from a domain group", async () => {
-    const updatedUri = "QmTfoSpX2JjLJrccCkAQ6Doh4Pwd47HxwKfSXmhW5j9ojM";
+  it("Updates a uri and confirm that a domain in that group is updated as well", async () => {
+    // Id of 0://1
+    const domainId = domainNameToId("1");
+    let tokenUri = await registry.tokenURI(domainId);
 
-    const domainUri = await registry.domainGroups("1")
-    expect(domainUri === updatedUri);
+    const uri = "QmTfoSpX2JjLJrccCkAQ6Doh4Pwd47HxwKfSXmhW5j9ojM";
+    expect(tokenUri === uri);
 
-    // Root, 3 in group 1, and 2 in group 2
-    const supply = await (await registry.totalSupply()).toNumber();
-    expect(supply === 6)
+    const updatedUri = "QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN";
+    const asController: Registrar = registry.connect(controller);
+    await asController.updateDomainGroup("1", updatedUri)
 
-    for (let i = 0; i < supply; i++) {
-      const domainId = await registry.tokenByIndex(i);
-      const domain = await registry.records(domainId);
-      console.log(
-        `domainId: ${domainId.toString()}
-        \nparentId: ${domain.parentId.toString()}
-        \ndomainGroup: ${domain.domainGroup.toString()}
-        \ngroupIndex ${domain.domainGroupFileIndex.toString()}\n`
-      );
-    }
+    tokenUri = await registry.tokenURI(domainId);
+    expect(tokenUri = updatedUri);
   });
 });

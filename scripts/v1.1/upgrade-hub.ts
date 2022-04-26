@@ -2,7 +2,9 @@ import * as hre from "hardhat";
 import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 
 // mainnet Hub
-const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
+//const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
+// rinkeby hub
+const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -17,9 +19,7 @@ const main = async () => {
 
   console.log("verifying");
   hre.run("verify:verify", {
-    address: await hre.upgrades.erc1967.getImplementationAddress(
-      "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca"
-    ),
+    address: await hre.upgrades.erc1967.getImplementationAddress(hubAddress),
   });
 };
 

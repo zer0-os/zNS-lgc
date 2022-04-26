@@ -38,18 +38,18 @@ const main = async () => {
   console.log(`ZNS Registrar beacon is at ${beaconAddress}`);
 
   console.log(`Upgrading zNS Hub`);
-  await hre.upgrades.upgradeProxy(hubAddress, new ZNSHub__factory(deployer), {
-    timeout: 0,
-  });
+  await hre.upgrades.upgradeProxy(
+    hubAddress,
+    new ZNSHub__factory(deployer),
+    {}
+  );
   console.log(`finished....`);
 
   console.log(`Upgrading root zNS Registrar`);
   const tx = await hre.upgrades.upgradeProxy(
     registrarAddress,
     new Registrar__factory(deployer),
-    {
-      timeout: 0,
-    }
+    {}
   );
   console.log(`finished....`);
 

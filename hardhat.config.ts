@@ -53,7 +53,7 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {
@@ -69,7 +69,7 @@ const config: HardhatUserConfig = {
     },
     ropsten: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },
-      url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
+      url: "https://ropsten.infura.io/v3/0e6434f252a949719227b5d68caa2657",
     },
     rinkeby: {
       accounts: process.env.TESTNET_PRIVATE_KEY

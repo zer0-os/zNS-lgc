@@ -599,6 +599,7 @@ contract Registrar is
   }
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
+    require(records[id].domainGroup == 0, "Must update via domain group");
     _setTokenURI(id, uri);
     zNSHub.metadataChanged(id, uri);
   }
@@ -748,20 +749,25 @@ contract Registrar is
     uint256 endingIndex,
     address minter,
     uint256 royaltyAmount,
-    bool locked
+    address sendTo
   ) external onlyController {
     require(endingIndex - startingIndex > 0, "Invalid number of domains");
+    uint256 tokenId;
     for (uint256 i = startingIndex; i < endingIndex; i++) {
-      _registerDomainV2(
+      tokenId = _registerDomainV2(
         parentId,
         uint2str(i + namingOffset),
         minter,
         "",
         royaltyAmount,
-        locked,
+        true, // always locked
         groupId,
         i
       );
+
+      if (sendTo != minter) {
+        _transfer(minter, sendTo, tokenId);
+      }
     }
   }
 

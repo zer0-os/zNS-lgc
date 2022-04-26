@@ -71,6 +71,17 @@ interface IRegistrar is
     address sendToUser
   ) external returns (uint256);
 
+  function registerDomainInGroupBulk(
+    uint256 parentId,
+    uint256 groupId,
+    uint256 namingOffset,
+    uint256 startingIndex,
+    uint256 endingIndex,
+    address minter,
+    uint256 royaltyAmount,
+    address sendTo
+  ) external;
+
   // Set a domains metadata uri and lock that domain from being modified
   function setAndLockDomainMetadata(uint256 id, string memory uri) external;
 

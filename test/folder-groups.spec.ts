@@ -60,7 +60,7 @@ describe("Folder groups functionality", () => {
   it("runs", async () => {
     // Should be 0
     const numDomainGroups = await registry.numDomainGroups();
-    expect(numDomainGroups.eq("0"))
+    expect(numDomainGroups).to.eq(0);
   });
   it("create domain groups", async () => {
     await registry.addController(controller.address);
@@ -68,38 +68,38 @@ describe("Folder groups functionality", () => {
     const asController = registry.connect(controller);
 
     // Test folders
-    const uri1 = "QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN";
-    const uri2 = "QmRrp9Hichv1jV1SxkSx8pqnhKhjHMpPZFKmtKi8C8pALQ";
+    const uri1 = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
+    const uri2 = "ipfs://QmRrp9Hichv1jV1SxkSx8pqnhKhjHMpPZFKmtKi8C8pALQ/";
     await asController.createDomainGroup(uri1);
     await asController.createDomainGroup(uri2);
 
     const numDomainGroups = await registry.numDomainGroups();
-    expect(numDomainGroups.eq("2"));
+    expect(numDomainGroups).to.eq(2);
   });
   it("updates an existing domain group", async () => {
     const asController: Registrar = registry.connect(controller);
 
     // Test groups
-    const uri = "QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN";
-    const uri2 = "QmRrp9Hichv1jV1SxkSx8pqnhKhjHMpPZFKmtKi8C8pALQ";
+    const uri = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
+    const uri2 = "ipfs://QmRrp9Hichv1jV1SxkSx8pqnhKhjHMpPZFKmtKi8C8pALQ/";
 
     let retrievedUri1 = await asController.domainGroups("1");
-    expect(retrievedUri1 === uri);
+    expect(retrievedUri1).to.eq(uri);
 
     const retrievedUri2 = await asController.domainGroups("2");
-    expect(retrievedUri2 === uri2);
+    expect(retrievedUri2).to.eq(uri2);
 
-    const updatedUri = "QmTfoSpX2JjLJrccCkAQ6Doh4Pwd47HxwKfSXmhW5j9ojM";
+    const updatedUri = "ipfs://QmTfoSpX2JjLJrccCkAQ6Doh4Pwd47HxwKfSXmhW5j9ojM/";
     await asController.updateDomainGroup("1", updatedUri);
 
     retrievedUri1 = await asController.domainGroups("1");
-    expect(retrievedUri1 === updatedUri);
+    expect(retrievedUri1).to.eq(updatedUri);
   });
   it("registers domains in a domain group", async () => {
     const asController = registry.connect(controller);
-    const controllerAddress = await controller.getAddress()
+    const controllerAddress = await controller.getAddress();
 
-    let params = {
+    const params = {
       parentId: "0",
       groupId: "1",
       namingOffset: "0",
@@ -107,11 +107,11 @@ describe("Folder groups functionality", () => {
       endingIndex: "3",
       minter: controllerAddress,
       royaltyAmount: "0",
-      locked: false
-    }
+      locked: false,
+    };
 
     // Create 0://0, 0://1, 0://2
-    const tx = await asController.registerDomainInGroupBulk(
+    await asController.registerDomainInGroupBulk(
       params.parentId,
       params.groupId,
       params.namingOffset,
@@ -121,24 +121,35 @@ describe("Folder groups functionality", () => {
       params.royaltyAmount,
       params.locked
     );
-    const receipt = await tx.wait();
 
-    // There are 2 logs for every domain created
-    expect(receipt.logs.length === 6)
+    expect(await asController.domainExists(domainNameToId("0"))).to.be.true;
+    expect(await asController.domainExists(domainNameToId("1"))).to.be.true;
+    expect(await asController.domainExists(domainNameToId("2"))).to.be.true;
   });
+
+  it("has the proper token uri", async () => {
+    const domainId = domainNameToId("1");
+    // current token uri
+    const tokenUri = await registry.tokenURI(domainId);
+    // token record
+    const record = await registry.records(domainId);
+    // group that the token is in
+    const domainGroup = await registry.domainGroups(record.domainGroup);
+
+    const uri = `${domainGroup}${record.domainGroupFileIndex}`;
+    expect(tokenUri).to.eq(uri);
+  });
+
   it("Updates a uri and confirm that a domain in that group is updated as well", async () => {
     // Id of 0://1
     const domainId = domainNameToId("1");
-    let tokenUri = await registry.tokenURI(domainId);
+    const record = await registry.records(domainId);
 
-    const uri = "QmTfoSpX2JjLJrccCkAQ6Doh4Pwd47HxwKfSXmhW5j9ojM";
-    expect(tokenUri === uri);
-
-    const updatedUri = "QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN";
+    const updatedUri = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
     const asController: Registrar = registry.connect(controller);
-    await asController.updateDomainGroup("1", updatedUri)
+    await asController.updateDomainGroup(1, updatedUri);
 
-    tokenUri = await registry.tokenURI(domainId);
-    expect(tokenUri = updatedUri);
+    const tokenUri = await registry.tokenURI(domainId);
+    expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
 });

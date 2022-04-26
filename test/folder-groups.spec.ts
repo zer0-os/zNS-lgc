@@ -108,7 +108,6 @@ describe("Folder groups functionality", () => {
       endingIndex: "3",
       minter: controllerAddress,
       royaltyAmount: "0",
-      locked: false,
     };
 
     // Create 0://0, 0://1, 0://2
@@ -120,7 +119,7 @@ describe("Folder groups functionality", () => {
       params.endingIndex,
       params.minter,
       params.royaltyAmount,
-      params.locked
+      creator.address
     );
 
     expect(await asController.domainExists(domainNameToId("0"))).to.be.true;

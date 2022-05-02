@@ -55,18 +55,20 @@ contract SubdomainController is
     uint256 parentId,
     string memory label,
     address owner,
-    string memory metadata
+    string memory metadata,
+    string memory tokenName,
+    string memory tokenSymbol
   ) external authorized(registrar, parentId) returns (uint256) {
-    address minter = _msgSender();
-
     uint256 id = IRegistrar(registrar).registerSubdomainContract(
       parentId,
       label,
-      minter,
+      _msgSender(),
       metadata,
       0,
       true,
-      owner
+      owner,
+      tokenName,
+      tokenSymbol
     );
 
     return id;

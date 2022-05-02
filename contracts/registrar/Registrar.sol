@@ -201,7 +201,9 @@ contract Registrar is
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked,
-    address sendToUser
+    address sendToUser,
+    string memory newTokenName,
+    string memory newTokenSymbol
   ) external onlyController returns (uint256) {
     // Register domain, `minter` is the minter
     uint256 id = _registerDomain(
@@ -222,8 +224,8 @@ contract Registrar is
     Registrar(subdomainContract).initialize(
       address(this),
       id,
-      "Zer0 Name Service",
-      "ZNS",
+      newTokenName,
+      newTokenSymbol,
       address(zNSHub)
     );
 

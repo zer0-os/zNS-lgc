@@ -68,7 +68,9 @@ interface IRegistrar is
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked,
-    address sendToUser
+    address sendToUser,
+    string memory tokenName,
+    string memory tokenSymbol
   ) external returns (uint256);
 
   // Set a domains metadata uri and lock that domain from being modified

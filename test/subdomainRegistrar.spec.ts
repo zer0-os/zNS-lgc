@@ -23,6 +23,8 @@ describe("Subdomain Registrar Functionality", () => {
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
+  let tokenName = "tokenName";
+  let symbol = "SMBL";
   const rootDomainId = BigNumber.from(0);
 
   const createSubdomainContract = async (
@@ -38,7 +40,9 @@ describe("Subdomain Registrar Functionality", () => {
       "metadata",
       0,
       true,
-      minter.address
+      minter.address,
+      tokenName,
+      symbol
     );
     const event = await getEvent(
       tx,
@@ -68,8 +72,8 @@ describe("Subdomain Registrar Functionality", () => {
     await registry.initialize(
       ethers.constants.AddressZero,
       ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
+      tokenName,
+      symbol,
       hub.address
     );
 
@@ -100,7 +104,9 @@ describe("Subdomain Registrar Functionality", () => {
         "somemetadata",
         0,
         true,
-        creator.address
+        creator.address,
+        tokenName,
+        symbol
       );
 
       expect(tx).to.emit(hub, "EENewSubdomainRegistrar");

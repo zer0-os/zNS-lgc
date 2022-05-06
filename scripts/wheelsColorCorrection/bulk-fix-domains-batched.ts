@@ -56,12 +56,16 @@ const main = async () => {
     const trimmedBatchSize = Math.min(batchSize, endIndex - i);
     const batch = newColoredIDs.ids.slice(i, i + trimmedBatchSize);
 
-    console.log(
-      `Updating bulk, startIndex=${startIndex} i=${i} trimmedBatchSize=${trimmedBatchSize}, batchLength=${batch.length}`
-    );
-    console.log(batch);
+    // console.log(
+    //   `Updating bulk, startIndex=${startIndex} i=${i} trimmedBatchSize=${trimmedBatchSize}, batchLength=${batch.length}`
+    // );
+    // console.log(batch);
 
-    // const tx = await instance.adminSetMetadataBulk(ipfsFolder, batch, i);
+    const tx = await instance.estimateGas.adminSetMetadataBulk(
+      ipfsFolder,
+      batch,
+      i
+    );
 
     // console.log(`tx hash: ${tx.hash}`);
     // console.log(`Waiting to be confirmed...`);

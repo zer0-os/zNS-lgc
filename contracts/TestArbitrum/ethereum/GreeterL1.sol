@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.7.3;
 
-import "../shared-dependencies/Inbox.sol";
-import "../shared-dependencies/Outbox.sol";
+import "../shared/Inbox.sol";
+import "../shared/Outbox.sol";
 import "../Greeter.sol";
 
 contract GreeterL1 is Greeter {
@@ -11,17 +11,55 @@ contract GreeterL1 is Greeter {
 
   event RetryableTicketCreated(uint256 indexed ticketId);
 
-  function __GreeterL1_init(
-    string calldata _greeting,
+  constructor(
+    string memory _greeting,
     address _l2Target,
     address _inbox
-  ) public initializer {
+  ) public {
     __Greeter_init(_greeting);
     l2Target = _l2Target;
     inbox = IInbox(_inbox);
   }
 
-  function setL2Target(address _l2Target) public onlyOwner {
+  function updateL2Target(address _l2Target) public {
     l2Target = _l2Target;
+  }
+
+  function setGreetingInL2(
+    string memory _greeting,
+    uint256 maxSubmissionCost,
+    uint256 maxGas,
+    uint256 gasPriceBid
+  ) public payable returns (uint256) {
+    bytes memory data = abi.encodeWithSelector(
+      Greeter.setGreeting.selector,
+      _greeting
+    );
+
+    uint256 ticketID = inbox.createRetryableTicket{value: msg.value}(
+      l2Target,
+      0,
+      maxSubmissionCost,
+      msg.sender,
+      msg.sender,
+      maxGas,
+      gasPriceBid,
+      data
+    );
+
+    emit RetryableTicketCreated(ticketID);
+    return ticketID;
+  }
+
+  /// @notice only l2Target can update greeting
+  function setGreeting(string memory _greeting) public override {
+    IBridge bridge = inbox.bridge();
+    // this prevents reentrancies on L2 to L1 txs
+    require(msg.sender == address(bridge), "NOT_BRIDGE");
+    IOutbox outbox = IOutbox(bridge.activeOutbox());
+    address l2Sender = outbox.l2ToL1Sender();
+    require(l2Sender == l2Target, "Greeting only updateable by L2");
+
+    Greeter.setGreeting(_greeting);
   }
 }

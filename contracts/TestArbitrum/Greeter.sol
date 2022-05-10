@@ -12,11 +12,11 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 contract Greeter is OwnableUpgradeable {
   string greeting;
 
-  function __Greeter_init(string calldata _greeting) public initializer {
+  function __Greeter_init(string memory _greeting) public initializer {
     greeting = _greeting;
   }
 
-  function setGreeeting(string calldata _greeting) public onlyOwner {
+  function setGreeting(string memory _greeting) public virtual onlyOwner {
     greeting = _greeting;
   }
 }

@@ -61,16 +61,12 @@ const main = async () => {
     // );
     // console.log(batch);
 
-    const tx = await instance.estimateGas.adminSetMetadataBulk(
-      ipfsFolder,
-      batch,
-      i
-    );
+    const tx = await instance.adminSetMetadataBulk(ipfsFolder, batch, i);
 
-    // console.log(`tx hash: ${tx.hash}`);
-    // console.log(`Waiting to be confirmed...`);
-    // const res = await tx.wait();
-    // console.log(`used ${res.gasUsed.toString()} gas`);
+    console.log(`tx hash: ${tx.hash}`);
+    console.log(`Waiting to be confirmed...`);
+    const res = await tx.wait();
+    console.log(`used ${res.gasUsed.toString()} gas`);
   }
 };
 

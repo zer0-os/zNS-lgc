@@ -271,9 +271,19 @@ contract DomainPurchaser is
    */
   function setPlatformFee(uint256 fee) external onlyOwner {
     require(platformFee != fee, "DP: Same fee");
-    require(fee < divisonBasisPlatformFee, "DP: Fee beyond 100%");
+    require(fee <= divisonBasisPlatformFee, "DP: Fee beyond 100%");
 
     platformFee = fee;
+  }
+
+  /**
+   * Allows for the platform wallet to be set by the owner
+   * @param wallet The new platform wallet
+   */
+  function setPlatformWallet(address wallet) external onlyOwner {
+    require(wallet != platformWallet, "DP: Same Wallet");
+
+    platformWallet = wallet;
   }
 
   /* --------- Internal + Private ------------ */

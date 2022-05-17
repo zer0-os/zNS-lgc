@@ -109,7 +109,9 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      await purchaser.connect(user1).purchaseSubdomain(0, "👻👻👻", "ipfs://Qm1");
+      await purchaser
+        .connect(user1)
+        .purchaseSubdomain(0, "👻👻👻", "ipfs://Qm1");
 
       expect(erc20Token.transferFrom).to.have.been.calledWith(
         user1.address,
@@ -125,7 +127,9 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      await purchaser.connect(user1).purchaseSubdomain(0, "黄埔炒蛋", "ipfs://Qm1");
+      await purchaser
+        .connect(user1)
+        .purchaseSubdomain(0, "黄埔炒蛋", "ipfs://Qm1");
 
       expect(erc20Token.transferFrom).to.have.been.calledWith(
         user1.address,
@@ -161,7 +165,11 @@ describe("DomainPurchaser", () => {
 
       const tx = purchaser
         .connect(user1)
-        .purchaseSubdomain(0, "THISNAMEISREALLYLONGONETWOTHREE!!", "ipfs://Qm1");
+        .purchaseSubdomain(
+          0,
+          "THISNAMEISREALLYLONGONETWOTHREE!!",
+          "ipfs://Qm1"
+        );
 
       await expect(tx).to.be.revertedWith("DP: Name too long");
     });
@@ -173,9 +181,73 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      const tx = purchaser.connect(user1).purchaseSubdomain(0, "", "ipfs://Qm1");
+      const tx = purchaser
+        .connect(user1)
+        .purchaseSubdomain(0, "", "ipfs://Qm1");
 
       await expect(tx).to.be.revertedWith("DP: Empty string");
+    });
+  });
+
+  describe("utility", () => {
+    before(async () => {
+      hub = await smock.smock.fake(ZNSHub__factory);
+      registrar = await smock.smock.fake(Registrar__factory);
+      erc20Token = await smock.smock.fake(ERC20Upgradeable__factory);
+
+      const factory = new DomainPurchaser__factory(creator);
+      purchaser = await factory.deploy();
+      await purchaser.initialize(
+        erc20Token.address,
+        hub.address,
+        creator.address,
+        pricingData,
+        0
+      );
+    });
+
+    it("allows the owner to set the platform fee", async () => {
+      await purchaser.setPlatformFee(100);
+      expect(await purchaser.platformFee()).to.eq(100);
+    });
+
+    it("prevents the owner to set the platform fee beyond 100%", async () => {
+      const tx = purchaser.setPlatformFee(1001);
+      await expect(tx).to.be.revertedWith("DP: Fee beyond 100%");
+    });
+
+    it("allows the owner to set the platform wallet", async () => {
+      await purchaser.setPlatformWallet(user1.address);
+      expect(await purchaser.platformWallet()).to.eq(user1.address);
+    });
+
+    it("allows an authorized user to set domain minting status", async () => {
+      hub.ownerOf.whenCalledWith(BigNumber.from(1)).returns(user1.address);
+      await purchaser.connect(user1).setDomainMintingStatus(1, true, true);
+      const record = await purchaser.purchaseData(1);
+      expect(record.subdomainMintingEnabled).to.be.true;
+      expect(record.allowSubdomainsToMint).to.be.true;
+    });
+
+    it("allows an authorized user to set domain minting pricing", async () => {
+      hub.ownerOf.whenCalledWith(2).returns(user1.address);
+      await purchaser.connect(user1).setDomainPricing(
+        2,
+        {
+          short: 100,
+          medium: 10,
+          long: 20,
+        },
+        true,
+        false
+      );
+
+      const record = await purchaser.purchaseData(2);
+      expect(record.subdomainMintingEnabled).to.be.true;
+      expect(record.allowSubdomainsToMint).to.be.false;
+      expect(record.prices.short).to.eq(100);
+      expect(record.prices.medium).to.eq(10);
+      expect(record.prices.long).to.eq(20);
     });
   });
 });

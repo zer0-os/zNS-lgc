@@ -19,9 +19,9 @@ const main = async () => {
   const hub = addresses.hub;
   const platformWallet = addresses.deployer;
   const prices = {
-    short: ethers.utils.parseEther("100"),
-    medium: ethers.utils.parseEther("100"),
-    long: ethers.utils.parseEther("100"),
+    short: ethers.utils.parseEther("250000"), // ~$10,000 USD (@ $0.04 per ZERO)
+    medium: ethers.utils.parseEther("125000"), // ~$5,000 USD (@ $0.04 per ZERO)
+    long: ethers.utils.parseEther("2500"), // ~$100 USD (@ $0.04 per ZERO)
   };
   // 1000 = 100%, 10 = 1%
   const platformFee = "50"; // 5%

@@ -1,5 +1,7 @@
 import logdown from "logdown";
 import * as fs from "fs";
+import * as hre from "hardhat";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 export const deploymentsFolder = "./deployments";
 
@@ -65,4 +67,22 @@ export const getWord = (index: number): string => {
   const words = fetchWords();
   const chosenWord = words[index % words.length];
   return chosenWord;
+};
+
+export const impersonateAccount = async (
+  address: string
+): Promise<SignerWithAddress> => {
+  await hre.network.provider.request({
+    method: "hardhat_impersonateAccount",
+    params: [address],
+  });
+
+  await hre.network.provider.send("hardhat_setBalance", [
+    address,
+    "0x56BC75E2D63100000", // some big number
+  ]);
+
+  const account = await hre.ethers.getSigner(address);
+
+  return account;
 };

@@ -58,7 +58,8 @@ describe("DomainPurchaser", () => {
         erc20Token.address,
         hub.address,
         creator.address,
-        pricingData
+        pricingData,
+        0
       );
     });
 
@@ -70,7 +71,7 @@ describe("DomainPurchaser", () => {
 
       const tx = await purchaser
         .connect(user1)
-        .purchaseNetwork("meowmeowmeow", "ipfs://Qm1");
+        .purchaseSubdomain(0, "meowmeowmeow", "ipfs://Qm1");
 
       expect(tx)
         .to.emit(purchaser, "NetworkPurchased")
@@ -96,7 +97,7 @@ describe("DomainPurchaser", () => {
 
       const tx = purchaser
         .connect(user1)
-        .purchaseNetwork("👻👻👻", "ipfs://Qm1", { gasLimit: 3000000 });
+        .purchaseSubdomain(0, "👻👻👻", "ipfs://Qm1", { gasLimit: 3000000 });
 
       await expect(tx).to.be.revertedWith("SafeERC20: low-level call failed");
     });
@@ -108,7 +109,7 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      await purchaser.connect(user1).purchaseNetwork("👻👻👻", "ipfs://Qm1");
+      await purchaser.connect(user1).purchaseSubdomain(0, "👻👻👻", "ipfs://Qm1");
 
       expect(erc20Token.transferFrom).to.have.been.calledWith(
         user1.address,
@@ -124,7 +125,7 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      await purchaser.connect(user1).purchaseNetwork("黄埔炒蛋", "ipfs://Qm1");
+      await purchaser.connect(user1).purchaseSubdomain(0, "黄埔炒蛋", "ipfs://Qm1");
 
       expect(erc20Token.transferFrom).to.have.been.calledWith(
         user1.address,
@@ -142,7 +143,7 @@ describe("DomainPurchaser", () => {
 
       await purchaser
         .connect(user1)
-        .purchaseNetwork("thisnameismeow", "ipfs://Qm1");
+        .purchaseSubdomain(0, "thisnameismeow", "ipfs://Qm1");
 
       expect(erc20Token.transferFrom).to.have.been.calledWith(
         user1.address,
@@ -160,7 +161,7 @@ describe("DomainPurchaser", () => {
 
       const tx = purchaser
         .connect(user1)
-        .purchaseNetwork("THISNAMEISREALLYLONGONETWOTHREE!!", "ipfs://Qm1");
+        .purchaseSubdomain(0, "THISNAMEISREALLYLONGONETWOTHREE!!", "ipfs://Qm1");
 
       await expect(tx).to.be.revertedWith("DP: Name too long");
     });
@@ -172,7 +173,7 @@ describe("DomainPurchaser", () => {
       erc20Token.transferFrom.reset();
       erc20Token.transferFrom.returns(true);
 
-      const tx = purchaser.connect(user1).purchaseNetwork("", "ipfs://Qm1");
+      const tx = purchaser.connect(user1).purchaseSubdomain(0, "", "ipfs://Qm1");
 
       await expect(tx).to.be.revertedWith("DP: Empty string");
     });

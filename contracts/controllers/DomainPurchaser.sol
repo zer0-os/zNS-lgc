@@ -217,7 +217,7 @@ contract DomainPurchaser is
       record.prices.long != pricing.long;
     require(
       differentPrices,
-      "Pricing info is the same. Use .setDomainMintingStatus"
+      "DP: Pricing info is the same. Use .setDomainMintingStatus"
     );
 
     record.prices = pricing;
@@ -271,7 +271,7 @@ contract DomainPurchaser is
    */
   function setPlatformFee(uint256 fee) external onlyOwner {
     require(platformFee != fee, "DP: Same fee");
-    require(fee <= divisonBasisPlatformFee, "DP: Fee beyond 100%");
+    require(fee < divisonBasisPlatformFee, "DP: Fee beyond 99.99%");
 
     platformFee = fee;
   }
@@ -309,12 +309,17 @@ contract DomainPurchaser is
   }
 
   /**
-   * Calculates out the length of a string
+   * Calculates out the length of a Unicode string
+   * Since Unicode can be different byte lengths ('👻' is more bytes than 'a')
+   * We inspect the first byte of each unicode character
+   * which allows us to determine how many bytes are in each unicode character
    */
   function strlen(string memory s) internal pure returns (uint256) {
     uint256 len = 0;
     uint256 bytelength = bytes(s).length;
     for (uint256 i = 0; i < bytelength; len++) {
+      // Inspect the first byte to see how large the character is
+      // and then skip an appropriate number of bytes
       bytes1 b = bytes(s)[i];
       if (b < 0x80) {
         i += 1;

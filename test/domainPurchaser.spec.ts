@@ -211,9 +211,9 @@ describe("DomainPurchaser", () => {
       expect(await purchaser.platformFee()).to.eq(100);
     });
 
-    it("prevents the owner to set the platform fee beyond 100%", async () => {
-      const tx = purchaser.setPlatformFee(1001);
-      await expect(tx).to.be.revertedWith("DP: Fee beyond 100%");
+    it("prevents the owner to set the platform fee beyond 99.9%", async () => {
+      const tx = purchaser.setPlatformFee(1000);
+      await expect(tx).to.be.revertedWith("DP: Fee beyond 99.9%");
     });
 
     it("allows the owner to set the platform wallet", async () => {

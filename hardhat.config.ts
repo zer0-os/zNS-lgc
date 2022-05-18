@@ -58,7 +58,7 @@ const config: HardhatUserConfig = {
     },
     mainnet: {
       accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
-      url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+      url: "https://eth-mainnet.alchemyapi.io/v2/-nhhIZg46QlTmzPozXF07vyxpK5BGukx",
       gasPrice: "auto",
     },
     kovan: {

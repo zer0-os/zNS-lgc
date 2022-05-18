@@ -532,7 +532,6 @@ contract ERC721Upgradeable is
     internal
     virtual
   {
-    require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
     _tokenURIs[tokenId] = _tokenURI;
   }
 

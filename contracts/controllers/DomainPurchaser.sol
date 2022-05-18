@@ -23,7 +23,7 @@ contract DomainPurchaser is
   uint256 constant maxNameLength = 33;
 
   // Divison basis for 'platformFee' percentages
-  uint256 constant divisonBasisPlatformFee = 1000;
+  uint256 constant divisionBasisPlatformFee = 1000;
 
   /**
    * Configuration / State of purchasing related information for a domain
@@ -31,7 +31,6 @@ contract DomainPurchaser is
   struct DomainPurchaseData {
     /**
      * Whether or not subdomain minting is enabled on this domain.
-     * If this is set, `.prices` needs to be also set.
      */
     bool subdomainMintingEnabled;
     /**
@@ -158,7 +157,7 @@ contract DomainPurchaser is
         // The platform is always considered to own the root domain (parentId == 0)
         paymentToken.safeTransferFrom(msg.sender, platformWallet, price);
       } else {
-        uint256 fee = (price * platformFee) / divisonBasisPlatformFee;
+        uint256 fee = (price * platformFee) / divisionBasisPlatformFee;
 
         // Take ZERO tokens (ERC20) from the user
         paymentToken.safeTransferFrom(
@@ -174,7 +173,7 @@ contract DomainPurchaser is
       }
     }
 
-    // Create the network domain
+    // Create the domain
     IRegistrar rootRegistrar = zNSHub.getRegistrarForDomain(parentId);
     uint256 createdDomainId = rootRegistrar.registerSubdomainContract(
       parentId,
@@ -279,7 +278,7 @@ contract DomainPurchaser is
    */
   function setPlatformFee(uint256 fee) external onlyOwner {
     require(platformFee != fee, "DP: Same fee");
-    require(fee < divisonBasisPlatformFee, "DP: Fee beyond 99.99%");
+    require(fee < divisionBasisPlatformFee, "DP: Fee beyond 99.99%");
 
     platformFee = fee;
   }

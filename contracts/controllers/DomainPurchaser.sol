@@ -62,14 +62,21 @@ contract DomainPurchaser is
 
   // The token used to mint subdomains
   IERC20Upgradeable public paymentToken;
+
   // Reference to the zNS Hub
   IZNSHub public zNSHub;
+
   // The wallet which fees owed to the platform go to
   address public platformWallet;
+
   // The percentage of proceeds that the platform gets encoded as (1000 = 100% | 1 = 0.1%)
   uint256 public platformFee;
+
   // Mapping of Domain Id => DomainPurchaseData
   mapping(uint256 => DomainPurchaseData) public purchaseData;
+
+  // Allow for non-network domains to be minted
+  bool allowMintingNonNetwork = false;
 
   function initialize(
     address _paymentToken,
@@ -108,14 +115,13 @@ contract DomainPurchaser is
   ) external returns (uint256) {
     DomainPurchaseData memory domainData = purchaseData[parentId];
 
-    // This will be removed later when the feature becomes available
+    // When minting a non-network domain
     if (parentId != 0) {
-      revert("DP: Only purchasing network domains is allowed currently.");
-    }
+      // May be disabled at a contract level
+      if (!allowMintingNonNetwork) {
+        revert("DP: Only purchasing network domains is allowed currently.");
+      }
 
-    require(domainData.subdomainMintingEnabled, "DP: Minting not enabled");
-
-    if (parentId != 0) {
       /*
         When minting a subdomain on something other than the root (0) we need to check
         to see if the parent of the domain we're minting a subdomain on (grandParent)
@@ -132,6 +138,8 @@ contract DomainPurchaser is
         "DP: Subdomains disallowed at this level."
       );
     }
+
+    require(domainData.subdomainMintingEnabled, "DP: Minting not enabled");
 
     uint256 lengthOfName = strlen(name);
     require(lengthOfName > 0, "DP: Empty string");
@@ -284,6 +292,15 @@ contract DomainPurchaser is
     require(wallet != platformWallet, "DP: Same Wallet");
 
     platformWallet = wallet;
+  }
+
+  /**
+   * Set whether the minting of non-network domains is allowed
+   * @param allowed Whether it is allowed or not
+   */
+  function setNonNetworkDomainMinting(bool allowed) external onlyOwner {
+    require(allowed != allowMintingNonNetwork, "DP: No state change");
+    allowMintingNonNetwork = allowed;
   }
 
   /* --------- Internal + Private ------------ */

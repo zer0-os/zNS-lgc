@@ -2,13 +2,8 @@
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "prettier.printWidth": 80,
-  "solidity.enabledAsYouTypeCompilationErrorCheck": true,
-  "solidity.validationDelay": 1500,
-  "solidity.linter": "solhint",
   "files.eol": "\n",
   "[solidity]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
   },
-  "solidity.compileUsingRemoteVersion": "v0.8.11+commit.d7f03943"
 }

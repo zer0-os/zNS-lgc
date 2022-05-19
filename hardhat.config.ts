@@ -46,18 +46,20 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      accounts: [
-        {
-          privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
-          balance: "10000000000000000000000",
-        },
-      ],
+      // accounts: [
+      //   {
+      //     privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+      //     balance: "10000000000000000000000",
+      //   },
+      // ],
       forking: {
         url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {
-      accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
+      accounts: process.env.MAINNET_PRIVATE_KEY
+        ? [`0x${process.env.MAINNET_PRIVATE_KEY}`]
+        : [],
       url: "https://eth-mainnet.alchemyapi.io/v2/-nhhIZg46QlTmzPozXF07vyxpK5BGukx",
       gasPrice: "auto",
     },
@@ -70,11 +72,15 @@ const config: HardhatUserConfig = {
       url: "https://ropsten.infura.io/v3/77c3d733140f4c12a77699e24cb30c27",
     },
     rinkeby: {
-      accounts: [`0x${process.env.TESTNET_PRIVATE_KEY}`],
+      accounts: process.env.TESTNET_PRIVATE_KEY
+        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+        : [],
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     goerli: {
-      accounts: [`0x${process.env.TESTNET_PRIVATE_KEY}`],
+      accounts: process.env.TESTNET_PRIVATE_KEY
+        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+        : [],
       url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     localhost: {

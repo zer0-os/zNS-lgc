@@ -94,9 +94,11 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  etherscan: {
-    apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
-  },
+  etherscan: process.env.ETHERSCAN_API_KEY
+    ? {
+        apiKey: process.env.ETHERSCAN_API_KEY,
+      }
+    : undefined,
   typechain: {
     outDir: "typechain",
   },

@@ -140,17 +140,7 @@ contract DomainPurchaser is
 
     require(domainData.subdomainMintingEnabled, "DP: Minting not enabled");
 
-    uint256 lengthOfName = strlen(name);
-    require(lengthOfName > 0, "DP: Empty string");
-    require(lengthOfName < maxNameLength, "DP: Name too long");
-
-    // Calculate out the cost of the network domain
-    uint256 price = domainData.prices.long; // Default price
-    if (lengthOfName < shortNameLength) {
-      price = domainData.prices.short;
-    } else if (lengthOfName < mediumNameLength) {
-      price = domainData.prices.medium;
-    }
+    uint256 price = getDomainPrice(parentId, name);
 
     if (price > 0) {
       if (parentId == 0) {
@@ -300,6 +290,36 @@ contract DomainPurchaser is
   function setNonNetworkDomainMinting(bool allowed) external onlyOwner {
     require(allowed != allowMintingNonNetwork, "DP: No state change");
     allowMintingNonNetwork = allowed;
+  }
+
+  /* --------- Public View ------------------ */
+
+  /**
+   * Get the price to mint a subdomain on a parent based on the name
+   * @param parentId The parent domain
+   * @param name the name of the subdomain
+   * @return The price of the domain
+   */
+  function getDomainPrice(uint256 parentId, string memory name)
+    public
+    view
+    returns (uint256)
+  {
+    DomainPurchaseData memory domainData = purchaseData[parentId];
+
+    uint256 lengthOfName = strlen(name);
+    require(lengthOfName > 0, "DP: Empty string");
+    require(lengthOfName < maxNameLength, "DP: Name too long");
+
+    // Calculate out the cost of the network domain
+    uint256 price = domainData.prices.long; // Default price
+    if (lengthOfName < shortNameLength) {
+      price = domainData.prices.short;
+    } else if (lengthOfName < mediumNameLength) {
+      price = domainData.prices.medium;
+    }
+
+    return price;
   }
 
   /* --------- Internal + Private ------------ */

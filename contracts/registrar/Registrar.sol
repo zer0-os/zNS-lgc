@@ -32,7 +32,7 @@ contract Registrar is
   }
 
   struct DomainGroup {
-    string baseUri;
+    string baseMetadataUri;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -66,33 +66,38 @@ contract Registrar is
 
   /**
    * Creates a new folder group
-   * @param baseUri The entire base uri (include ipfs://.../)
+   * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function createDomainGroup(string memory baseUri) public onlyController {
-    domainGroups[numDomainGroups + 1] = DomainGroup({baseUri: baseUri});
+  function createDomainGroup(string memory baseMetadataUri)
+    public
+    onlyController
+  {
+    domainGroups[numDomainGroups + 1] = DomainGroup({
+      baseMetadataUri: baseMetadataUri
+    });
     numDomainGroups++; // increment number of folders
 
-    zNSHub.domainGroupUpdated(numDomainGroups, baseUri);
+    zNSHub.domainGroupUpdated(numDomainGroups, baseMetadataUri);
   }
 
   /**
    * Updates a folder group
    * @param id The id of the folder group
-   * @param baseUri The entire base uri (include ipfs://.../)
+   * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function updateDomainGroup(uint256 id, string memory baseUri)
+  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
     external
     onlyController
   {
     require(id != 0 && id <= numDomainGroups, "Folder group invalid");
     require(
-      keccak256(abi.encodePacked(domainGroups[id].baseUri)) !=
-        keccak256(abi.encodePacked(baseUri)),
+      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
+        keccak256(abi.encodePacked(baseMetadataUri)),
       "Folder groups are the same"
     );
-    domainGroups[id].baseUri = baseUri;
+    domainGroups[id].baseMetadataUri = baseMetadataUri;
 
-    zNSHub.domainGroupUpdated(id, baseUri);
+    zNSHub.domainGroupUpdated(id, baseMetadataUri);
   }
 
   function _getAdmin() internal view returns (address) {
@@ -575,7 +580,7 @@ contract Registrar is
       return
         string(
           abi.encodePacked(
-            domainGroups[domain.domainGroup].baseUri,
+            domainGroups[domain.domainGroup].baseMetadataUri,
             uint2str(domain.domainGroupFileIndex)
           )
         );

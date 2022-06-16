@@ -70,7 +70,7 @@ contract ZNSHub is
   event EEDomainGroupUpdatedV1(
     address parentRegistrar,
     uint256 folderGroupId,
-    string baseUri
+    string baseMetadataUri
   );
 
   // Contains all zNS Registrars that are authentic
@@ -233,11 +233,11 @@ contract ZNSHub is
     emit EERoyaltiesAmountChanged(_msgSender(), id, amount);
   }
 
-  function domainGroupUpdated(uint256 folderGroupId, string calldata baseUri)
-    external
-    onlyRegistrar
-  {
-    emit EEDomainGroupUpdatedV1(_msgSender(), folderGroupId, baseUri);
+  function domainGroupUpdated(
+    uint256 folderGroupId,
+    string calldata baseMetadataUri
+  ) external onlyRegistrar {
+    emit EEDomainGroupUpdatedV1(_msgSender(), folderGroupId, baseMetadataUri);
   }
 
   function owner()

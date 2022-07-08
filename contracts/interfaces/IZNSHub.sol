@@ -55,4 +55,6 @@ interface IZNSHub {
 
   function domainGroupUpdated(uint256 folderGroupId, string calldata baseUri)
     external;
+
+  function subdomainRegistrars(uint256 id) external view returns (address);
 }

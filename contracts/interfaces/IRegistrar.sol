@@ -117,4 +117,13 @@ interface IRegistrar is
 
   // Returns the parent domain of a child domain
   function parentOf(uint256 id) external view returns (uint256);
+
+  function createDomainGroup(string memory baseMetadataUri)
+    external
+    returns (uint256);
+
+  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
+    external;
+
+  function numDomainGroups() external view returns (uint256);
 }

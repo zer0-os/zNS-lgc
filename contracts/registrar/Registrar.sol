@@ -71,6 +71,7 @@ contract Registrar is
   function createDomainGroup(string memory baseMetadataUri)
     public
     onlyController
+    returns (uint256)
   {
     domainGroups[numDomainGroups + 1] = DomainGroup({
       baseMetadataUri: baseMetadataUri
@@ -78,6 +79,8 @@ contract Registrar is
     numDomainGroups++; // increment number of folders
 
     zNSHub.domainGroupUpdated(numDomainGroups, baseMetadataUri);
+
+    return numDomainGroups;
   }
 
   /**
@@ -323,6 +326,7 @@ contract Registrar is
       records[parentId].subdomainContract == address(0),
       "ZR: Parent is subcontract"
     );
+    require(groupId <= numDomainGroups, "ZR: Domain group doesn't exist");
     if (parentId != rootDomainId) {
       // Domain parents must exist
       require(_exists(parentId), "ZR: No parent");

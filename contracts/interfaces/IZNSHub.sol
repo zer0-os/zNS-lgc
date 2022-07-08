@@ -35,7 +35,9 @@ interface IZNSHub {
     address minter,
     address controller,
     string calldata metadataUri,
-    uint256 royaltyAmount
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
   ) external;
 
   function metadataLockChanged(
@@ -50,4 +52,9 @@ interface IZNSHub {
 
   // Returns the parent domain of a child domain
   function parentOf(uint256 id) external view returns (uint256);
+
+  function domainGroupUpdated(uint256 folderGroupId, string calldata baseUri)
+    external;
+
+  function subdomainRegistrars(uint256 id) external view returns (address);
 }

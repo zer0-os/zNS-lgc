@@ -1,0 +1,19 @@
+name: Notify CPT
+on:
+  pull_request:
+    types: [opened, reopened]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message on push
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ${{ github.actor }} opened a PR for review:
+
+            ${{ github.event.pull_request.title }}  
+            ${{ github.event.pull_request._links.html.href }}

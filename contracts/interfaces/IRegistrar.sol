@@ -71,6 +71,17 @@ interface IRegistrar is
     address sendToUser
   ) external returns (uint256);
 
+  function registerDomainInGroupBulk(
+    uint256 parentId,
+    uint256 groupId,
+    uint256 namingOffset,
+    uint256 startingIndex,
+    uint256 endingIndex,
+    address minter,
+    uint256 royaltyAmount,
+    address sendTo
+  ) external;
+
   // Set a domains metadata uri and lock that domain from being modified
   function setAndLockDomainMetadata(uint256 id, string memory uri) external;
 
@@ -106,4 +117,13 @@ interface IRegistrar is
 
   // Returns the parent domain of a child domain
   function parentOf(uint256 id) external view returns (uint256);
+
+  function createDomainGroup(string memory baseMetadataUri)
+    external
+    returns (uint256);
+
+  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
+    external;
+
+  function numDomainGroups() external view returns (uint256);
 }

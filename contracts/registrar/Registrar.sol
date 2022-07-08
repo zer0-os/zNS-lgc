@@ -3,7 +3,7 @@ pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
@@ -25,6 +25,14 @@ contract Registrar is
     uint256 royaltyAmount;
     uint256 parentId;
     address subdomainContract;
+    // This is the folder group the domain belongs to
+    uint256 domainGroup;
+    // This is the index in that group (/0, /1, /2, /3)
+    uint256 domainGroupFileIndex;
+  }
+
+  struct DomainGroup {
+    string baseMetadataUri;
   }
 
   // A map of addresses that are authorised to register domains.
@@ -51,6 +59,49 @@ contract Registrar is
   IZNSHub public zNSHub;
   uint8 private test; // ignore
   uint256 private gap; // ignore
+
+  // 0 is the null case
+  mapping(uint256 => DomainGroup) public domainGroups;
+  uint256 public numDomainGroups;
+
+  /**
+   * Creates a new folder group
+   * @param baseMetadataUri The entire base uri (include ipfs://.../)
+   */
+  function createDomainGroup(string memory baseMetadataUri)
+    public
+    onlyController
+    returns (uint256)
+  {
+    domainGroups[numDomainGroups + 1] = DomainGroup({
+      baseMetadataUri: baseMetadataUri
+    });
+    numDomainGroups++; // increment number of folders
+
+    zNSHub.domainGroupUpdated(numDomainGroups, baseMetadataUri);
+
+    return numDomainGroups;
+  }
+
+  /**
+   * Updates a folder group
+   * @param id The id of the folder group
+   * @param baseMetadataUri The entire base uri (include ipfs://.../)
+   */
+  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
+    external
+    onlyController
+  {
+    require(id != 0 && id <= numDomainGroups, "Folder group invalid");
+    require(
+      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
+        keccak256(abi.encodePacked(baseMetadataUri)),
+      "Folder groups are the same"
+    );
+    domainGroups[id].baseMetadataUri = baseMetadataUri;
+
+    zNSHub.domainGroupUpdated(id, baseMetadataUri);
+  }
 
   function _getAdmin() internal view returns (address) {
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
@@ -79,7 +130,7 @@ contract Registrar is
 
     if (parentRegistrar_ == address(0)) {
       // create the root domain
-      _createDomain(0, 0, msg.sender, address(0));
+      _createDomain(0, 0, msg.sender, address(0), 0, 0);
     } else {
       rootDomainId = rootDomainId_;
       parentRegistrar = parentRegistrar_;
@@ -246,12 +297,36 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked
   ) internal returns (uint256) {
+    return
+      _registerDomainV2(
+        parentId,
+        label,
+        minter,
+        metadataUri,
+        royaltyAmount,
+        locked,
+        0,
+        0
+      );
+  }
+
+  function _registerDomainV2(
+    uint256 parentId,
+    string memory label,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    uint256 groupId, // 0 is null
+    uint256 groupFileIndex // ignored if groupId is 0
+  ) internal returns (uint256) {
     require(bytes(label).length > 0, "ZR: Empty name");
     // subdomain cannot be minted on domains which are subdomain contracts
     require(
       records[parentId].subdomainContract == address(0),
       "ZR: Parent is subcontract"
     );
+    require(groupId <= numDomainGroups, "ZR: Domain group doesn't exist");
     if (parentId != rootDomainId) {
       // Domain parents must exist
       require(_exists(parentId), "ZR: No parent");
@@ -259,15 +334,21 @@ contract Registrar is
 
     // Create the child domain under the parent domain
     uint256 labelHash = uint256(keccak256(bytes(label)));
-    address controller = msg.sender;
 
     // Calculate the new domain's id and create it
     uint256 domainId = uint256(
       keccak256(abi.encodePacked(parentId, labelHash))
     );
-    _createDomain(parentId, domainId, minter, controller);
-    _setTokenURI(domainId, metadataUri);
 
+    // Create not inside of a domain group
+    _createDomain(
+      parentId,
+      domainId,
+      minter,
+      msg.sender,
+      groupId,
+      groupFileIndex
+    );
     if (locked) {
       records[domainId].metadataLockedBy = minter;
       records[domainId].metadataLocked = true;
@@ -277,15 +358,22 @@ contract Registrar is
       records[domainId].royaltyAmount = royaltyAmount;
     }
 
+    // No domain group was defined
+    if (groupId == 0) {
+      _setTokenURI(domainId, metadataUri);
+    }
+
     zNSHub.domainCreated(
       domainId,
       label,
       labelHash,
       parentId,
       minter,
-      controller,
+      msg.sender,
       metadataUri,
-      royaltyAmount
+      royaltyAmount,
+      groupId,
+      groupFileIndex
     );
 
     return domainId;
@@ -477,6 +565,34 @@ contract Registrar is
     return parentId;
   }
 
+  function tokenURI(uint256 tokenId)
+    public
+    view
+    virtual
+    override(IERC721MetadataUpgradeable, ERC721Upgradeable)
+    returns (string memory)
+  {
+    require(
+      _exists(tokenId),
+      "ERC721Metadata: URI query for nonexistent token"
+    );
+
+    DomainRecord memory domain = records[tokenId];
+
+    if (domain.domainGroup != 0) {
+      // figure out uri based on domain group
+      return
+        string(
+          abi.encodePacked(
+            domainGroups[domain.domainGroup].baseMetadataUri,
+            uint2str(domain.domainGroupFileIndex)
+          )
+        );
+    }
+
+    return super.tokenURI(tokenId);
+  }
+
   /*
    * Internal Methods
    */
@@ -492,6 +608,7 @@ contract Registrar is
   }
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
+    require(records[id].domainGroup == 0, "Must update via domain group");
     _setTokenURI(id, uri);
     zNSHub.metadataChanged(id, uri);
   }
@@ -511,7 +628,9 @@ contract Registrar is
     uint256 parentId,
     uint256 domainId,
     address minter,
-    address controller
+    address controller,
+    uint256 domainGroupId,
+    uint256 domainGroupFileIndex
   ) internal {
     // Create the NFT and register the domain data
     _mint(minter, domainId);
@@ -522,7 +641,9 @@ contract Registrar is
       metadataLockedBy: address(0),
       controller: controller,
       royaltyAmount: 0,
-      subdomainContract: address(0)
+      subdomainContract: address(0),
+      domainGroup: domainGroupId,
+      domainGroupFileIndex: domainGroupFileIndex
     });
   }
 
@@ -626,6 +747,36 @@ contract Registrar is
         royaltyAmount,
         locked
       );
+    }
+  }
+
+  function registerDomainInGroupBulk(
+    uint256 parentId,
+    uint256 groupId,
+    uint256 namingOffset,
+    uint256 startingIndex,
+    uint256 endingIndex,
+    address minter,
+    uint256 royaltyAmount,
+    address sendTo
+  ) external onlyController {
+    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+    uint256 tokenId;
+    for (uint256 i = startingIndex; i < endingIndex; i++) {
+      tokenId = _registerDomainV2(
+        parentId,
+        uint2str(i + namingOffset),
+        minter,
+        "",
+        royaltyAmount,
+        true, // always locked
+        groupId,
+        i
+      );
+
+      if (sendTo != minter) {
+        _transfer(minter, sendTo, tokenId);
+      }
     }
   }
 

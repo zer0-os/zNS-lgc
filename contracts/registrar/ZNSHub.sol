@@ -32,6 +32,20 @@ contract ZNSHub is
     uint256 royaltyAmount
   );
 
+  event EEDomainCreatedV3(
+    address registrar,
+    uint256 indexed id,
+    string label,
+    uint256 indexed labelHash,
+    uint256 indexed parent,
+    address minter,
+    address controller,
+    string metadataUri,
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
+  );
+
   event EEMetadataLockChanged(
     address registrar,
     uint256 indexed id,
@@ -51,6 +65,12 @@ contract ZNSHub is
     address parentRegistrar,
     uint256 rootId,
     address childRegistrar
+  );
+
+  event EEDomainGroupUpdatedV1(
+    address parentRegistrar,
+    uint256 folderGroupId,
+    string baseMetadataUri
   );
 
   // Contains all zNS Registrars that are authentic
@@ -171,9 +191,11 @@ contract ZNSHub is
     address minter,
     address controller,
     string calldata metadataUri,
-    uint256 royaltyAmount
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
   ) external onlyRegistrar {
-    emit EEDomainCreatedV2(
+    emit EEDomainCreatedV3(
       _msgSender(),
       id,
       label,
@@ -182,7 +204,9 @@ contract ZNSHub is
       minter,
       controller,
       metadataUri,
-      royaltyAmount
+      royaltyAmount,
+      groupId,
+      groupFileIndex
     );
     domainToContract[id] = _msgSender();
   }
@@ -207,6 +231,13 @@ contract ZNSHub is
     onlyRegistrar
   {
     emit EERoyaltiesAmountChanged(_msgSender(), id, amount);
+  }
+
+  function domainGroupUpdated(
+    uint256 folderGroupId,
+    string calldata baseMetadataUri
+  ) external onlyRegistrar {
+    emit EEDomainGroupUpdatedV1(_msgSender(), folderGroupId, baseMetadataUri);
   }
 
   function owner()

@@ -42,7 +42,7 @@ const main = async () => {
   const startIndex = 4262;
   const endIndex = startIndex + numberToMint;
   const batchSize = 50;
-  const namingOffset = 1;
+  const namingOffset = 0;
   const groupID = 1;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);

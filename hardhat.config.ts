@@ -61,7 +61,7 @@ const config: HardhatUserConfig = {
         ? [`0x${process.env.MAINNET_PRIVATE_KEY}`]
         : [],
       url: "https://eth-mainnet.alchemyapi.io/v2/-nhhIZg46QlTmzPozXF07vyxpK5BGukx",
-      gasPrice: "auto",
+      gasPrice: 15000000000,
     },
     kovan: {
       accounts: { mnemonic: process.env.TESTNET_MNEMONIC || "" },

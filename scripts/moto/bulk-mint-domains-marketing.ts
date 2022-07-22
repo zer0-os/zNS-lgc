@@ -41,7 +41,7 @@ const main = async () => {
   console.log(`Registering bulk`);
   const startIndex = 4262;
   const endIndex = startIndex + numberToMint;
-  const batchSize = 50;
+  const batchSize = 200;
   const namingOffset = 0;
   const groupID = 1;
   for (let i = startIndex; i < endIndex; i += batchSize) {

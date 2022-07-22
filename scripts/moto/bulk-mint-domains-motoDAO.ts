@@ -8,7 +8,7 @@ const parentDomainId =
 const deployerWallet = "0xF5A37a4c139D639d04875f1945b59B1fA6cf939B"; // wilder moto deployer
 const minterWallet = "0x624fb845A6b2C64ea10fF9EBe710f747853022B3"; // moto dao
 
-const numberToMint = 1564;
+const numberToMint = 1564 - 750;
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -39,7 +39,7 @@ const main = async () => {
   );
 
   console.log(`Registering bulk`);
-  const startIndex = 4280; // 18 will be minted for marketing, 4262 were minted by users
+  const startIndex = 4980 + 50; // 18 will be minted for marketing, 4262 were minted by users
   const endIndex = startIndex + numberToMint;
   const batchSize = 50;
   const namingOffset = 0;

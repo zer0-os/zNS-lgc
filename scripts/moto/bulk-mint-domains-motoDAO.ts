@@ -1,5 +1,5 @@
 import * as hre from "hardhat";
-import { Registrar, Registrar__factory } from "../../typechain";
+import { IRegistrar, IRegistrar__factory } from "../../typechain";
 
 const registrarAddress = "0x51bd5948cf84a1041d2720f56ded5e173396fc95"; // wilder.moto.genesis reg
 const parentDomainId =
@@ -34,29 +34,30 @@ const main = async () => {
     );
   }
 
-  const instance: Registrar = Registrar__factory.connect(
+  const instance: IRegistrar = IRegistrar__factory.connect(
     registrarAddress,
     deployer
   );
 
   console.log(`Registering bulk`);
-  const startIndex = 3363; // 18 will be minted for marketing, 3345 were minted by users
+  const startIndex = 4280; // 18 will be minted for marketing, 4262 were minted by users
   const endIndex = startIndex + numberToMint;
   const batchSize = 50;
   const namingOffset = 1;
+  const groupID = 1;
   for (let i = startIndex; i < endIndex; i += batchSize) {
     const batchEnd = Math.min(i + batchSize, endIndex);
 
     console.log(`Registering bulk, startIndex=${startIndex} i=${i}`);
-    const tx = await instance.registerDomainAndSendBulk(
+    const tx = await instance.registerDomainInGroupBulk(
       parentDomainId,
+      groupID,
       namingOffset, // folder /0 becomes /(0 + namingOffset)
       i, // start of folder /0
       batchEnd, // end of folder /30 (if amount is 30)
-      minterWallet,
-      ipfsFolder,
+      minterWallet, // minter
       0, // royalty
-      true
+      minterWallet // send to
     );
 
     console.log(`tx hash: ${tx.hash}`);

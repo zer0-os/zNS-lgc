@@ -8,7 +8,6 @@ const parentDomainId =
 const deployerWallet = "0xF5A37a4c139D639d04875f1945b59B1fA6cf939B"; // wilder moto deployer
 const minterWallet = "0x053387FE5c3d990510C0069842c4C77069aDBc55"; // marketing wallet
 
-const ipfsFolder = "ipfs://QmUtJpyiYKcFJJbUipD1WfAQKhFuieTzQDwq4PVJqaZ6uF/";
 const numberToMint = 18;
 
 const main = async () => {

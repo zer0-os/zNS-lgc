@@ -8,7 +8,6 @@ const parentDomainId =
 const deployerWallet = "0xF5A37a4c139D639d04875f1945b59B1fA6cf939B"; // wilder moto deployer
 const minterWallet = "0xEe7Ad892Fdf8d95223d7E94E4fF42E9d0cfeCAFA"; // wheels dao
 
-const ipfsFolder = "ipfs://QmUtJpyiYKcFJJbUipD1WfAQKhFuieTzQDwq4PVJqaZ6uF/";
 const numberToMint = 552;
 
 const main = async () => {

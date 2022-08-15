@@ -9,12 +9,6 @@ defaults: &defaults
     - image: circleci/node:14.17.5
 
 jobs:
-  lint:
-    <<: *defaults
-    steps:
-      - node/run: yarn lint
-    docker:
-      - image: circleci/node:14.17.5
   test:
     <<: *defaults
     steps:
@@ -38,6 +32,10 @@ workflows:
   version: 2
   build:
     jobs:
+      - node/run:
+          pkg-manager: yarn
+          yarn-run: lint
+          version: 14.17.5
       - test:
           filters:
             branches:

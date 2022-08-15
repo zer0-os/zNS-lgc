@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@4.7.0
+  node: circleci/node@5.0.2
 
 defaults: &defaults
   working_directory: ~/repo
@@ -9,6 +9,12 @@ defaults: &defaults
     - image: circleci/node:14.17.5
 
 jobs:
+  lint:
+    <<: *defaults
+    steps:
+      - node/run: yarn lint
+    docker:
+      - image: circleci/node:14.17.5
   test:
     <<: *defaults
     steps:

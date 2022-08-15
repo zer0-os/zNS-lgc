@@ -1,11 +1,5 @@
 import { Interface } from "@ethersproject/abi";
-import {
-  BaseContract,
-  Contract,
-  ContractTransaction,
-  ethers,
-  providers,
-} from "ethers";
+import { ContractTransaction, ethers, providers } from "ethers";
 
 export const getSubnodeHash = (
   parentHash: string,

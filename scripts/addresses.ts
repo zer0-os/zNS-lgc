@@ -28,7 +28,9 @@ export const zNSAddressesByNetwork: NetworkToZNSAddresses = {
   },
 };
 
-export const getZNSAddressesByNetworkName = (networkName: string) => {
+export const getZNSAddressesByNetworkName = (
+  networkName: string
+): ZNSAddresses => {
   if (networkName === "hardhat") {
     networkName = "mainnet";
   }

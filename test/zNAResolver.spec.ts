@@ -19,7 +19,7 @@ import IResourceRegistryAbi from "../artifacts/contracts/interfaces/IResourceReg
 
 chai.use(smock.matchers);
 
-describe.only("zNAResolver", function () {
+describe("zNAResolver", function () {
   let deployer: SignerWithAddress,
     resourceTypeManager: SignerWithAddress,
     resourceRegistryManager: SignerWithAddress,

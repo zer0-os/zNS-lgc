@@ -2,12 +2,12 @@ import { run } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
 import { ethers } from "ethers";
 
-export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
+export const sleep = (m: number): Promise<void> => new Promise((r) => setTimeout(r, m));
 
 export const verifyContract = async (
   address: string,
-  constructorArguments: any[] = []
-) => {
+  constructorArguments: unknown[] = []
+): Promise<void> => {
   try {
     console.log("Sleeping for 10 seconds before verification...");
     await sleep(10000);

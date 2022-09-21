@@ -20,6 +20,7 @@ import IResourceRegistryAbi from "../artifacts/contracts/interfaces/IResourceReg
 chai.use(smock.matchers);
 
 describe("zNAResolver", function () {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let deployer: SignerWithAddress,
     resourceTypeManager: SignerWithAddress,
     resourceRegistryManager: SignerWithAddress,
@@ -35,12 +36,14 @@ describe("zNAResolver", function () {
 
   let RESOURCE_TYPE_DAO: BigNumber,
     RESOURCE_TYPE_STAKING_POOL: BigNumber,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     RESOURCE_TYPE_FARMING: BigNumber;
 
   const resourceID1 = 1,
     resourceID2 = 2;
 
   beforeEach("init setup", async function () {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [deployer, resourceTypeManager, resourceRegistryManager, zNAOwner, userA] =
       await ethers.getSigners();
 
@@ -61,6 +64,7 @@ describe("zNAResolver", function () {
 
     RESOURCE_TYPE_DAO = await zNAResolver.RESOURCE_TYPE_DAO();
     RESOURCE_TYPE_STAKING_POOL = await zNAResolver.RESOURCE_TYPE_STAKING_POOL();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     RESOURCE_TYPE_FARMING = await zNAResolver.RESOURCE_TYPE_FARMING();
 
     const RESOURCE_TYPE_MANAGER_ROLE =

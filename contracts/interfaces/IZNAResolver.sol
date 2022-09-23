@@ -15,12 +15,6 @@ interface IZNAResolver {
     uint256 _resourceID
   );
 
-  event ResourceAssociationUpdated(
-    uint256 _zNA,
-    uint256 _resourceType,
-    uint256 _resourceID
-  );
-
   event ResourceDisassociated(uint256 _zNA, uint256 _resourceType);
 
   event ResourceRegistryAdded(uint256 _resourceType, address _resourceRegistry);
@@ -30,12 +24,6 @@ interface IZNAResolver {
   /* -------------------------------------------------------------------------- */
 
   function associateWithResourceType(
-    uint256 _zNA,
-    uint256 _resourceType,
-    uint256 _resourceID
-  ) external;
-
-  function updateResourceIDWithResourceType(
     uint256 _zNA,
     uint256 _resourceType,
     uint256 _resourceID

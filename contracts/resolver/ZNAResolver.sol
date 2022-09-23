@@ -16,31 +16,31 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   bytes32 public constant RESOURCE_TYPE_MANAGER_ROLE =
     keccak256(abi.encode("RESOURCE_TYPE_MANAGER"));
   bytes32 public constant RESOURCE_REGISTRY_MANAGER_ROLE =
-    keccak256(abi.encode("RESOURCE_TYPE_MANAGER"));
+    keccak256(abi.encode("RESOURCE_REGISTRY_MANAGER"));
 
   IZNSHub public znsHub;
 
   // <zNA => ResourceType>
   // ResourceTypes = DAO | StakingPool | Farming | ...
-  mapping(uint256 => uint256) private zNATypes;
+  mapping(uint256 => uint256) public zNATypes;
 
   // <zNA => <ResourceType => ResourceID>>
   // ResourceID can be zDAOId or StakingPoolId or hash Id for other resource
   // Single zNA can have multiple different resource
-  mapping(uint256 => mapping(uint256 => uint256)) private zNAResourceIDs;
+  mapping(uint256 => mapping(uint256 => uint256)) public zNAResourceIDs;
 
   // <ResourceType, ResourceRegistry>
-  mapping(uint256 => IResourceRegistry) private resourceRegistries;
+  mapping(uint256 => IResourceRegistry) public resourceRegistries;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyResourceTypeManager(uint256 _zNA) {
+  modifier onlyResourceTypeManagerOrZNAOwner(uint256 _zNA) {
     require(
       hasRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender()) ||
         znsHub.ownerOf(_zNA) == _msgSender(),
-      "Not have a role"
+      "Not authorized: resource type manager"
     );
     _;
   }
@@ -48,7 +48,7 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   modifier onlyResourceRegistryManager() {
     require(
       hasRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender()),
-      "Not have a role"
+      "Not authorized: resource registry manager"
     );
     _;
   }
@@ -58,8 +58,6 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   /* -------------------------------------------------------------------------- */
 
   function __ZNAResolver_init(IZNSHub _znsHub) public initializer {
-    ZeroUpgradeable.__ZeroUpgradeable_init();
-
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _setupRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender());
     _setupRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender());
@@ -71,7 +69,7 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setZNSHub(address _znsHub) external onlyOwner {
+  function setZNSHub(address _znsHub) external onlyRole(DEFAULT_ADMIN_ROLE) {
     znsHub = IZNSHub(_znsHub);
   }
 
@@ -89,46 +87,23 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
     uint256 _zNA,
     uint256 _resourceType,
     uint256 _resourceID
-  ) external override onlyResourceTypeManager(_zNA) {
+  ) external override onlyResourceTypeManagerOrZNAOwner(_zNA) {
     require(znsHub.ownerOf(_zNA) != address(0), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
-    require(_isResourceExist(_resourceType, _resourceID), "Not exist resource");
     require(
-      !_hasResourceType(_zNA, _resourceType),
-      "Already has same resource type"
+      _doesResourceExist(_resourceType, _resourceID),
+      "Not exist resource"
+    );
+    require(
+      zNATypes[_zNA] == 0 || _hasResourceType(_zNA, _resourceType),
+      "Only support single resource type"
     );
 
+    // Set/Update ResourceID
     zNATypes[_zNA] = zNATypes[_zNA] | _resourceType;
     zNAResourceIDs[_zNA][_resourceType] = _resourceID;
 
     emit ResourceAssociated(_zNA, _resourceType, _resourceID);
-  }
-
-  /**
-   * @notice Update association of resource ID with resource type
-   * @dev Only callable by zNA Owner or the resource type manager
-   * @param _zNA Associating zNA
-   * @param _resourceType Single resource type. Check above constants.
-   * @param _resourceID Allocated resource ID. Resource ID can be zDAOId or
-   *     StakingPoolId or hash Id for other resource
-   */
-  function updateResourceIDWithResourceType(
-    uint256 _zNA,
-    uint256 _resourceType,
-    uint256 _resourceID
-  ) external override onlyResourceTypeManager(_zNA) {
-    require(znsHub.ownerOf(_zNA) != address(0), "Invalid zNA");
-    require(_isValidResourceType(_resourceType), "Invalid resource type");
-    require(_isResourceExist(_resourceType, _resourceID), "Not exist resource");
-    require(_hasResourceType(_zNA, _resourceType), "Should have resource type");
-    require(
-      zNAResourceIDs[_zNA][_resourceType] > 0,
-      "Should be associated with resource ID"
-    );
-
-    zNAResourceIDs[_zNA][_resourceType] = _resourceID;
-
-    emit ResourceAssociationUpdated(_zNA, _resourceType, _resourceID);
   }
 
   /**
@@ -141,7 +116,7 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   function disassociateWithResourceType(uint256 _zNA, uint256 _resourceType)
     external
     override
-    onlyResourceTypeManager(_zNA)
+    onlyResourceTypeManagerOrZNAOwner(_zNA)
   {
     require(znsHub.ownerOf(_zNA) != address(0), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
@@ -184,12 +159,9 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
     pure
     returns (bool)
   {
-    if (
-      _resourceType == RESOURCE_TYPE_DAO ||
+    return (_resourceType == RESOURCE_TYPE_DAO ||
       _resourceType == RESOURCE_TYPE_STAKING_POOL ||
-      _resourceType == RESOURCE_TYPE_FARMING
-    ) return true;
-    return false;
+      _resourceType == RESOURCE_TYPE_FARMING);
   }
 
   /**
@@ -202,15 +174,13 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
     view
     returns (bool)
   {
-    uint256 zNAType = zNATypes[_zNA];
-    if ((zNAType & _resourceType) > 0) return true;
-    return false;
+    return (zNATypes[_zNA] & _resourceType) > 0;
   }
 
   /**
    * @notice Check if resource exists by integrating with ResourceRegistry
    */
-  function _isResourceExist(uint256 _resourceType, uint256 _resourceID)
+  function _doesResourceExist(uint256 _resourceType, uint256 _resourceID)
     internal
     view
     returns (bool)

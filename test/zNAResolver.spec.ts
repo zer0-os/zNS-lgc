@@ -20,7 +20,6 @@ import IResourceRegistryAbi from "../artifacts/contracts/interfaces/IResourceReg
 chai.use(smock.matchers);
 
 describe("zNAResolver", function () {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let deployer: SignerWithAddress,
     resourceTypeManager: SignerWithAddress,
     resourceRegistryManager: SignerWithAddress,
@@ -86,6 +85,14 @@ describe("zNAResolver", function () {
   });
 
   describe("Check for callable permission", async function () {
+    it("Only admin can update zNSHub address", async function () {
+      await expect(zNAResolver.connect(userA).setZNSHub(zNSHub.address)).to.be
+        .reverted;
+
+      await expect(zNAResolver.connect(deployer).setZNSHub(zNSHub.address)).to
+        .be.not.reverted;
+    });
+
     it("zNA owner can associate zNA with resource type", async function () {
       await expect(
         zNAResolver
@@ -95,13 +102,13 @@ describe("zNAResolver", function () {
             RESOURCE_TYPE_DAO,
             resourceID1
           )
-      ).to.be.revertedWith("Not have a role");
+      ).to.be.revertedWith("Not authorized: resource type manager");
 
       await expect(
         zNAResolver
           .connect(userA)
           .disassociateWithResourceType(wilder_beasts, RESOURCE_TYPE_DAO)
-      ).to.be.revertedWith("Not have a role");
+      ).to.be.revertedWith("Not authorized: resource type manager");
     });
 
     it("Only resource registry manager can add resource registry", async function () {
@@ -109,7 +116,7 @@ describe("zNAResolver", function () {
         zNAResolver
           .connect(userA)
           .addResourceRegistry(RESOURCE_TYPE_DAO, resourceRegistry.address)
-      ).to.be.revertedWith("Not have a role");
+      ).to.be.revertedWith("Not authorized: resource registry manager");
 
       await expect(
         zNAResolver
@@ -170,7 +177,7 @@ describe("zNAResolver", function () {
       expect(resourceID).to.be.equal(resourceID1);
     });
 
-    it("Should not associate again with same resource type", async function () {
+    it("Should update resource ID with same resource type", async function () {
       await zNAResolver
         .connect(resourceTypeManager)
         .associateWithResourceType(
@@ -187,10 +194,47 @@ describe("zNAResolver", function () {
             RESOURCE_TYPE_DAO,
             resourceID2
           )
-      ).to.be.revertedWith("Already has same resource type");
+      ).to.be.not.reverted;
     });
 
-    it("Should associate with valid zNA and multiple resource types", async function () {
+    it("Should associate with valid zNA and single resource type(temporary)", async function () {
+      await zNAResolver
+        .connect(resourceTypeManager)
+        .associateWithResourceType(
+          wilder_beasts,
+          RESOURCE_TYPE_DAO,
+          resourceID1
+        );
+
+      const hasResourceTypeDAO = await zNAResolver.hasResourceType(
+        wilder_beasts,
+        RESOURCE_TYPE_DAO
+      );
+      expect(hasResourceTypeDAO).to.be.equal(true);
+
+      const resourceTypes = await zNAResolver.resourceTypes(wilder_beasts);
+      // RESOURCE_TYPE_DAO
+      expect(resourceTypes.toNumber()).to.be.equal(Number.parseInt("1", 2));
+
+      const resourceIDA = await zNAResolver.resourceID(
+        wilder_beasts,
+        RESOURCE_TYPE_DAO
+      );
+      expect(resourceIDA).to.be.equal(resourceID1);
+
+      // Should not allow to associate multiple resource types for same zNA
+      await expect(
+        zNAResolver
+          .connect(resourceTypeManager)
+          .associateWithResourceType(
+            wilder_beasts,
+            RESOURCE_TYPE_STAKING_POOL,
+            resourceID2
+          )
+      ).to.be.revertedWith("Only support single resource type");
+    });
+
+    xit("Should associate with valid zNA and multiple resource types", async function () {
       await zNAResolver
         .connect(resourceTypeManager)
         .associateWithResourceType(
@@ -232,32 +276,6 @@ describe("zNAResolver", function () {
         RESOURCE_TYPE_STAKING_POOL
       );
       expect(resourceIDB).to.be.equal(resourceID2);
-    });
-
-    it("Should update association with new resource ID", async function () {
-      await zNAResolver
-        .connect(resourceTypeManager)
-        .associateWithResourceType(
-          wilder_beasts,
-          RESOURCE_TYPE_DAO,
-          resourceID1
-        );
-
-      await expect(
-        zNAResolver
-          .connect(resourceTypeManager)
-          .updateResourceIDWithResourceType(
-            wilder_beasts,
-            RESOURCE_TYPE_DAO,
-            resourceID2
-          )
-      ).to.be.not.reverted;
-
-      const resourceID = await zNAResolver.resourceID(
-        wilder_beasts,
-        RESOURCE_TYPE_DAO
-      );
-      expect(resourceID).to.be.equal(resourceID2);
     });
   });
 });

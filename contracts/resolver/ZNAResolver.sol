@@ -3,7 +3,7 @@ pragma solidity ^0.8.11;
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
-import {AccessControlUpgradeable} from "../oz-upgradeable/access/AccessControlUpgradeable.sol";
+import {AccessControlUpgradeable} from "../oz442/access/AccessControlUpgradeable.sol";
 import {IResourceRegistry} from "../interfaces/IResourceRegistry.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {IZNAResolver} from "../interfaces/IZNAResolver.sol";

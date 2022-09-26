@@ -59,7 +59,7 @@ describe("zNAResolver", function () {
     )) as MockContractFactory<ZNAResolver__factory>;
     zNAResolver =
       (await ZNAResolverFactory.deploy()) as MockContract<ZNAResolver>;
-    await zNAResolver.__ZNAResolver_init(zNSHub.address);
+    await zNAResolver.initialize(zNSHub.address);
 
     RESOURCE_TYPE_DAO = await zNAResolver.RESOURCE_TYPE_DAO();
     RESOURCE_TYPE_STAKING_POOL = await zNAResolver.RESOURCE_TYPE_STAKING_POOL();

@@ -3,12 +3,12 @@ pragma solidity ^0.8.11;
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
-import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
+import {AccessControlUpgradeable} from "../oz-upgradeable/access/AccessControlUpgradeable.sol";
 import {IResourceRegistry} from "../interfaces/IResourceRegistry.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {IZNAResolver} from "../interfaces/IZNAResolver.sol";
 
-contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
+contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   uint256 public constant RESOURCE_TYPE_DAO = 0x1;
   uint256 public constant RESOURCE_TYPE_STAKING_POOL = 0x2;
   uint256 public constant RESOURCE_TYPE_FARMING = 0x4;
@@ -57,7 +57,9 @@ contract ZNAResolver is ZeroUpgradeable, IZNAResolver {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZNAResolver_init(IZNSHub _znsHub) public initializer {
+  function initialize(IZNSHub _znsHub) public initializer {
+    __AccessControl_init();
+    
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _setupRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender());
     _setupRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender());

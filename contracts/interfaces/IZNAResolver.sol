@@ -15,9 +15,18 @@ interface IZNAResolver {
     uint256 _resourceID
   );
 
-  event ResourceDisassociated(uint256 _zNA, uint256 _resourceType);
+  event ResourceDisassociated(
+    uint256 _zNA,
+    uint256 _resourceType,
+    uint256 _oldResourceID
+  );
 
   event ResourceRegistryAdded(uint256 _resourceType, address _resourceRegistry);
+
+  event ResourceRegistryRemoved(
+    uint256 _resourceType,
+    address _oldResourceRegistry
+  );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
@@ -36,6 +45,8 @@ interface IZNAResolver {
     uint256 _resourceType,
     IResourceRegistry _resourceRegistry
   ) external;
+
+  function removeResourceRegistry(uint256 _resourceType) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

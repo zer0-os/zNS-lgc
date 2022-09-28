@@ -13,8 +13,10 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   uint256 public constant RESOURCE_TYPE_STAKING_POOL = 0x2;
   uint256 public constant RESOURCE_TYPE_FARMING = 0x4;
 
+  // Role with who can associate zNA with resource type.
   bytes32 public constant RESOURCE_TYPE_MANAGER_ROLE =
     keccak256(abi.encode("RESOURCE_TYPE_MANAGER"));
+  // Role with who can add resource registry to zNAResolver.
   bytes32 public constant RESOURCE_REGISTRY_MANAGER_ROLE =
     keccak256(abi.encode("RESOURCE_REGISTRY_MANAGER"));
 
@@ -59,7 +61,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
 
   function initialize(IZNSHub _znsHub) public initializer {
     __AccessControl_init();
-    
+
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _setupRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender());
     _setupRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender());
@@ -73,6 +75,13 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
 
   function setZNSHub(address _znsHub) external onlyRole(DEFAULT_ADMIN_ROLE) {
     znsHub = IZNSHub(_znsHub);
+  }
+
+  function setupResourceRegistryManagerRole(address _manager)
+    external
+    onlyRole(DEFAULT_ADMIN_ROLE)
+  {
+    _setupRole(RESOURCE_REGISTRY_MANAGER_ROLE, _manager);
   }
 
   /**
@@ -96,16 +105,8 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
       _doesResourceExist(_resourceType, _resourceID),
       "Not exist resource"
     );
-    require(
-      zNATypes[_zNA] == 0 || _hasResourceType(_zNA, _resourceType),
-      "Only support single resource type"
-    );
 
-    // Set/Update ResourceID
-    zNATypes[_zNA] = zNATypes[_zNA] | _resourceType;
-    zNAResourceIDs[_zNA][_resourceType] = _resourceID;
-
-    emit ResourceAssociated(_zNA, _resourceType, _resourceID);
+    _associateWithResourceType(_zNA, _resourceType, _resourceID);
   }
 
   /**
@@ -124,10 +125,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     require(_isValidResourceType(_resourceType), "Invalid resource type");
     require(_hasResourceType(_zNA, _resourceType), "Should have resource type");
 
-    zNATypes[_zNA] = zNATypes[_zNA] ^ _resourceType;
-    delete zNAResourceIDs[_zNA][_resourceType];
-
-    emit ResourceDisassociated(_zNA, _resourceType);
+    _disassociateWithResourceType(_zNA, _resourceType);
   }
 
   /**
@@ -144,9 +142,33 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   ) external override onlyResourceRegistryManager {
     require(_isValidResourceType(_resourceType), "Invalid resource type");
 
+    if (address(resourceRegistries[_resourceType]) != address(0)) {
+      // Revole ResoureceTypeManager role from old ResourceRegistry
+      _revokeRole(
+        RESOURCE_TYPE_MANAGER_ROLE,
+        address(resourceRegistries[_resourceType])
+      );
+    }
+    // Grant ResoureceTypeManager role to new ResourceRegistry
     resourceRegistries[_resourceType] = _resourceRegistry;
+    _setupRole(RESOURCE_TYPE_MANAGER_ROLE, address(_resourceRegistry));
 
     emit ResourceRegistryAdded(_resourceType, address(_resourceRegistry));
+  }
+
+  function removeResourceRegistry(uint256 _resourceType)
+    external
+    override
+    onlyResourceRegistryManager
+  {
+    require(_isValidResourceType(_resourceType), "Invalid resource type");
+    address oldRegistry = address(resourceRegistries[_resourceType]);
+    require(oldRegistry != address(0), "Should have resource registry");
+
+    delete resourceRegistries[_resourceType];
+    _revokeRole(RESOURCE_TYPE_MANAGER_ROLE, oldRegistry);
+
+    emit ResourceRegistryRemoved(_resourceType, oldRegistry);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -190,6 +212,35 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     IResourceRegistry registry = resourceRegistries[_resourceType];
     assert(address(registry) != address(0));
     return registry.resourceExists(_resourceID);
+  }
+
+  function _associateWithResourceType(
+    uint256 _zNA,
+    uint256 _resourceType,
+    uint256 _resourceID
+  ) internal {
+    if (_hasResourceType(_zNA, _resourceType)) {
+      _disassociateWithResourceType(_zNA, _resourceType);
+    } else if (zNATypes[_zNA] > 0) {
+      // At this moment, do not support multiple resource type per a zNA
+      revert("Only support single resource type");
+    }
+
+    // Set/Update ResourceID
+    zNATypes[_zNA] = zNATypes[_zNA] | _resourceType;
+    zNAResourceIDs[_zNA][_resourceType] = _resourceID;
+
+    emit ResourceAssociated(_zNA, _resourceType, _resourceID);
+  }
+
+  function _disassociateWithResourceType(uint256 _zNA, uint256 _resourceType)
+    internal
+  {
+    zNATypes[_zNA] = zNATypes[_zNA] ^ _resourceType;
+    uint256 oldResourceID = zNAResourceIDs[_zNA][_resourceType];
+    delete zNAResourceIDs[_zNA][_resourceType];
+
+    emit ResourceDisassociated(_zNA, _resourceType, oldResourceID);
   }
 
   /* -------------------------------------------------------------------------- */

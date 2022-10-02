@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
 // Uncomment this line to use console.log
@@ -20,7 +20,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   bytes32 public constant RESOURCE_REGISTRY_MANAGER_ROLE =
     keccak256(abi.encode("RESOURCE_REGISTRY_MANAGER"));
 
-  IZNSHub public znsHub;
+  IZNSHub public zNSHub;
 
   // <zNA => ResourceType>
   // ResourceTypes = DAO | StakingPool | Farming | ...
@@ -41,7 +41,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   modifier onlyResourceTypeManagerOrZNAOwner(uint256 _zNA) {
     require(
       hasRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender()) ||
-        znsHub.ownerOf(_zNA) == _msgSender(),
+        zNSHub.ownerOf(_zNA) == _msgSender(),
       "Not authorized: resource type manager"
     );
     _;
@@ -59,22 +59,22 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function initialize(IZNSHub _znsHub) public initializer {
+  function initialize(IZNSHub _zNSHub) public initializer {
     __AccessControl_init();
 
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _setupRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender());
     _setupRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender());
 
-    znsHub = _znsHub;
+    zNSHub = _zNSHub;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setZNSHub(address _znsHub) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    znsHub = IZNSHub(_znsHub);
+  function setZNSHub(address _zNSHub) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    zNSHub = IZNSHub(_zNSHub);
   }
 
   function setupResourceRegistryManagerRole(address _manager)
@@ -99,7 +99,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     uint256 _resourceType,
     uint256 _resourceID
   ) external override onlyResourceTypeManagerOrZNAOwner(_zNA) {
-    require(znsHub.ownerOf(_zNA) != address(0), "Invalid zNA");
+    require(zNSHub.domainExists(_zNA), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
     require(
       _doesResourceExist(_resourceType, _resourceID),
@@ -121,7 +121,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     override
     onlyResourceTypeManagerOrZNAOwner(_zNA)
   {
-    require(znsHub.ownerOf(_zNA) != address(0), "Invalid zNA");
+    require(zNSHub.domainExists(_zNA), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
     require(_hasResourceType(_zNA, _resourceType), "Should have resource type");
 

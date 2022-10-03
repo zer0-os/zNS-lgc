@@ -134,12 +134,12 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   ) external override onlyResourceRegistryManager {
     require(_isValidResourceType(_resourceType), "Invalid resource type");
 
-    if (address(resourceRegistries[_resourceType]) != address(0)) {
+    address oldRegistry = address(resourceRegistries[_resourceType]);
+    if (oldRegistry != address(0)) {
       // Revole ResoureceTypeManager role from old ResourceRegistry
-      _revokeRole(
-        RESOURCE_TYPE_MANAGER_ROLE,
-        address(resourceRegistries[_resourceType])
-      );
+      _revokeRole(RESOURCE_TYPE_MANAGER_ROLE, oldRegistry);
+
+      emit ResourceRegistryRemoved(_resourceType, oldRegistry);
     }
     // Grant ResoureceTypeManager role to new ResourceRegistry
     resourceRegistries[_resourceType] = _resourceRegistry;
@@ -226,11 +226,8 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     uint256 _resourceType,
     uint256 _resourceID
   ) internal {
-    if (_hasResourceType(_zNA, _resourceType)) {
+    if (zNATypes[_zNA] > 0 && !_hasResourceType(_zNA, _resourceType)) {
       _disassociateWithResourceType(_zNA, _resourceType);
-    } else if (zNATypes[_zNA] > 0) {
-      // At this moment, do not support multiple resource type per a zNA
-      revert("Only support single resource type");
     }
 
     // Set/Update ResourceID

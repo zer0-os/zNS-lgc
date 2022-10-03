@@ -38,15 +38,6 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyResourceTypeManagerOrZNAOwner(uint256 _zNA) {
-    require(
-      hasRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender()) ||
-        zNSHub.ownerOf(_zNA) == _msgSender(),
-      "Not authorized: resource type manager"
-    );
-    _;
-  }
-
   modifier onlyResourceRegistryManager() {
     require(
       hasRole(RESOURCE_REGISTRY_MANAGER_ROLE, _msgSender()),
@@ -98,13 +89,14 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     uint256 _zNA,
     uint256 _resourceType,
     uint256 _resourceID
-  ) external override onlyResourceTypeManagerOrZNAOwner(_zNA) {
+  ) external override {
     require(zNSHub.domainExists(_zNA), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
     require(
       _doesResourceExist(_resourceType, _resourceID),
       "Not exist resource"
     );
+    _isResourceTypeAuthorized(_zNA, _resourceType);
 
     _associateWithResourceType(_zNA, _resourceType, _resourceID);
   }
@@ -119,11 +111,11 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   function disassociateWithResourceType(uint256 _zNA, uint256 _resourceType)
     external
     override
-    onlyResourceTypeManagerOrZNAOwner(_zNA)
   {
     require(zNSHub.domainExists(_zNA), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
     require(_hasResourceType(_zNA, _resourceType), "Should have resource type");
+    _isResourceTypeAuthorized(_zNA, _resourceType);
 
     _disassociateWithResourceType(_zNA, _resourceType);
   }
@@ -212,6 +204,21 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     IResourceRegistry registry = resourceRegistries[_resourceType];
     assert(address(registry) != address(0));
     return registry.resourceExists(_resourceID);
+  }
+
+  function _isResourceTypeAuthorized(uint256 _zNA, uint256 _resourceType)
+    internal
+    view
+  {
+    if (zNSHub.ownerOf(_zNA) != _msgSender()) {
+      if (!hasRole(RESOURCE_TYPE_MANAGER_ROLE, _msgSender())) {
+        revert("Not authorized: resource type manager");
+      }
+      require(
+        address(resourceRegistries[_resourceType]) == _msgSender(),
+        "Not authorized: resource type manager"
+      );
+    }
   }
 
   function _associateWithResourceType(

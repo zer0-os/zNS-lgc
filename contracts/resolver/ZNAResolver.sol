@@ -7,12 +7,9 @@ import {AccessControlUpgradeable} from "../oz442/access/AccessControlUpgradeable
 import {IResourceRegistry} from "../interfaces/IResourceRegistry.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {IZNAResolver} from "../interfaces/IZNAResolver.sol";
+import {ResourceType} from "../libraries/ResourceType.sol";
 
 contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
-  uint256 public constant RESOURCE_TYPE_DAO = 0x1;
-  uint256 public constant RESOURCE_TYPE_STAKING_POOL = 0x2;
-  uint256 public constant RESOURCE_TYPE_FARMING = 0x4;
-
   // Role with who can associate zNA with resource type.
   bytes32 public constant RESOURCE_TYPE_MANAGER_ROLE =
     keccak256(abi.encode("RESOURCE_TYPE_MANAGER"));
@@ -175,9 +172,9 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     pure
     returns (bool)
   {
-    return (_resourceType == RESOURCE_TYPE_DAO ||
-      _resourceType == RESOURCE_TYPE_STAKING_POOL ||
-      _resourceType == RESOURCE_TYPE_FARMING);
+    return (_resourceType == ResourceType.RESOURCE_TYPE_DAO ||
+      _resourceType == ResourceType.RESOURCE_TYPE_STAKING_POOL ||
+      _resourceType == ResourceType.RESOURCE_TYPE_FARMING);
   }
 
   /**

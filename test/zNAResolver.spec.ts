@@ -415,26 +415,4 @@ describe("zNAResolver", function () {
       expect(resourceIDB).to.be.equal(resourceID2);
     });
   });
-
-  describe("Check for upgradability", async function () {
-    beforeEach("init setup", async function () {
-      // todo
-    });
-
-    it("Should preserve storage layout", async function () {
-      // todo
-      // Associate zNA with DAO resource type
-      // Upgrade to v2
-      // zNA should have DAO association
-    });
-
-    it("Should be able to associate new resource type", async function () {
-      // todo
-      // Associate zNA with DAO resource type
-      // Upgrade to v2 which has new resource type(Farming)
-      // zNA should have DAO association
-      // Associate zNA with new resource type
-      // zNA should have association with new resource type, not for DAO
-    });
-  });
 });

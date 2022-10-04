@@ -42,14 +42,14 @@ contract Registrar is
   // This essentially expands the internal ERC721's token storage to additional fields
   mapping(uint256 => DomainRecord) public records;
 
-  /**
-   * @dev Storage slot with the admin of the contract.
-   */
-  bytes32 internal constant _ADMIN_SLOT =
-    0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+  // /**
+  //  * @dev Storage slot with the admin of the contract.
+  //  */
+  // bytes32 internal constant _ADMIN_SLOT =
+  //   0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
   // The beacon address
-  address public beacon;
+  // address public beacon;
 
   // If this is a subdomain contract these will be set
   uint256 public rootDomainId;
@@ -57,8 +57,8 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
-  uint8 private test; // ignore
-  uint256 private gap; // ignore
+  // uint8 private test; // ignore
+  // uint256 private gap; // ignore
 
   // 0 is the null case
   mapping(uint256 => DomainGroup) public domainGroups;
@@ -103,9 +103,9 @@ contract Registrar is
     zNSHub.domainGroupUpdated(id, baseMetadataUri);
   }
 
-  function _getAdmin() internal view returns (address) {
-    return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
-  }
+  // function _getAdmin() internal view returns (address) {
+  //   return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
+  // }
 
   modifier onlyController() {
     if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
@@ -178,19 +178,21 @@ contract Registrar is
     emit ControllerRemoved(controller);
   }
 
-  /**
-   * @notice Pauses the registrar. Can only be done when not paused.
-   */
-  function pause() external onlyOwner {
-    _pause();
-  }
+  function burnDomain(uint256 domainId) external {}
 
-  /**
-   * @notice Unpauses the registrar. Can only be done when not paused.
-   */
-  function unpause() external onlyOwner {
-    _unpause();
-  }
+  // /**
+  //  * @notice Pauses the registrar. Can only be done when not paused.
+  //  */
+  // function pause() external onlyOwner {
+  //   _pause();
+  // }
+
+  // /**
+  //  * @notice Unpauses the registrar. Can only be done when not paused.
+  //  */
+  // function unpause() external onlyOwner {
+  //   _unpause();
+  // }
 
   /**
    * @notice Registers a new (sub) domain
@@ -434,27 +436,27 @@ contract Registrar is
     _setDomainLock(id, msg.sender, toLock);
   }
 
-  /**
-   * @notice transferFrom but many at a time
-   * @param from Current owner of token
-   * @param to New desired owner of token
-   * @param tokenIds The tokens to ransfer
-   */
-  function transferFromBulk(
-    address from,
-    address to,
-    uint256[] calldata tokenIds
-  ) public {
-    for (uint256 i = 0; i < tokenIds.length; ++i) {
-      uint256 tokenId = tokenIds[i];
-      require(
-        _isApprovedOrOwner(_msgSender(), tokenId),
-        "ERC721: transfer caller is not owner nor approved"
-      );
+  // /**
+  //  * @notice transferFrom but many at a time
+  //  * @param from Current owner of token
+  //  * @param to New desired owner of token
+  //  * @param tokenIds The tokens to ransfer
+  //  */
+  // function transferFromBulk(
+  //   address from,
+  //   address to,
+  //   uint256[] calldata tokenIds
+  // ) public {
+  //   for (uint256 i = 0; i < tokenIds.length; ++i) {
+  //     uint256 tokenId = tokenIds[i];
+  //     require(
+  //       _isApprovedOrOwner(_msgSender(), tokenId),
+  //       "ERC721: transfer caller is not owner nor approved"
+  //     );
 
-      _transfer(from, to, tokenId);
-    }
-  }
+  //     _transfer(from, to, tokenId);
+  //   }
+  // }
 
   /*
    * Public View

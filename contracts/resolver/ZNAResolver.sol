@@ -101,7 +101,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   /**
    * @notice Disassociate zNA with resource type, it will automatically
    *     remove allocated resource ID of given resource type.
-   * @dev Only callable by resource type manager
+   * @dev Only callable by zNAOwner
    * @param _zNA Associating zNA
    * @param _resourceType Single resource type. Check above constants
    */
@@ -111,8 +111,11 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
   {
     require(zNSHub.domainExists(_zNA), "Invalid zNA");
     require(_isValidResourceType(_resourceType), "Invalid resource type");
+    require(
+      zNSHub.ownerOf(_zNA) == _msgSender(),
+      "Not authorized: resource type manager"
+    );
     require(_hasResourceType(_zNA, _resourceType), "Should have resource type");
-    _isResourceTypeAuthorized(_zNA, _resourceType);
 
     _disassociateWithResourceType(_zNA, _resourceType);
   }
@@ -213,7 +216,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
       }
       require(
         address(resourceRegistries[_resourceType]) == _msgSender(),
-        "Not authorized: resource type manager"
+        "Only allow to manage registered resource type"
       );
     }
   }
@@ -224,7 +227,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     uint256 _resourceID
   ) internal {
     if (zNATypes[_zNA] > 0 && !_hasResourceType(_zNA, _resourceType)) {
-      _disassociateWithResourceType(_zNA, _resourceType);
+      _disassociateWithResourceType(_zNA, zNATypes[_zNA]);
     }
 
     // Set/Update ResourceID

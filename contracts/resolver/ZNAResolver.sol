@@ -176,8 +176,7 @@ contract ZNAResolver is AccessControlUpgradeable, IZNAResolver {
     returns (bool)
   {
     return (_resourceType == ResourceType.RESOURCE_TYPE_DAO ||
-      _resourceType == ResourceType.RESOURCE_TYPE_STAKING_POOL ||
-      _resourceType == ResourceType.RESOURCE_TYPE_FARMING);
+      _resourceType == ResourceType.RESOURCE_TYPE_STAKING_POOL);
   }
 
   /**

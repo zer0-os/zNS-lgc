@@ -46,14 +46,14 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      // accounts: [
-      //   {
-      //     privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
-      //     balance: "10000000000000000000000",
-      //   },
-      // ],
+      accounts: [
+        {
+          privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+          balance: "10000000000000000000000",
+        },
+      ],
       forking: {
-        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {

@@ -31,8 +31,6 @@ contract ZNSHub is
   // Beacon Proxy used by zNS Registrars
   address public beacon;
 
-  uint8 private test;
-
   modifier onlyRegistrar() {
     require(authorizedRegistrars[msg.sender], "REE: Not authorized registrar");
     _;

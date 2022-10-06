@@ -3,13 +3,13 @@ pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
-contract Registrar is
+contract MigrationRegistrar is
   IRegistrar,
   OwnableUpgradeable,
   ERC721PausableUpgradeable
@@ -45,11 +45,11 @@ contract Registrar is
   // /**
   //  * @dev Storage slot with the admin of the contract.
   //  */
-  // bytes32 internal constant _ADMIN_SLOT =
-  //   0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+  bytes32 internal constant _ADMIN_SLOT =
+    0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
   // The beacon address
-  // address public beacon;
+  address public beacon;
 
   // If this is a subdomain contract these will be set
   uint256 public rootDomainId;
@@ -57,8 +57,8 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
-  // uint8 private test; // ignore
-  // uint256 private gap; // ignore
+  uint8 private test; // ignore
+  uint256 private gap; // ignore
 
   // 0 is the null case
   mapping(uint256 => DomainGroup) public domainGroups;
@@ -102,10 +102,6 @@ contract Registrar is
 
     zNSHub.domainGroupUpdated(id, baseMetadataUri);
   }
-
-  // function _getAdmin() internal view returns (address) {
-  //   return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
-  // }
 
   modifier onlyController() {
     if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
@@ -178,22 +174,6 @@ contract Registrar is
     emit ControllerRemoved(controller);
   }
 
-  function burnDomain(uint256 domainId) external {}
-
-  // /**
-  //  * @notice Pauses the registrar. Can only be done when not paused.
-  //  */
-  // function pause() external onlyOwner {
-  //   _pause();
-  // }
-
-  // /**
-  //  * @notice Unpauses the registrar. Can only be done when not paused.
-  //  */
-  // function unpause() external onlyOwner {
-  //   _unpause();
-  // }
-
   /**
    * @notice Registers a new (sub) domain
    * @param parentId The parent domain
@@ -247,6 +227,58 @@ contract Registrar is
     return id;
   }
 
+  //
+  // vv TEMPORARY FOR MIGRATION vv
+  //
+
+  // does this need to exist if we have `adminBurnToken` below?
+  function burnDomain(uint256 domainId) external onlyOwner {
+    _transfer(msg.sender, address(0), domainId);
+  }
+
+  function mintDomain(
+    uint256 parentId,
+    string memory label,
+    address minter,
+    string memory metadataUri,
+    uint256 royaltyAmount,
+    bool locked,
+    address sendToUser,
+    address subdomainContract
+  ) external onlyOwner returns (uint256) {
+    uint256 id = _registerDomain(
+      parentId,
+      label,
+      minter,
+      metadataUri,
+      royaltyAmount,
+      locked
+    );
+    records[id].subdomainContract = subdomainContract;
+
+    zNSHub.addRegistrar(id, subdomainContract);
+
+    // immediately send the domain to the user (from the minter)
+    _safeTransfer(minter, sendToUser, id, "");
+
+    return id;
+  }
+
+  function setRootDomainId(uint256 _rootDomainId) external onlyOwner {
+    rootDomainId = _rootDomainId;
+  }
+
+  function setParentRegistrar(address _registrar) external onlyOwner {
+    parentRegistrar = _registrar;
+  }
+
+  //
+  // ^^ TEMPORARY FOR MIGRATION ^^
+  //
+
+  /**
+   * @notice Temporary change to add subdomainContract parameter for root
+   */
   function registerSubdomainContract(
     uint256 parentId,
     string memory label,
@@ -272,7 +304,7 @@ contract Registrar is
     );
 
     // More maintainable instead of using `data` in constructor
-    Registrar(subdomainContract).initialize(
+    MigrationRegistrar(subdomainContract).initialize( // temp change name
       address(this),
       id,
       "Zer0 Name Service",
@@ -436,47 +468,25 @@ contract Registrar is
     _setDomainLock(id, msg.sender, toLock);
   }
 
-  // /**
-  //  * @notice transferFrom but many at a time
-  //  * @param from Current owner of token
-  //  * @param to New desired owner of token
-  //  * @param tokenIds The tokens to ransfer
-  //  */
-  // function transferFromBulk(
-  //   address from,
-  //   address to,
-  //   uint256[] calldata tokenIds
-  // ) public {
-  //   for (uint256 i = 0; i < tokenIds.length; ++i) {
-  //     uint256 tokenId = tokenIds[i];
-  //     require(
-  //       _isApprovedOrOwner(_msgSender(), tokenId),
-  //       "ERC721: transfer caller is not owner nor approved"
-  //     );
-
-  //     _transfer(from, to, tokenId);
-  //   }
-  // }
-
   /*
    * Public View
    */
 
-  function ownerOf(uint256 tokenId)
-    public
-    view
-    virtual
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    returns (address)
-  {
-    // Check if the token is in this contract
-    if (_tokenOwners.contains(tokenId)) {
-      return
-        _tokenOwners.get(tokenId, "ERC721: owner query for nonexistent token");
-    }
+  // function ownerOf(uint256 tokenId)
+  //   public
+  //   view
+  //   virtual
+  //   override(ERC721Upgradeable, IERC721Upgradeable)
+  //   returns (address)
+  // {
+  //   // Check if the token is in this contract
+  //   if (_tokenOwners.contains(tokenId)) {
+  //     return
+  //       _tokenOwners.get(tokenId, "ERC721: owner query for nonexistent token");
+  //   }
 
-    return zNSHub.ownerOf(tokenId);
-  }
+  //   return zNSHub.ownerOf(tokenId);
+  // }
 
   /**
    * @notice Returns whether or not an account is a a controller registered on this contract
@@ -493,7 +503,8 @@ contract Registrar is
    */
   function domainExists(uint256 id) public view override returns (bool) {
     bool domainNftExists = _exists(id);
-    return domainNftExists;
+    bool domainHasNotBeenBurned = ownerOf(id) != address(0);
+    return domainNftExists && domainHasNotBeenBurned;
   }
 
   /**
@@ -567,33 +578,33 @@ contract Registrar is
     return parentId;
   }
 
-  function tokenURI(uint256 tokenId)
-    public
-    view
-    virtual
-    override(IERC721MetadataUpgradeable, ERC721Upgradeable)
-    returns (string memory)
-  {
-    require(
-      _exists(tokenId),
-      "ERC721Metadata: URI query for nonexistent token"
-    );
+  // function tokenURI(uint256 tokenId)
+  //   public
+  //   view
+  //   virtual
+  //   override(ERC721Upgradeable, IERC721MetadataUpgradeable, IERC721Upgradeable)
+  //   returns (string memory)
+  // {
+  //   require(
+  //     _exists(tokenId),
+  //     "ERC721Metadata: URI query for nonexistent token"
+  //   );
 
-    DomainRecord memory domain = records[tokenId];
+  //   DomainRecord memory domain = records[tokenId];
 
-    if (domain.domainGroup != 0) {
-      // figure out uri based on domain group
-      return
-        string(
-          abi.encodePacked(
-            domainGroups[domain.domainGroup].baseMetadataUri,
-            uint2str(domain.domainGroupFileIndex)
-          )
-        );
-    }
+  //   if (domain.domainGroup != 0) {
+  //     // figure out uri based on domain group
+  //     return
+  //       string(
+  //         abi.encodePacked(
+  //           domainGroups[domain.domainGroup].baseMetadataUri,
+  //           uint2str(domain.domainGroupFileIndex)
+  //         )
+  //       );
+  //   }
 
-    return super.tokenURI(tokenId);
-  }
+  //   return super.tokenURI(tokenId);
+  // }
 
   /*
    * Internal Methods

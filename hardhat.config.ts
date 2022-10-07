@@ -81,7 +81,7 @@ const config: HardhatUserConfig = {
       accounts: process.env.TESTNET_PRIVATE_KEY
         ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
         : [],
-      url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+      url: "https://goerli.infura.io/v3/fc014702aa244f2ea194515e4cbeb77e",
     },
     localhost: {
       gas: "auto",
@@ -94,9 +94,9 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  etherscan: {
-    apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
-  },
+  // etherscan: {
+  //   apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",
+  // },
   typechain: {
     outDir: "typechain",
   },

@@ -28,7 +28,7 @@ async function main() {
 
   const instance = await upgrades.deployProxy(
     factory,
-    ["Mock WILD/ETH LP", "mLP"],
+    ["Mock WILD", "mWILD"],
     {
       initializer: "initialize",
     }

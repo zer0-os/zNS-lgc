@@ -1,12 +1,12 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import { Registrar__factory } from "../typechain";
+import { Registrar__factory } from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../utilities";
+} from "../../utilities";
 
 import {
   hashBytecodeWithoutMetadata,

@@ -76,3 +76,25 @@ export async function getEvent(
   const firstEvent = events[0];
   return firstEvent;
 }
+
+export type EventMappingType = { [name: string]: ethers.utils.LogDescription };
+
+export async function getAllEvents(
+  tx: ContractTransaction,
+  contract: string,
+  abi: Interface
+): Promise<EventMappingType> {
+  const receipt = await tx.wait();
+  const keys = Object.keys(abi.events);
+  const events = keys.reduce((prev: EventMappingType, current: string) => {
+    const logs = filterLogsWithTopics(receipt.logs, abi.getEventTopic(current), contract);
+    if (logs.length < 1) {
+      return prev;
+    }
+    return {
+      ...prev,
+      [current]: abi.parseLog(logs[0])
+    }
+  }, {});
+  return events;
+}

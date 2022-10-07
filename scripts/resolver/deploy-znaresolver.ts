@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { ZNAResolver } from "../../typechain";
+import { ZNAResolver, ZNAResolver__factory } from "../../typechain";
 import { config } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 
@@ -18,14 +18,10 @@ async function main() {
     network.name === "mainnet"
   ) {
     console.log("Deploying ZNAResolver proxy contract...");
-    const ZNAResolverFactory = await ethers.getContractFactory("ZNAResolver");
+    const ZNAResolverFactory = new ZNAResolver__factory(deployer);
     const zNAResolver = (await upgrades.deployProxy(
       ZNAResolverFactory,
-      [config[network.name].zNSHub],
-      {
-        kind: "uups",
-        initializer: "__ZNAResolver_init",
-      }
+      [config[network.name].zNSHub]
     )) as ZNAResolver;
     await zNAResolver.deployed();
     console.log(`\ndeployed: ${zNAResolver.address}`);

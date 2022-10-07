@@ -46,9 +46,7 @@ describe("zNAResolver", function () {
     BigNumber.from("0x290422f1f79e710c65e3a72fe8dddc0691bb638c865f5061a5e639cf244effff");
 
   let RESOURCE_TYPE_DAO: BigNumber,
-    RESOURCE_TYPE_STAKING_POOL: BigNumber,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    RESOURCE_TYPE_FARMING: BigNumber;
+    RESOURCE_TYPE_STAKING_POOL: BigNumber;
 
   let RESOURCE_TYPE_MANAGER_ROLE: string;
 
@@ -72,8 +70,6 @@ describe("zNAResolver", function () {
     // What is Resource Type
     RESOURCE_TYPE_DAO = await resourceTypeLib.RESOURCE_TYPE_DAO();
     RESOURCE_TYPE_STAKING_POOL = await resourceTypeLib.RESOURCE_TYPE_STAKING_POOL();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    RESOURCE_TYPE_FARMING = await resourceTypeLib.RESOURCE_TYPE_FARMING();
 
     // Deploy ZNAResolver
     const ZNAResolverFactory = (await smock.mock<ZNAResolver__factory>(

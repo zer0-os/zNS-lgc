@@ -1,0 +1,16 @@
+{
+  "registrar": {
+    "name": "Registrar",
+    "address": "0x009A11617dF427319210e842D6B202f3831e0116",
+    "version": "a1d218027995370a7107baa946d92e9fdaf3951bc4e311b49710749dcdfa7cc0",
+    "date": "2022-10-08T00:14:38.576Z",
+    "implementation": "0x27CE4C1bEf3B31C6fb09072D738a412523bDd691"
+  },
+  "basicController": {
+    "name": "BasicController",
+    "address": "0xd23299F8f0BF17d2d037a12985F83c29A630E6F8",
+    "version": "d9cfe9ecb4defa8ce4a66b2e93423d61e1d21cc351483e6ff43082324dfcb9ec",
+    "date": "2022-10-08T00:31:29.105Z",
+    "implementation": "0x28dDe9D541964FD93c53A43752f16F13Fce0D32e"
+  }
+}

@@ -1,16 +1,16 @@
 import { ethers, upgrades, network, run } from "hardhat";
 import {
-  BasicController__factory,
+  AuthBasicController__factory,
   Registrar,
   Registrar__factory,
-} from "../typechain";
+} from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../utilities";
+} from "../../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
@@ -43,6 +43,8 @@ async function main() {
     deploymentData = {};
   }
 
+  console.log(deploymentData.registrar)
+
   if (!deploymentData.registrar) {
     logger.error(
       `Registrar must be deployed before controller can be deployed!`
@@ -59,7 +61,7 @@ async function main() {
     `Deploying with registrar address : ${deploymentData.registrar.address}`
   );
 
-  const controllerFactory = new BasicController__factory(deploymentAccount);
+  const controllerFactory = new AuthBasicController__factory(deploymentAccount);
   const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
 
   logger.log(`Implementation version is ${bytecodeHash}`);

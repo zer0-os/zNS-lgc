@@ -134,11 +134,12 @@ export const runSimulation = async (signer: SignerWithAddress) => {
   await zNSHub.addRegistrar(ethers.constants.HashZero, newRootRegistrar.address)
   await zNSHub.setDefaultRegistrar(newRootRegistrar.address)
 
-  zNSHub.on("EEDomainCreatedV3", async (event) => {
-    console.log(event);
+  let domainId: string;
+
+  zNSHub.on("EEDomainCreatedV3", async (_, id) => {
+    domainId = id;
   });
 
-  console.log(zNSHub.listenerCount());
   // 5. Mint 0://wilder on new root registrar
   const tx = await newRootRegistrar.connect(signer).mintDomain(
     ethers.constants.AddressZero,
@@ -151,21 +152,14 @@ export const runSimulation = async (signer: SignerWithAddress) => {
     newRootRegistrar.address
   );
 
-  // active events?
-  // is there an easier way to do this?
-  // read through contracts better
-  // need to print addresses
-  // to better understand values for debug
-  // console.log(newRootRegistrar.address);
-  // console.log(zNSHub.address);
+  console.log("domainId: ", domainId!);
 
-  const receipt = await tx.wait();
+  // const receipt = await tx.wait();
 
   // console.log(listeners);
 
   // const recordsList = await newRootRegistrar.records.length;
   // console.log(receipt);
 
-  console.log(2)
   return;
 }

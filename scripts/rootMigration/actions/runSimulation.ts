@@ -16,29 +16,27 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { migrateLegacyProject } from "@openzeppelin/upgrades-core";
 
 // For hardhat only
-const deployContract = async <T>(signer: Signer, contractName: string, args: any[]) => {
+const deployContractsHelper = async <T extends Contract>(contractName: string, args: any[]) => {
   const factory = await ethers.getContractFactory(contractName);
   const contract = await hre.upgrades.deployProxy(factory, args);
   return contract as T;
 }
 
-const setupContracts = async (signer: SignerWithAddress): Promise<[ZNSHub, Registrar]> => {
+const deployContracts = async (signer: SignerWithAddress): Promise<[ZNSHub, Registrar]> => {
   const networkName = hre.network.name;
   const addresses = getAddressesForNetwork(networkName);
 
   const signerAddress = await signer.getAddress();
 
   // Deploy and init local contracts
-  const zNSHub = await deployContract<ZNSHub>(
-    signer,
+  const zNSHub = await deployContractsHelper<ZNSHub>(
     "ZNSHub",
     [
       addresses.legacyRegistrar,
       addresses.hubBeaconProxy
     ]
   );
-  const legacyRegistrar = await deployContract<Registrar>(
-    signer,
+  const legacyRegistrar = await deployContractsHelper<Registrar>(
     "Registrar",
     [
       ethers.constants.AddressZero,
@@ -67,7 +65,6 @@ const mintSamples = async (signer: SignerWithAddress, legacyRegistrar: Registrar
   // Real root domain is just 0 address, use this for testing
   const receipt_1 = await tx_1.wait();
   const rootDomainId = BigNumber.from(receipt_1.events![0].args!["tokenId"]);
-  console.log(rootDomainId.toHexString());
 
   const tx_2 = await legacyRegistrar.connect(signer).registerDomain(
     rootDomainId,
@@ -80,20 +77,17 @@ const mintSamples = async (signer: SignerWithAddress, legacyRegistrar: Registrar
 
   const receipt_2 = await tx_2.wait();
   const wilderDomainId = BigNumber.from(receipt_2.events![0].args!["tokenId"]);
-  console.log(wilderDomainId.toHexString());
 
   return [rootDomainId, wilderDomainId];
 }
 
 export const runSimulation = async (signer: SignerWithAddress) => {
-  await run("compile");
-
   const signerAddress = await signer.getAddress();
 
   // Preliminary requirements for test run
-  const [zNSHub, legacyRegistrar] = await setupContracts(signer);
+  const [zNSHub, legacyRegistrar] = await deployContracts(signer);
 
-  await zNSHub.addRegistrar(ethers.constants.AddressZero, legacyRegistrar.address);
+  await zNSHub.addRegistrar(ethers.constants.HashZero, legacyRegistrar.address);
   await legacyRegistrar.connect(signer).addController(signerAddress);
 
   const [rootDomainId, wilderDomainId] = await mintSamples(signer, legacyRegistrar);
@@ -111,13 +105,13 @@ export const runSimulation = async (signer: SignerWithAddress) => {
   // Verify burn of wilder
   const wilderDomainExists = await upgradedRegistrar.domainExists(wilderDomainId);
   if (wilderDomainExists) {
-    throw Error("Burn didn't work")
+    throw Error("Burn didn't work");
   }
 
   await upgradedRegistrar.connect(signer).burnDomain(rootDomainId);
   const rootDomainExists = await upgradedRegistrar.domainExists(rootDomainId);
   if (rootDomainExists) {
-    throw Error("Burn didn't work")
+    throw Error("Burn didn't work");
   }
 
   // 4. Deploy new root registrar
@@ -135,33 +129,43 @@ export const runSimulation = async (signer: SignerWithAddress) => {
       zNSHub.address
     ]
   );
-  console.log(newRegistrar.address);
 
-  // const newRootRegistrar = await newRegistrarBeacon.deployed();
-  // const newRegistrarAddress = await hre.upgrades.beacon.getImplementationAddress(newRegistrarBeacon.address);
-  // console.log(newRegistrarAddress);
-  // console.log(newRootRegistrar.functions.implementation());
-  // console.log(newRootRegistrar.address);
-  // registering the registrar
-  // await newRootRegistrar.connect(signer).initialize(
-  //   ethers.constants.AddressZero,
-  //   ethers.constants.AddressZero,
-  //   "Zer0 Namespace Service",
-  //   "ZNS",
-  //   zNSHub.address
-  // )
+  const newRootRegistrar = await newRegistrar.deployed();
+  await zNSHub.addRegistrar(ethers.constants.HashZero, newRootRegistrar.address)
+  await zNSHub.setDefaultRegistrar(newRootRegistrar.address)
 
+  zNSHub.on("EEDomainCreatedV3", async (event) => {
+    console.log(event);
+  });
+
+  console.log(zNSHub.listenerCount());
   // 5. Mint 0://wilder on new root registrar
-  // const tx = await newRootRegistrar.connect(signer).mintDomain(
-  //   ethers.constants.AddressZero,
-  //   "0://wilder",
-  //   signerAddress,
-  //   "ipfs.io/ipfs/Qm",
-  //   0,
-  //   false,
-  //   signerAddress,
-  //   newRootRegistrar.address
-  // )
+  const tx = await newRootRegistrar.connect(signer).mintDomain(
+    ethers.constants.AddressZero,
+    "0://wilder",
+    signerAddress,
+    "ipfs.io/ipfs/Qm",
+    0,
+    false,
+    signerAddress,
+    newRootRegistrar.address
+  );
 
+  // active events?
+  // is there an easier way to do this?
+  // read through contracts better
+  // need to print addresses
+  // to better understand values for debug
+  // console.log(newRootRegistrar.address);
+  // console.log(zNSHub.address);
+
+  const receipt = await tx.wait();
+
+  // console.log(listeners);
+
+  // const recordsList = await newRootRegistrar.records.length;
+  // console.log(receipt);
+
+  console.log(2)
   return;
 }

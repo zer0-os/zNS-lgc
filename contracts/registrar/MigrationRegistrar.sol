@@ -256,7 +256,13 @@ contract MigrationRegistrar is
     );
     records[id].subdomainContract = subdomainContract;
 
-    zNSHub.addRegistrar(id, subdomainContract);
+    // Call to '_registerDomain` above calls the
+    // 'onlyRegistrar' function to emit event data,
+    // if we register after domain creation it fails, 
+    // and if we register before this line fails
+    // so either no event data or we register in the 
+    // migration script
+    // zNSHub.addRegistrar(id, subdomainContract);
 
     // immediately send the domain to the user (from the minter)
     _safeTransfer(minter, sendToUser, id, "");

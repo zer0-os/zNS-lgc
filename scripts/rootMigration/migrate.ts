@@ -20,7 +20,7 @@ import {
 // 6. Upgrade both the legacy registrar and new beacon to have the old registrar code (PM)
 
 const migrate = async () => {
-  // await run("compile");
+  await hre.run("compile");
 
   // As beasts and air wild season2 sales only happened on mainnet they can't be tested on rinkeby 
   // unless we deploy a fake contract to act as the sale contract when testing. For now just test

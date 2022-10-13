@@ -6,9 +6,9 @@ import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 // const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
 // const deployerAddress = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
 
-// rinkeby
-const registrarAddress = "0xa4F6C921f914ff7972D7C55c15f015419326e0Ca";
-const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
+// goerli
+const registrarAddress = "0x009A11617dF427319210e842D6B202f3831e0116";
+const hubAddress = "0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1";
 const deployerAddress = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
 
 const main = async () => {
@@ -68,7 +68,7 @@ const main = async () => {
 
   console.log(`verifying implementation on etherscan`);
   const implementationAddress =
-    await hre.upgrades.erc1967.getImplementationAddress(registrarAddress);
+    await hre.upgrades.erc1967.getImplementationAddress(hubAddress);
   await hre.run("verify:verify", { address: implementationAddress });
 };
 

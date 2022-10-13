@@ -92,6 +92,16 @@
       "address": "0x0e46c45f8aca3f89Ad06F4a20E2BED1A12e4658C",
       "txHash": "0x3d9a0709fd3404b0574a82e6ea8f37f17aa756089ed2ab98f1b656c0082e9fb7",
       "kind": "transparent"
+    },
+    {
+      "address": "0x196bc789E03761904E3d7266fa57f2001592D25A",
+      "txHash": "0xc8c30751998b5e2e6d3456aafe6dde7ad065860f73c82813d8357708be5ce245",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x19f127f0a5ACCF0E6E2DdcE63085750a74EBc44A",
+      "txHash": "0x8d29f533a99e24c71d07e15aa401859460ba3e1a9fc684b5414ea5c4beed0e9b",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -691,13 +701,13 @@
           {
             "contract": "ERC721Upgradeable",
             "label": "_holderTokens",
-            "type": "t_mapping(t_address,t_struct(UintSet)6848_storage)",
+            "type": "t_mapping(t_address,t_struct(UintSet)4289_storage)",
             "src": "contracts\\oz\\token\\ERC721\\ERC721Upgradeable.sol:41"
           },
           {
             "contract": "ERC721Upgradeable",
             "label": "_tokenOwners",
-            "type": "t_struct(UintToAddressMap)6199_storage",
+            "type": "t_struct(UintToAddressMap)3640_storage",
             "src": "contracts\\oz\\token\\ERC721\\ERC721Upgradeable.sol:44"
           },
           {
@@ -769,7 +779,7 @@
           {
             "contract": "Registrar",
             "label": "records",
-            "type": "t_mapping(t_uint256,t_struct(DomainRecord)7256_storage)",
+            "type": "t_mapping(t_uint256,t_struct(DomainRecord)4697_storage)",
             "src": "contracts\\registrar\\Registrar.sol:43"
           },
           {
@@ -793,7 +803,7 @@
           {
             "contract": "Registrar",
             "label": "zNSHub",
-            "type": "t_contract(IZNSHub)1745",
+            "type": "t_contract(IZNSHub)368",
             "src": "contracts\\registrar\\Registrar.sol:59"
           },
           {
@@ -811,7 +821,7 @@
           {
             "contract": "Registrar",
             "label": "domainGroups",
-            "type": "t_mapping(t_uint256,t_struct(DomainGroup)7259_storage)",
+            "type": "t_mapping(t_uint256,t_struct(DomainGroup)4700_storage)",
             "src": "contracts\\registrar\\Registrar.sol:64"
           },
           {
@@ -831,13 +841,13 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_mapping(t_uint256,t_struct(DomainRecord)7256_storage)": {
+          "t_mapping(t_uint256,t_struct(DomainRecord)4697_storage)": {
             "label": "mapping(uint256 => struct Registrar.DomainRecord)"
           },
           "t_uint256": {
             "label": "uint256"
           },
-          "t_struct(DomainRecord)7256_storage": {
+          "t_struct(DomainRecord)4697_storage": {
             "label": "struct Registrar.DomainRecord",
             "members": [
               {
@@ -878,16 +888,16 @@
               }
             ]
           },
-          "t_contract(IZNSHub)1745": {
+          "t_contract(IZNSHub)368": {
             "label": "contract IZNSHub"
           },
           "t_uint8": {
             "label": "uint8"
           },
-          "t_mapping(t_uint256,t_struct(DomainGroup)7259_storage)": {
+          "t_mapping(t_uint256,t_struct(DomainGroup)4700_storage)": {
             "label": "mapping(uint256 => struct Registrar.DomainGroup)"
           },
-          "t_struct(DomainGroup)7259_storage": {
+          "t_struct(DomainGroup)4700_storage": {
             "label": "struct Registrar.DomainGroup",
             "members": [
               {
@@ -905,19 +915,19 @@
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
           },
-          "t_mapping(t_address,t_struct(UintSet)6848_storage)": {
+          "t_mapping(t_address,t_struct(UintSet)4289_storage)": {
             "label": "mapping(address => struct EnumerableSetUpgradeable.UintSet)"
           },
-          "t_struct(UintSet)6848_storage": {
+          "t_struct(UintSet)4289_storage": {
             "label": "struct EnumerableSetUpgradeable.UintSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)6444_storage"
+                "type": "t_struct(Set)3885_storage"
               }
             ]
           },
-          "t_struct(Set)6444_storage": {
+          "t_struct(Set)3885_storage": {
             "label": "struct EnumerableSetUpgradeable.Set",
             "members": [
               {
@@ -939,21 +949,21 @@
           "t_mapping(t_bytes32,t_uint256)": {
             "label": "mapping(bytes32 => uint256)"
           },
-          "t_struct(UintToAddressMap)6199_storage": {
+          "t_struct(UintToAddressMap)3640_storage": {
             "label": "struct EnumerableMapUpgradeable.UintToAddressMap",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Map)5870_storage"
+                "type": "t_struct(Map)3311_storage"
               }
             ]
           },
-          "t_struct(Map)5870_storage": {
+          "t_struct(Map)3311_storage": {
             "label": "struct EnumerableMapUpgradeable.Map",
             "members": [
               {
                 "label": "_entries",
-                "type": "t_array(t_struct(MapEntry)5861_storage)dyn_storage"
+                "type": "t_array(t_struct(MapEntry)3302_storage)dyn_storage"
               },
               {
                 "label": "_indexes",
@@ -961,10 +971,10 @@
               }
             ]
           },
-          "t_array(t_struct(MapEntry)5861_storage)dyn_storage": {
+          "t_array(t_struct(MapEntry)3302_storage)dyn_storage": {
             "label": "struct EnumerableMapUpgradeable.MapEntry[]"
           },
-          "t_struct(MapEntry)5861_storage": {
+          "t_struct(MapEntry)3302_storage": {
             "label": "struct EnumerableMapUpgradeable.MapEntry",
             "members": [
               {
@@ -1212,6 +1222,144 @@
           },
           "t_bytes4": {
             "label": "bytes4"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "c689c04f552cd8ce2e08ed30147fa97a0b9390d1e86e78463e5a43501a2fac46": {
+      "address": "0xc347B2a5240176DB7FCe717667A3393AFFCBca37",
+      "txHash": "0x4338621219e841fea82be43533be49103fdfba40c2f8cf968dce998aa3942c90",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\oz\\proxy\\Initializable.sol:24"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "contracts\\oz\\proxy\\Initializable.sol:29"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts\\oz\\utils\\ContextUpgradeable.sol:32"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "contracts\\oz\\access\\OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts\\oz\\access\\OwnableUpgradeable.sol:79"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "paymentToken",
+            "type": "t_contract(IERC20Upgradeable)3751",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:63"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "zNSHub",
+            "type": "t_contract(IZNSHub)1748",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:66"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "platformWallet",
+            "type": "t_address",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:69"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "platformFee",
+            "type": "t_uint256",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:72"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "purchaseData",
+            "type": "t_mapping(t_uint256,t_struct(DomainPurchaseData)287_storage)",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:75"
+          },
+          {
+            "contract": "DomainPurchaser",
+            "label": "allowMintingNonNetwork",
+            "type": "t_bool",
+            "src": "contracts\\controllers\\DomainPurchaser.sol:78"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)3751": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IZNSHub)1748": {
+            "label": "contract IZNSHub"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_struct(DomainPurchaseData)287_storage)": {
+            "label": "mapping(uint256 => struct DomainPurchaser.DomainPurchaseData)"
+          },
+          "t_struct(DomainPurchaseData)287_storage": {
+            "label": "struct DomainPurchaser.DomainPurchaseData",
+            "members": [
+              {
+                "label": "subdomainMintingEnabled",
+                "type": "t_bool"
+              },
+              {
+                "label": "prices",
+                "type": "t_struct(PricingData)1146_storage"
+              },
+              {
+                "label": "allowSubdomainsToMint",
+                "type": "t_bool"
+              },
+              {
+                "label": "wasAllowedToSubdomainMintOnCreation",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_struct(PricingData)1146_storage": {
+            "label": "struct IDomainPurchaser.PricingData",
+            "members": [
+              {
+                "label": "short",
+                "type": "t_uint256"
+              },
+              {
+                "label": "medium",
+                "type": "t_uint256"
+              },
+              {
+                "label": "long",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

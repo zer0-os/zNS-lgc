@@ -1,11 +1,6 @@
 import * as hre from "hardhat";
 import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 
-// mainnet
-// const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
-// const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
-// const deployerAddress = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
-
 // goerli
 const registrarAddress = "0x009A11617dF427319210e842D6B202f3831e0116";
 const hubAddress = "0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1";
@@ -38,37 +33,42 @@ const main = async () => {
   console.log(`ZNS Registrar beacon is at ${beaconAddress}`);
 
   console.log(`Upgrading zNS Hub`);
-  await hre.upgrades.upgradeProxy(
+  let tx = await hre.upgrades.upgradeProxy(
     hubAddress,
     new ZNSHub__factory(deployer),
     {}
   );
+  console.log(`waiting for confirmations....`);
+  await tx.deployTransaction.wait(2);
   console.log(`finished....`);
 
   console.log(`Upgrading root zNS Registrar`);
-  const tx = await hre.upgrades.upgradeProxy(
+  tx = await hre.upgrades.upgradeProxy(
     registrarAddress,
     new Registrar__factory(deployer),
     {}
   );
+  console.log(`waiting for confirmations....`);
+  await tx.deployTransaction.wait(2);
   console.log(`finished....`);
 
   console.log(`Upgrading zNS Sub-Registrar Beacon`);
-  await hre.upgrades.upgradeBeacon(
+  tx = await hre.upgrades.upgradeBeacon(
     beaconAddress,
     new Registrar__factory(deployer),
     {
       timeout: 0,
     }
   );
+  console.log(`waiting for confirmations....`);
+  await tx.deployTransaction.wait(2);
   console.log(`finished....`);
-
-  console.log("waiting for confirmations");
-  await tx.deployTransaction.wait(3);
 
   console.log(`verifying implementation on etherscan`);
   const implementationAddress =
     await hre.upgrades.erc1967.getImplementationAddress(hubAddress);
+  await hre.run("verify:verify", { address: implementationAddress });
+
   await hre.run("verify:verify", { address: implementationAddress });
 };
 

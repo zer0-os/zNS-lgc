@@ -4,68 +4,6 @@ pragma solidity ^0.8.9;
 import {IRegistrar} from "./IRegistrar.sol";
 
 interface IZNSHub {
-  event EETransferV1(
-    address registrar,
-    address indexed from,
-    address indexed to,
-    uint256 indexed tokenId
-  );
-
-  event EEDomainCreatedV2(
-    address registrar,
-    uint256 indexed id,
-    string label,
-    uint256 indexed labelHash,
-    uint256 indexed parent,
-    address minter,
-    address controller,
-    string metadataUri,
-    uint256 royaltyAmount
-  );
-
-  event EEDomainCreatedV3(
-    address registrar,
-    uint256 indexed id,
-    string label,
-    uint256 indexed labelHash,
-    uint256 indexed parent,
-    address minter,
-    address controller,
-    string metadataUri,
-    uint256 royaltyAmount,
-    uint256 groupId,
-    uint256 groupFileIndex
-  );
-
-  event EEMetadataLockChanged(
-    address registrar,
-    uint256 indexed id,
-    address locker,
-    bool isLocked
-  );
-
-  event EEMetadataChanged(address registrar, uint256 indexed id, string uri);
-
-  event EERoyaltiesAmountChanged(
-    address registrar,
-    uint256 indexed id,
-    uint256 amount
-  );
-
-  event EENewSubdomainRegistrar(
-    address parentRegistrar,
-    uint256 rootId,
-    address childRegistrar
-  );
-
-  event EEDomainGroupUpdatedV1(
-    address parentRegistrar,
-    uint256 folderGroupId,
-    string baseMetadataUri
-  );
-
-  event EERefreshMetadata(uint256 startIndex, uint256 endIndex);
-
   function addRegistrar(uint256 rootDomainId, address registrar) external;
 
   function isController(address controller) external returns (bool);

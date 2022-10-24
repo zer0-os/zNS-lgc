@@ -3,7 +3,7 @@ import {
   AuthBasicController__factory,
   Registrar,
   Registrar__factory,
-} from "../typechain";
+} from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,

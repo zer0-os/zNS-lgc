@@ -1,15 +1,10 @@
 import * as hre from "hardhat";
 import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 
-// mainnet
-const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
-const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
-const deployerAddress = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
-
-// rinkeby
-// const registrarAddress = "0xa4F6C921f914ff7972D7C55c15f015419326e0Ca";
-// const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
-// const deployerAddress = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+// goerli
+const registrarAddress = "0x009A11617dF427319210e842D6B202f3831e0116";
+const hubAddress = "0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1";
+const deployerAddress = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
@@ -70,14 +65,10 @@ const main = async () => {
   console.log(`finished....`);
 
   console.log(`verifying implementation on etherscan`);
-  let implementationAddress =
-    await hre.upgrades.erc1967.getImplementationAddress(registrarAddress);
+  const implementationAddress =
+    await hre.upgrades.erc1967.getImplementationAddress(hubAddress);
   await hre.run("verify:verify", { address: implementationAddress });
 
-  console.log(`verifying implementation on etherscan (hub)`);
-  implementationAddress = await hre.upgrades.erc1967.getImplementationAddress(
-    hubAddress
-  );
   await hre.run("verify:verify", { address: implementationAddress });
 };
 

@@ -1,13 +1,13 @@
 import * as hre from "hardhat";
-import { Registrar__factory, ZNSHub__factory } from "../../typechain";
+import { Registrar__factory, ZNSHub__factory } from "../../../typechain";
 
-// Mainnet Registrar
-const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+// Goerli Registrar
+const registrarAddress = "0x009A11617dF427319210e842D6B202f3831e0116";
 
 const main = async () => {
   let deployer = (await hre.ethers.getSigners())[0];
 
-  if (hre.ethers.provider.network.chainId == 31337) {
+  if (hre.network.name == "hardhat") {
     const mainnetDeployer = "0x7829afa127494ca8b4ceef4fb81b78fee9d0e471";
 
     await hre.network.provider.request({

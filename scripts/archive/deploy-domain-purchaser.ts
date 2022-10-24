@@ -14,7 +14,7 @@ async function main() {
 
   const tenToEighteen = ethers.BigNumber.from(10).pow(18)
 
-  // compare with values on rinkeby
+  // Goerli contract addresses
   const paymentToken = "0x0e46c45f8aca3f89Ad06F4a20E2BED1A12e4658C";
   const znsHub = "0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1";
   const platformWallet = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";

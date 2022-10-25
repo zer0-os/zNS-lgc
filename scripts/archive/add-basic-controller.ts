@@ -1,12 +1,13 @@
 import { ethers, network, run } from "hardhat";
-import { Registrar, Registrar__factory } from "../typechain";
+import { Registrar, Registrar__factory } from "../../typechain";
 import * as fs from "fs";
-import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
+import { DeploymentOutput, deploymentsFolder, getLogger } from "../../utilities";
 
 const logger = getLogger("scripts::add-basic-controller");
 
-const deployerNew = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
-const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+// Astro
+const deployerNew = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";
+const registrarAddress = "0x009A11617dF427319210e842D6B202f3831e0116";
 
 async function main() {
   await run("compile");

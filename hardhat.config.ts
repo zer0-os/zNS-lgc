@@ -22,6 +22,34 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
+        version: "0.8.2",
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.9",
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
         version: "0.8.11",
         settings: {
           outputSelection: {
@@ -78,8 +106,8 @@ const config: HardhatUserConfig = {
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     goerli: {
-      accounts: process.env.TESTNET_PRIVATE_KEY
-        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+      accounts: process.env.ASTRO_PRIVATE_KEY
+        ? [`0x${process.env.ASTRO_PRIVATE_KEY}`]
         : [],
       url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },

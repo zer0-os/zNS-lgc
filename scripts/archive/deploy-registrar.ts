@@ -1,12 +1,12 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import { Registrar__factory } from "../typechain";
+import { Registrar__factory } from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../utilities";
+} from "../../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
@@ -14,6 +14,7 @@ import {
 } from "@openzeppelin/upgrades-core";
 
 const logger = getLogger("scripts::deploy-registrar");
+const goerliZNSHubAddress = "0x35921570D157D6E9DA51e67B47d43bAF5da1e108";
 
 async function main() {
   await run("compile");
@@ -32,9 +33,25 @@ async function main() {
 
   logger.log(`Implementation version is ${bytecodeHash}`);
 
-  const instance = await upgrades.deployProxy(registrarFactory, [], {
-    initializer: "initialize",
-  });
+  /**
+   * address parentRegistrar_,
+    uint256 rootDomainId_,
+    string calldata collectionName,
+    string calldata collectionSymbol,
+    address zNSHub_
+   */
+  const instance = await upgrades.deployProxy(registrarFactory,
+    [
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero,
+      "Zer0 Name Service",
+      "ZNS",
+      goerliZNSHubAddress
+    ],
+    {
+      initializer: "initialize",
+    }
+  );
   await instance.deployed();
 
   logger.log(`Deployed Registrar to '${instance.address}'`);

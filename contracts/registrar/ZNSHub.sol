@@ -4,8 +4,8 @@ pragma solidity ^0.8.9;
 import {ContextUpgradeable} from "../oz/utils/ContextUpgradeable.sol";
 import {ERC165Upgradeable} from "../oz/introspection/ERC165Upgradeable.sol";
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
+import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
-import "../interfaces/IZNSHub.sol";
 
 contract ZNSHub is
   ContextUpgradeable,
@@ -13,6 +13,66 @@ contract ZNSHub is
   IZNSHub,
   OwnableUpgradeable
 {
+  event EETransferV1(
+    address registrar,
+    address indexed from,
+    address indexed to,
+    uint256 indexed tokenId
+  );
+
+  event EEDomainCreatedV2(
+    address registrar,
+    uint256 indexed id,
+    string label,
+    uint256 indexed labelHash,
+    uint256 indexed parent,
+    address minter,
+    address controller,
+    string metadataUri,
+    uint256 royaltyAmount
+  );
+
+  event EEDomainCreatedV3(
+    address registrar,
+    uint256 indexed id,
+    string label,
+    uint256 indexed labelHash,
+    uint256 indexed parent,
+    address minter,
+    address controller,
+    string metadataUri,
+    uint256 royaltyAmount,
+    uint256 groupId,
+    uint256 groupFileIndex
+  );
+
+  event EEMetadataLockChanged(
+    address registrar,
+    uint256 indexed id,
+    address locker,
+    bool isLocked
+  );
+
+  event EEMetadataChanged(address registrar, uint256 indexed id, string uri);
+
+  event EERoyaltiesAmountChanged(
+    address registrar,
+    uint256 indexed id,
+    uint256 amount
+  );
+
+  event EENewSubdomainRegistrar(
+    address parentRegistrar,
+    uint256 rootId,
+    address childRegistrar
+  );
+
+  event EEDomainGroupUpdatedV1(
+    address parentRegistrar,
+    uint256 folderGroupId,
+    string baseMetadataUri
+  );
+
   // Contains all zNS Registrars that are authentic
   mapping(address => bool) public authorizedRegistrars;
 
@@ -176,13 +236,6 @@ contract ZNSHub is
     string calldata baseMetadataUri
   ) external onlyRegistrar {
     emit EEDomainGroupUpdatedV1(_msgSender(), folderGroupId, baseMetadataUri);
-  }
-
-  function refreshMetadata(uint256 startIndex, uint256 endIndex)
-    external
-    onlyOwner
-  {
-    emit EERefreshMetadata(startIndex, endIndex);
   }
 
   function owner()

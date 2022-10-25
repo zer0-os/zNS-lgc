@@ -75,7 +75,7 @@ contract DomainPurchaser is
   mapping(uint256 => DomainPurchaseData) public purchaseData;
 
   // Allow for non-network domains to be minted
-  bool allowMintingNonNetwork = false;
+  bool allowMintingNonNetwork;
 
   function initialize(
     address _paymentToken,
@@ -96,6 +96,8 @@ contract DomainPurchaser is
       allowSubdomainsToMint: true,
       wasAllowedToSubdomainMintOnCreation: true
     });
+
+    allowMintingNonNetwork = false;
 
     platformFee = _platformFee;
   }

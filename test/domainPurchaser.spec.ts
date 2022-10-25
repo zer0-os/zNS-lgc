@@ -14,7 +14,7 @@ import {
   ZNSHub,
   ZNSHub__factory,
 } from "../typechain";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 chai.use(solidity);
 chai.use(smock.smock.matchers);
@@ -30,6 +30,9 @@ describe("DomainPurchaser", () => {
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
+
+  const rootDomainHash = ethers.constants.HashZero;
+  const rootDomainId = BigNumber.from(0);
 
   const pricingData = {
     short: 3,

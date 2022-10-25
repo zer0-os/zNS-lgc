@@ -256,12 +256,12 @@ contract MigrationRegistrar is
     );
     records[id].subdomainContract = subdomainContract;
 
-    // Call to '_registerDomain` above calls the
-    // 'onlyRegistrar' function to emit event data,
-    // if we register after domain creation it fails, 
-    // and if we register before this line fails
-    // so either no event data or we register in the 
-    // migration script
+    // Call to '_registerDomain` above calls function
+    // that has 'onlyRegistrar' modifier to emit event data,
+    // if we register after domain creation it fails,
+    // and if we register before, the below fails
+    // so either no event data or we register in the
+    // migration script itself
     // zNSHub.addRegistrar(id, subdomainContract);
 
     // immediately send the domain to the user (from the minter)

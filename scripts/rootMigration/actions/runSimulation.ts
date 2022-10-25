@@ -4,16 +4,12 @@ import {
   MigrationRegistrar,
   MigrationRegistrar__factory,
   ZNSHub,
-  ZNSHub__factory,
-  BeaconProxy,
-  BeaconProxy__factory,
   Registrar,
-  Registrar__factory
 } from "../../../typechain";
 import { getAddressesForNetwork } from "./addresses";
 import { BigNumber, Contract, ContractTransaction, Signer } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { migrateLegacyProject } from "@openzeppelin/upgrades-core";
+import { domain } from "process";
 
 // For hardhat only
 const deployContractsHelper = async <T extends Contract>(contractName: string, args: any[]) => {
@@ -22,11 +18,9 @@ const deployContractsHelper = async <T extends Contract>(contractName: string, a
   return contract as T;
 }
 
-const deployContracts = async (signer: SignerWithAddress): Promise<[ZNSHub, Registrar]> => {
+const deployContracts = async (): Promise<[ZNSHub, Registrar, Registrar]> => {
   const networkName = hre.network.name;
   const addresses = getAddressesForNetwork(networkName);
-
-  const signerAddress = await signer.getAddress();
 
   // Deploy and init local contracts
   const zNSHub = await deployContractsHelper<ZNSHub>(
@@ -45,11 +39,17 @@ const deployContracts = async (signer: SignerWithAddress): Promise<[ZNSHub, Regi
       "ZNS",
       zNSHub.address
     ]
-  )
+  );
 
-  return [zNSHub, legacyRegistrar]
+  const factory = await ethers.getContractFactory("Registrar");
+  const beacon = await hre.upgrades.deployBeacon(factory) as Registrar;
+
+  return [zNSHub, legacyRegistrar, beacon];
 }
-const mintSamples = async (signer: SignerWithAddress, legacyRegistrar: Registrar): Promise<[BigNumber, BigNumber]> => {
+const mintSamples = async (
+  signer: SignerWithAddress,
+  legacyRegistrar: Registrar
+): Promise<[BigNumber, BigNumber]> => {
   const signerAddress = await signer.getAddress();
 
   // Mint necessary sample domains
@@ -84,42 +84,50 @@ const mintSamples = async (signer: SignerWithAddress, legacyRegistrar: Registrar
 export const runSimulation = async (signer: SignerWithAddress) => {
   const signerAddress = await signer.getAddress();
 
-  // Preliminary requirements for test run
-  const [zNSHub, legacyRegistrar] = await deployContracts(signer);
+  // Preliminary requirements for simulated run
+  const [zNSHub, legacyRegistrar, beacon] = await deployContracts();
 
   await zNSHub.addRegistrar(ethers.constants.HashZero, legacyRegistrar.address);
   await legacyRegistrar.connect(signer).addController(signerAddress);
 
   const [rootDomainId, wilderDomainId] = await mintSamples(signer, legacyRegistrar);
 
+  console.log(rootDomainId)
+  console.log(wilderDomainId)
   // Begin Migration simulation
   // 2. Upgrade existing proxies to have needed functionality
+  // 2.a. Upgrade legacy Registrar
   const upgradedRegistrar: MigrationRegistrar = await hre.upgrades.upgradeProxy(
     legacyRegistrar,
     new MigrationRegistrar__factory(signer)
   ) as MigrationRegistrar;
 
+  // 2.b. Upgrade Beacon registrars
+  const upgradedBeacon: MigrationRegistrar = await hre.upgrades.upgradeBeacon(
+    beacon,
+    new MigrationRegistrar__factory(signer)
+  ) as MigrationRegistrar;
+
   // 3. Burn domains
   await upgradedRegistrar.connect(signer).burnDomain(wilderDomainId);
-
-  // Verify burn of wilder
-  const wilderDomainExists = await upgradedRegistrar.domainExists(wilderDomainId);
-  if (wilderDomainExists) {
-    throw Error("Burn didn't work");
-  }
-
   await upgradedRegistrar.connect(signer).burnDomain(rootDomainId);
+
+  // Verify burn
+  const wilderDomainExists = await upgradedRegistrar.domainExists(wilderDomainId);
   const rootDomainExists = await upgradedRegistrar.domainExists(rootDomainId);
-  if (rootDomainExists) {
+
+  if (wilderDomainExists || rootDomainExists) {
     throw Error("Burn didn't work");
   }
 
-  // 4. Deploy new root registrar
-  const newRegistrarBeacon = await hre.upgrades.deployBeacon(
-    new MigrationRegistrar__factory(signer)
-  );
+  // 4. Deploy new root registrar, new beacon or existing subdomain registrar beacon?
+
+  // Q. Use a new beacon for the root registrar? or same beacon as subregistrars?
+  // const newRegistrarBeacon = await hre.upgrades.deployBeacon(
+  //   new MigrationRegistrar__factory(signer)
+  // );
   const newRegistrar = await hre.upgrades.deployBeaconProxy(
-    newRegistrarBeacon.address,
+    beacon.address,
     new MigrationRegistrar__factory(signer),
     [
       ethers.constants.AddressZero,

@@ -36,8 +36,6 @@ const migrate = async () => {
     const addresses = getAddressesForNetwork(hre.network.name);
     console.log(hre.network.name)
   }
-
-
 }
 
 migrate();

@@ -8,6 +8,7 @@ import {
   Registrar,
   Registrar__factory,
 } from "../../typechain";
+import { runMigration } from "./actions/runMigration";
 
 // 0. Make code changes for migration registrar, version M
 //    0a. Make this a new version, maintain the old version, PM, for post migration
@@ -22,19 +23,13 @@ import {
 const migrate = async () => {
   await hre.run("compile");
 
-  // As beasts and air wild season2 sales only happened on mainnet they can't be tested on rinkeby 
-  // unless we deploy a fake contract to act as the sale contract when testing. For now just test
-  // on registrar that does exist on rinkeby
-
   const [signer] = await hre.ethers.getSigners();
 
   // run simulation on hardhat
   if (hre.network.name === "hardhat") {
     runSimulation(signer);
   } else {
-    const signerAddress = await signer.getAddress();
-    const addresses = getAddressesForNetwork(hre.network.name);
-    console.log(hre.network.name)
+    runMigration(signer);
   }
 }
 

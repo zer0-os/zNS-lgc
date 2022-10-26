@@ -31,8 +31,8 @@ const deployContracts = async (): Promise<[ZNSHub, Registrar, Registrar]> => {
   const zNSHub = await deployContractsHelper<ZNSHub>(
     "ZNSHub",
     [
-      addresses.legacyRegistrar,
-      addresses.hubBeaconProxy
+      addresses.registrar,
+      addresses.zNSHub
     ]
   );
   const legacyRegistrar = await deployContractsHelper<Registrar>(
@@ -54,20 +54,21 @@ const deployContracts = async (): Promise<[ZNSHub, Registrar, Registrar]> => {
 const mintSamples = async (
   signer: SignerWithAddress,
   legacyRegistrar: Registrar
-): Promise<[BigNumber, BigNumber]> => {
+): Promise<[string, BigNumber]> => {
   const signerAddress = await signer.getAddress();
 
-  // Mint riit
-  const tx_1 = await legacyRegistrar.connect(signer).registerDomain(
-    hre.ethers.constants.AddressZero,
-    "0://",
-    signerAddress,
-    "ipfs.io/ipfs/Qm",
-    0,
-    false
-  );
+  // // Mint riit
+  // const tx_1 = await legacyRegistrar.connect(signer).registerDomain(
+  //   hre.ethers.constants.AddressZero,
+  //   "0://",
+  //   signerAddress,
+  //   "ipfs.io/ipfs/Qm",
+  //   0,
+  //   false
+  // );
 
-  const rootDomainId = await getDomainId(tx_1);
+  // const rootDomainId = await getDomainId(tx_1);
+  const rootDomainId = "0";
 
   // Mint wilder
   const tx_2 = await legacyRegistrar.connect(signer).registerDomain(
@@ -80,9 +81,6 @@ const mintSamples = async (
   );
 
   const wilderDomainId = await getDomainId(tx_2);
-
-  console.log(`legacy root: ${rootDomainId}`);
-  console.log(`legacy wilder: ${wilderDomainId}`);
 
   return [rootDomainId, wilderDomainId];
 }
@@ -143,8 +141,7 @@ export const runSimulation = async (signer: SignerWithAddress) => {
 
   console.log(`beaconRegistrar: ${beaconRegistrar.address}`)
 
-  await zNSHub.addRegistrar(ethers.constants.HashZero, beaconRegistrar.address)
-  await zNSHub.setDefaultRegistrar(beaconRegistrar.address);
+  await zNSHub.addRegistrar(rootDomainId, beaconRegistrar.address);
 
   // 5. Mint 0://wilder in new root registrar
   const tx = await beaconRegistrar.connect(signer).mintDomain(

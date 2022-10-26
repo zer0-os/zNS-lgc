@@ -1,2 +1,0 @@
-// Define some constants
-export const DEPLOYER_ADDRESS = "0xaE3153c9F5883FD2E78031ca2716520748c521dB"

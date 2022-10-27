@@ -506,7 +506,7 @@ contract ERC721Upgradeable is
       ERC721Upgradeable.ownerOf(tokenId) == from,
       "ERC721: transfer of token that is not own"
     ); // internal owner
-    // Allow burning of tokens
+    // To allow token burning we must be able to send to the zero address
     // require(to != address(0), "ERC721: transfer to the zero address");
 
     _beforeTokenTransfer(from, to, tokenId);

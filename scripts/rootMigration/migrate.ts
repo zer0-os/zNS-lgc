@@ -25,7 +25,7 @@ const migrate = async () => {
 
   const [signer] = await hre.ethers.getSigners();
 
-  // run simulation on hardhat
+  // Run simulation on hardhat
   if (hre.network.name === "hardhat") {
     runSimulation(signer);
   } else {

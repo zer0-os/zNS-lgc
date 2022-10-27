@@ -11,7 +11,6 @@ import { getAddressesForNetwork } from "./addresses";
 import { BigNumber, Contract, ContractTransaction, Signer } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-// For hardhat only
 const deployContractsHelper = async <T extends Contract>(contractName: string, args: any[]) => {
   const factory = await ethers.getContractFactory(contractName);
   const contract = await hre.upgrades.deployProxy(factory, args);
@@ -56,22 +55,10 @@ const mintSamples = async (
   legacyRegistrar: Registrar
 ): Promise<[string, BigNumber]> => {
   const signerAddress = await signer.getAddress();
-
-  // // Mint riit
-  // const tx_1 = await legacyRegistrar.connect(signer).registerDomain(
-  //   hre.ethers.constants.AddressZero,
-  //   "0://",
-  //   signerAddress,
-  //   "ipfs.io/ipfs/Qm",
-  //   0,
-  //   false
-  // );
-
-  // const rootDomainId = await getDomainId(tx_1);
   const rootDomainId = "0";
 
   // Mint wilder
-  const tx_2 = await legacyRegistrar.connect(signer).registerDomain(
+  const tx = await legacyRegistrar.connect(signer).registerDomain(
     rootDomainId,
     "0://wilder",
     signerAddress,
@@ -80,7 +67,7 @@ const mintSamples = async (
     false
   );
 
-  const wilderDomainId = await getDomainId(tx_2);
+  const wilderDomainId = await getDomainId(tx);
 
   return [rootDomainId, wilderDomainId];
 }

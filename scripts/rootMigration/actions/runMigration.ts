@@ -1,10 +1,8 @@
-import { ethers, upgrades, run } from "hardhat";
+import { ethers } from "hardhat";
 import * as hre from "hardhat"
 import {
   MigrationRegistrar,
   MigrationRegistrar__factory,
-  ZNSHub,
-  Registrar,
   Registrar__factory,
   ZNSHub__factory,
 } from "../../../typechain";
@@ -23,8 +21,9 @@ const logger = getLogger("scripts::runTestNetwork");
 export const runMigration = async (signer: SignerWithAddress) => {
   const signerAddress = await signer.getAddress();
   const network = hre.network.name;
-  logger.log(`Using network: ${network}`)
   const addresses = getAddressesForNetwork(network);
+
+  logger.log(`Using network ${network} for migration`)
 
   const legacyRegistrarAddress = addresses.registrar;
   const beaconAddress = addresses.subregistrarBeacon;

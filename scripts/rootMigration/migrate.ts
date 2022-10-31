@@ -1,13 +1,4 @@
-// import { ethers, upgrades, run } from "hardhat";
 import * as hre from "hardhat"
-import { runSimulation } from "./actions/runSimulation";
-import { getAddressesForNetwork } from "./actions/addresses";
-import {
-  MigrationRegistrar,
-  MigrationRegistrar__factory,
-  Registrar,
-  Registrar__factory,
-} from "../../typechain";
 import { runMigration } from "./actions/runMigration";
 
 // 0. Make code changes for migration registrar, version M
@@ -24,13 +15,7 @@ const migrate = async () => {
   await hre.run("compile");
 
   const [signer] = await hre.ethers.getSigners();
-
-  // Run simulation on hardhat
-  if (hre.network.name === "hardhat") {
-    runSimulation(signer);
-  } else {
-    runMigration(signer);
-  }
+  runMigration(signer, hre.network.name);
 }
 
 migrate();

@@ -243,7 +243,6 @@ contract MigrationRegistrar is
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked,
-    address sendToUser,
     address subdomainContract
   ) external onlyOwner returns (uint256) {
     uint256 id = _registerDomain(
@@ -263,9 +262,6 @@ contract MigrationRegistrar is
     // so either no event data or we register in the
     // migration script itself
     // zNSHub.addRegistrar(id, subdomainContract);
-
-    // immediately send the domain to the user (from the minter)
-    _safeTransfer(minter, sendToUser, id, "");
 
     return id;
   }

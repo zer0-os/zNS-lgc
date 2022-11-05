@@ -231,7 +231,6 @@ contract MigrationRegistrar is
   // vv TEMPORARY FOR MIGRATION vv
   //
 
-  // does this need to exist if we have `adminBurnToken` below?
   function burnDomain(uint256 domainId) external onlyOwner {
     _transfer(msg.sender, address(0), domainId);
   }
@@ -245,6 +244,7 @@ contract MigrationRegistrar is
     bool locked,
     address subdomainContract
   ) external onlyOwner returns (uint256) {
+    // por que?
     uint256 id = _registerDomain(
       parentId,
       label,
@@ -271,7 +271,19 @@ contract MigrationRegistrar is
   }
 
   function setParentRegistrar(address _registrar) external onlyOwner {
+    require(
+      parentRegistrar != _registrar,
+      "MR: Can't set the same parentRegistrar"
+    );
     parentRegistrar = _registrar;
+  }
+
+  function setParentDomainId(uint256 _parentId, uint256 _domainId)
+    external
+    onlyOwner
+  {
+    DomainRecord storage domain = records[_domainId];
+    domain.parentId = _parentId;
   }
 
   //

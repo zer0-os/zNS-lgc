@@ -59,7 +59,7 @@ export const mintSampleWilderDomain = async (
   // Mint wilder
   const tx = await legacyRegistrar.connect(signer).registerDomain(
     rootDomainId,
-    "wilder",
+    "wilder-sample",
     signerAddress,
     "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
     0,
@@ -83,4 +83,5 @@ export const updateRegistrarValues = async (
   await tx.wait(waitBlocks);
   tx = await registrar.connect(signer).setParentRegistrar(beaconRegistrarAddress);
   await tx.wait(waitBlocks);
+  // also update each subdomain.parentId?
 }

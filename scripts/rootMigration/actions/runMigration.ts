@@ -117,21 +117,6 @@ export const runMigration = async (
 
   logger.log(`New Wilder domainId: ${newWilderDomainId.toHexString()}`);
 
-  logger.log("5.5 Update all subdomain parentIds to the new Wilder domainId");
-  for (const subDomain of addresses.subdomains) {
-    const tx = await upgradedLegacyRegistrar.setParentDomainId(
-      newWilderDomainId,
-      subDomain
-    );
-    await tx.wait(waitBlocks);
-  }
-
-  logger.log("Verify the parent changed")
-  const wowDomain = await upgradedLegacyRegistrar.records(addresses.subdomains[0]);
-  logger.log(`Original wilder domain: ${hre.ethers.BigNumber.from(wilderDomainId)._hex}`);
-  console.log(`New wilder domain ${newWilderDomainId._hex}`);
-  console.log(`WoW parent domain ${wowDomain.parentId._hex}`);
-
   logger.log("6. Update the rootDomainId and parentRegistrar values on upgraded legacy registrar");
   await helpers.updateRegistrarValues(
     signer,

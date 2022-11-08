@@ -181,7 +181,7 @@ contract Registrar is
   /**
    * @notice Pauses the registrar. Can only be done when not paused.
    */
-  function pauseUnpause() external onlyOwner {
+  function pause() external onlyOwner {
     _pause();
   }
 

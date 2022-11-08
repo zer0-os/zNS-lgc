@@ -8,13 +8,13 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import {DefaultOperatorFilterer} from "../opensea/DefaultOperatorFilterer.sol";
+import {OperatorFilterer} from "../opensea/OperatorFilterer.sol";
 
 contract Registrar is
   IRegistrar,
   OwnableUpgradeable,
   ERC721PausableUpgradeable,
-  DefaultOperatorFilterer
+  OperatorFilterer
 {
   using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
 
@@ -38,7 +38,7 @@ contract Registrar is
   }
 
   // A map of addresses that are authorised to register domains.
-  mapping(address => bool) controllers;
+  mapping(address => bool) public controllers;
 
   // A mapping of domain id's to domain data
   // This essentially expands the internal ERC721's token storage to additional fields
@@ -140,10 +140,8 @@ contract Registrar is
 
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
-  }
 
-  function owner() public view override returns (address) {
-    return zNSHub.owner();
+    initializeFilter();
   }
 
   /*
@@ -477,15 +475,6 @@ contract Registrar is
   function minterOf(uint256 id) public view override returns (address) {
     address minter = records[id].minter;
     return minter;
-  }
-
-  /**
-   * @notice Returns whether or not an account is a a controller registered on this contract
-   * @param account Address of account to check
-   */
-  function isController(address account) external view override returns (bool) {
-    bool accountIsController = controllers[account];
-    return accountIsController;
   }
 
   /**

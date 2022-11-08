@@ -1,8 +1,8 @@
 {
   "devDependencies": {
-    "@defi-wonderland/smock": "2.0.7",
+    "@defi-wonderland/smock": "2.3.0",
     "@nomiclabs/ethereumjs-vm": "4.2.2",
-    "@nomiclabs/hardhat-ethers": "2.0.5",
+    "@nomiclabs/hardhat-ethers": "^2.2.1",
     "@nomiclabs/hardhat-etherscan": "2.1.8",
     "@nomiclabs/hardhat-waffle": "2.0.3",
     "@openzeppelin/contracts-upgradeable": "3.4.2",
@@ -20,7 +20,7 @@
     "eslint": "7.21.0",
     "eslint-plugin-prettier": "3.3.1",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "5.5.4",
+    "ethers": "^5.7.2",
     "hardhat": "2.12.0",
     "ipfs-http-client": "49.0.4",
     "lodash": "4.17.21",
@@ -53,5 +53,7 @@
   },
   "name": "zns-contracts",
   "version": "0.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "@eth-optimism/smock": "^1.1.10"
+  }
 }

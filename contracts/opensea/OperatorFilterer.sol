@@ -9,14 +9,30 @@ contract OperatorFilterer {
   IOperatorFilterRegistry constant operatorFilterRegistry =
     IOperatorFilterRegistry(0x000000000000AAeB6D7670E522A718067333cd4E);
 
-  function initializeFilter() internal {
+  function initializeFilter(
+    address subscriptionOrRegistrantToCopy,
+    bool subscribe
+  ) internal {
     // If an inheriting token contract is deployed to a network without the registry deployed, the modifier
     // will not revert, but the contract will need to be registered with the registry once it is deployed in
     // order for the modifier to filter addresses.
-    operatorFilterRegistry.registerAndSubscribe(
-      address(this),
-      address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6)
-    );
+    if (address(operatorFilterRegistry).code.length > 0) {
+      if (subscribe) {
+        operatorFilterRegistry.registerAndSubscribe(
+          address(this),
+          subscriptionOrRegistrantToCopy
+        );
+      } else {
+        if (subscriptionOrRegistrantToCopy != address(0)) {
+          operatorFilterRegistry.registerAndCopyEntries(
+            address(this),
+            subscriptionOrRegistrantToCopy
+          );
+        } else {
+          operatorFilterRegistry.register(address(this));
+        }
+      }
+    }
   }
 
   modifier onlyAllowedOperator() virtual {

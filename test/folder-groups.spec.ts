@@ -62,6 +62,7 @@ describe("Folder groups functionality", () => {
     const numDomainGroups = await registry.numDomainGroups();
     expect(numDomainGroups).to.eq(0);
   });
+
   it("create domain groups", async () => {
     await registry.addController(controller.address);
 
@@ -94,6 +95,12 @@ describe("Folder groups functionality", () => {
 
     retrievedUri1 = await asController.domainGroups("1");
     expect(retrievedUri1).to.eq(updatedUri);
+  });
+  it("ascontroller", async () => {
+    const asController = registry.connect(controller);
+  });
+  it("connect", async () => {
+    const controllerAddress = await controller.getAddress();
   });
 
   it("registers domains in a domain group", async () => {
@@ -153,5 +160,5 @@ describe("Folder groups functionality", () => {
     expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
 
-  it("still allows old token uris to work", async () => {});
+  it("still allows old token uris to work", async () => { });
 });

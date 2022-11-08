@@ -3,13 +3,12 @@ pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
-import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
+import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable, StringsUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
 import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {DefaultOperatorFilterer} from "../opensea/DefaultOperatorFilterer.sol";
-import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
 
 contract Registrar is
   IRegistrar,

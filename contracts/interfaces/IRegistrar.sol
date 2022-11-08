@@ -95,7 +95,7 @@ interface IRegistrar is
   function setDomainRoyaltyAmount(uint256 id, uint256 amount) external;
 
   // Returns whether an address is a controller
-  function isController(address account) external view returns (bool);
+  function controllers(address account) external view returns (bool);
 
   // Checks whether or not a domain exists
   function domainExists(uint256 id) external view returns (bool);

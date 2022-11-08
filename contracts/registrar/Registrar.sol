@@ -8,11 +8,14 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import {DefaultOperatorFilterer} from "../opensea/operator-filter-registry/src/DefaultOperatorFilterer.sol";
+import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
 
 contract Registrar is
   IRegistrar,
   OwnableUpgradeable,
-  ERC721PausableUpgradeable
+  ERC721PausableUpgradeable,
+  DefaultOperatorFilterer
 {
   using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
 
@@ -57,8 +60,6 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
-  uint8 private test; // ignore
-  uint256 private gap; // ignore
 
   // 0 is the null case
   mapping(uint256 => DomainGroup) public domainGroups;
@@ -181,7 +182,7 @@ contract Registrar is
   /**
    * @notice Pauses the registrar. Can only be done when not paused.
    */
-  function pause() external onlyOwner {
+  function pauseUnpause() external onlyOwner {
     _pause();
   }
 
@@ -210,13 +211,15 @@ contract Registrar is
     bool locked
   ) external override onlyController returns (uint256) {
     return
-      _registerDomain(
+      _registerDomainV2(
         parentId,
         label,
         minter,
         metadataUri,
         royaltyAmount,
-        locked
+        locked,
+        0,
+        0
       );
   }
 
@@ -230,13 +233,15 @@ contract Registrar is
     address sendToUser
   ) external override onlyController returns (uint256) {
     // Register the domain
-    uint256 id = _registerDomain(
+    uint256 id = _registerDomainV2(
       parentId,
       label,
       minter,
       metadataUri,
       royaltyAmount,
-      locked
+      locked,
+      0,
+      0
     );
 
     // immediately send domain to user
@@ -255,13 +260,15 @@ contract Registrar is
     address sendToUser
   ) external onlyController returns (uint256) {
     // Register domain, `minter` is the minter
-    uint256 id = _registerDomain(
+    uint256 id = _registerDomainV2(
       parentId,
       label,
       minter,
       metadataUri,
       royaltyAmount,
-      locked
+      locked,
+      0,
+      0
     );
 
     // Create subdomain contract as a beacon proxy
@@ -287,27 +294,6 @@ contract Registrar is
     _safeTransfer(minter, sendToUser, id, "");
 
     return id;
-  }
-
-  function _registerDomain(
-    uint256 parentId,
-    string memory label,
-    address minter,
-    string memory metadataUri,
-    uint256 royaltyAmount,
-    bool locked
-  ) internal returns (uint256) {
-    return
-      _registerDomainV2(
-        parentId,
-        label,
-        minter,
-        metadataUri,
-        royaltyAmount,
-        locked,
-        0,
-        0
-      );
   }
 
   function _registerDomainV2(
@@ -477,15 +463,6 @@ contract Registrar is
   }
 
   /**
-   * @notice Returns whether or not an account is a a controller registered on this contract
-   * @param account Address of account to check
-   */
-  function isController(address account) external view override returns (bool) {
-    bool accountIsController = controllers[account];
-    return accountIsController;
-  }
-
-  /**
    * @notice Returns whether or not a domain is exists
    * @param id The domain
    */
@@ -577,20 +554,45 @@ contract Registrar is
       "ERC721Metadata: URI query for nonexistent token"
     );
 
-    DomainRecord memory domain = records[tokenId];
+    //DomainRecord memory domain = records[tokenId];
 
-    if (domain.domainGroup != 0) {
+    if (records[tokenId].domainGroup != 0) {
       // figure out uri based on domain group
       return
         string(
           abi.encodePacked(
-            domainGroups[domain.domainGroup].baseMetadataUri,
-            uint2str(domain.domainGroupFileIndex)
+            domainGroups[records[tokenId].domainGroup].baseMetadataUri,
+            StringsUpgradeable.toString(records[tokenId].domainGroupFileIndex)
           )
         );
     }
 
     return super.tokenURI(tokenId);
+  }
+
+  function transferFrom(
+    address from,
+    address to,
+    uint256 tokenId
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator {
+    super.transferFrom(from, to, tokenId);
+  }
+
+  function safeTransferFrom(
+    address from,
+    address to,
+    uint256 tokenId
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator {
+    super.safeTransferFrom(from, to, tokenId);
+  }
+
+  function safeTransferFrom(
+    address from,
+    address to,
+    uint256 tokenId,
+    bytes memory data
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator {
+    super.safeTransferFrom(from, to, tokenId, data);
   }
 
   /*
@@ -674,7 +676,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            uint2str(ipfsFolderIndexOffset + i)
+            StringsUpgradeable.toString(ipfsFolderIndexOffset + i)
           )
         )
       );
@@ -700,7 +702,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            uint2str(ipfsFolderIndexStart + i)
+            StringsUpgradeable.toString(ipfsFolderIndexStart + i)
           )
         )
       );
@@ -739,13 +741,17 @@ contract Registrar is
     require(endingIndex - startingIndex > 0, "Invalid number of domains");
     uint256 result;
     for (uint256 i = startingIndex; i < endingIndex; i++) {
-      result = _registerDomain(
+      result = _registerDomainV2(
         parentId,
-        uint2str(i + namingOffset),
+        StringsUpgradeable.toString(i + namingOffset),
         minter,
-        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
+        string(
+          abi.encodePacked(folderWithIPFSPrefix, StringsUpgradeable.toString(i))
+        ),
         royaltyAmount,
-        locked
+        locked,
+        0,
+        0
       );
     }
   }
@@ -765,7 +771,7 @@ contract Registrar is
     for (uint256 i = startingIndex; i < endingIndex; i++) {
       tokenId = _registerDomainV2(
         parentId,
-        uint2str(i + namingOffset),
+        StringsUpgradeable.toString(i + namingOffset),
         minter,
         "",
         royaltyAmount,
@@ -778,31 +784,5 @@ contract Registrar is
         _transfer(minter, sendTo, tokenId);
       }
     }
-  }
-
-  function uint2str(uint256 _i)
-    internal
-    pure
-    returns (string memory _uintAsString)
-  {
-    if (_i == 0) {
-      return "0";
-    }
-    uint256 j = _i;
-    uint256 len;
-    while (j != 0) {
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint256 k = len;
-    while (_i != 0) {
-      k = k - 1;
-      uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
-      bytes1 b1 = bytes1(temp);
-      bstr[k] = b1;
-      _i /= 10;
-    }
-    return string(bstr);
   }
 }

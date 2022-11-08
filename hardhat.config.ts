@@ -63,6 +63,20 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.8.13",
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
     ],
   },
   paths: {
@@ -81,7 +95,7 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {

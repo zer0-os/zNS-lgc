@@ -96,12 +96,6 @@ describe("Folder groups functionality", () => {
     retrievedUri1 = await asController.domainGroups("1");
     expect(retrievedUri1).to.eq(updatedUri);
   });
-  it("ascontroller", async () => {
-    const asController = registry.connect(controller);
-  });
-  it("connect", async () => {
-    const controllerAddress = await controller.getAddress();
-  });
 
   it("registers domains in a domain group", async () => {
     const asController = registry.connect(controller);

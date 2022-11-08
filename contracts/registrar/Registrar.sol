@@ -8,7 +8,7 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import {DefaultOperatorFilterer} from "../opensea/operator-filter-registry/src/DefaultOperatorFilterer.sol";
+import {DefaultOperatorFilterer} from "../opensea/DefaultOperatorFilterer.sol";
 import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
 
 contract Registrar is

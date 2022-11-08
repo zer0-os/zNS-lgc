@@ -38,7 +38,7 @@ contract Registrar is
   }
 
   // A map of addresses that are authorised to register domains.
-  mapping(address => bool) public controllers;
+  mapping(address => bool) controllers;
 
   // A mapping of domain id's to domain data
   // This essentially expands the internal ERC721's token storage to additional fields
@@ -477,6 +477,15 @@ contract Registrar is
   function minterOf(uint256 id) public view override returns (address) {
     address minter = records[id].minter;
     return minter;
+  }
+
+  /**
+   * @notice Returns whether or not an account is a a controller registered on this contract
+   * @param account Address of account to check
+   */
+  function isController(address account) external view override returns (bool) {
+    bool accountIsController = controllers[account];
+    return accountIsController;
   }
 
   /**

@@ -1,5 +1,13 @@
-// import { ethers } from "hardhat";
-import * as hre from "hardhat"
+import * as hre from "hardhat";
+import { BigNumber } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import * as safe from '@gnosis.pm/safe-core-sdk';
+
+
+import { ethers } from 'ethers';
+import EthersAdapter, { EthersAdapterConfig } from '@gnosis.pm/safe-ethers-lib'
+import Safe, { SafeConfig, SafeAccountConfig, SafeFactoryConfig, SafeFactory, SafeDeploymentConfig } from '@gnosis.pm/safe-core-sdk'
+
 import {
   MigrationRegistrar,
   MigrationRegistrar__factory,
@@ -7,11 +15,14 @@ import {
   ZNSHub__factory,
 } from "../../../typechain";
 import { getAddressesForNetwork } from "./addresses";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getLogger } from "../../../utilities";
-import * as helpers from "./helpers";
 
-const logger = getLogger("scripts::runTestNetwork");
+import * as helpers from "./helpers";
+import { ContractNetworkConfig, ContractNetworksConfig } from "@gnosis.pm/safe-core-sdk/dist/src/types";
+import { TransactionOptions } from "@gnosis.pm/safe-core-sdk-types";
+import SafeServiceClient from '@gnosis.pm/safe-service-client'
+
+const logger = getLogger("scripts::runMigration");
 
 export const runMigration = async (
   signer: SignerWithAddress,
@@ -22,31 +33,82 @@ export const runMigration = async (
 
   logger.log(`Using network ${network} for migration`);
 
-  let legacyRegistrarAddress;
-  let zNSHubAddress;
-  let beaconAddress;
-  let wilderDomainId;
+  // Print all accounts
+  // await hre.run("accounts");
 
   const rootDomainId = "0";
   const waitBlocks = network === "hardhat" ? 0 : 3;
 
+  const legacyRegistrarAddress = addresses.registrar;
+  const legacyRegistrarOwner = addresses.registrarOwner;
+  const zNSHubAddress = addresses.zNSHub;
+  const beaconAddress = addresses.subregistrarBeacon;
+  const wilderDomainId = addresses.wilderDomainId;
+
+  const ethAdapter: EthersAdapter = new EthersAdapter({
+    ethers,
+    signer
+  });
+
+  // Gnosis Safe SDK for Hardhat
+  const networkConfig: ContractNetworksConfig = {
+    // Mainnet
+    "1": helpers.getGnosisNetworkConfig(network),
+    // Goerli
+    "5": helpers.getGnosisNetworkConfig(network),
+    // Hardhat
+    "31337": helpers.getGnosisNetworkConfig(network)
+  };
+
+  let safeSdk: Safe;
   if (network === "hardhat") {
-    // Setup default contracts required for migration simulation
-    const [zNSHub, legacyRegistrar, beacon] = await helpers.deployContracts();
+    // Deploy a fake Gnosis safe for testing
+    console.log(1)
+    const factoryConfig: SafeFactoryConfig = {
+      ethAdapter,
+      contractNetworks: networkConfig
+    }
+    const safeFactory = await SafeFactory.create(factoryConfig);
+    console.log(2)
 
-    await zNSHub.addRegistrar(hre.ethers.constants.HashZero, legacyRegistrar.address);
-    await legacyRegistrar.connect(signer).addController(signerAddress);
-
-    legacyRegistrarAddress = legacyRegistrar.address;
-    zNSHubAddress = zNSHub.address;
-    beaconAddress = beacon.address;
-
-    wilderDomainId = await helpers.mintSampleWilderDomain(signer, legacyRegistrar);
+    const safeAccountConfig: SafeAccountConfig = {
+      owners: [signerAddress],
+      threshold: 1,
+    }
+    const safeDeploymentConfig: SafeDeploymentConfig = {
+      saltNonce: "1"
+    }
+    const options: TransactionOptions = {
+      gasLimit: 10000000
+    }
+    console.log(3)
+    // cannot estimate gas
+    safeSdk = await safeFactory.deploySafe({
+      safeAccountConfig,
+      safeDeploymentConfig,
+      options
+    });
   } else {
-    legacyRegistrarAddress = addresses.registrar;
-    zNSHubAddress = addresses.zNSHub;
-    beaconAddress = addresses.subregistrarBeacon;
-    wilderDomainId = addresses.wilderDomainId;
+    const safeConfig: SafeConfig = {
+      ethAdapter,
+      safeAddress: addresses.registrarOwner
+    };
+    safeSdk = await Safe.create(safeConfig);
+  }
+
+  // Passing '--network mainnet' to CLI
+  console.log(await safeSdk.getAddress());
+  console.log(await safeSdk.getContractManager());
+  console.log(await safeSdk.getChainId());
+  console.log(await safeSdk.getMultiSendAddress());
+  console.log(await safeSdk.getMultiSendCallOnlyAddress());
+
+  return;
+
+  // The address for the legacy registrar is not in the manifest we must force
+  // hardhat to use it and allow us to upgrade it.
+  if (network !== "goerli") {
+    await hre.upgrades.forceImport(legacyRegistrarAddress, new Registrar__factory());
   }
 
   const zNSHub = ZNSHub__factory.connect(zNSHubAddress, signer);
@@ -85,7 +147,7 @@ export const runMigration = async (
   logger.log("4. Deploy new root registrar as proxy to existing subdomain registrar beacon");
   const newRegistrarTx = await hre.upgrades.deployBeaconProxy(
     upgradedBeacon.address,
-    new MigrationRegistrar__factory(signer),
+    new MigrationRegistrar__factory(signer), // deploy as version 0 registrar?
     [
       hre.ethers.constants.AddressZero, // Parent registrar
       rootDomainId,
@@ -95,25 +157,32 @@ export const runMigration = async (
     ]
   );
 
-  const beaconRegistrar = await newRegistrarTx.deployed() as MigrationRegistrar;
+  const newBeaconRegistrar = await newRegistrarTx.deployed() as MigrationRegistrar;
 
-  logger.log(`New Beacon Registrar Address: ${beaconRegistrar.address}`);
+  logger.log(`New Beacon Registrar Address: ${newBeaconRegistrar.address}`);
 
-  // Must do this to be able to mint below
-  await zNSHub.addRegistrar(rootDomainId, beaconRegistrar.address);
+  // Must do register the new registrar as authorized to be able to mint below
+  const addRegistrarTx = await zNSHub.addRegistrar(rootDomainId, newBeaconRegistrar.address);
+  await addRegistrarTx.wait(waitBlocks);
 
   logger.log("5. Mint wilder in new root registrar");
-  const tx = await beaconRegistrar.connect(signer).mintDomain(
+  const tx = await newBeaconRegistrar.connect(signer).mintDomain(
     hre.ethers.constants.HashZero, // parent id
     "wilder",
     signerAddress,
     "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
     0,
     false,
-    beaconRegistrar.address
+    newBeaconRegistrar.address
   );
+  const receipt = await tx.wait(waitBlocks)
+  const newWilderDomainId = BigNumber.from(receipt.events![0].args!["tokenId"]);
 
-  const newWilderDomainId = await helpers.getDomainId(tx, waitBlocks);
+  if (wilderDomainId !== newWilderDomainId.toHexString()) {
+    logger.error(
+      `Original wilderDomainId: ${wilderDomainId} and minted newWilderDomainId ${newWilderDomainId.toHexString()} do not match.`
+    );
+  }
 
   logger.log(`New Wilder domainId: ${newWilderDomainId.toHexString()}`);
 
@@ -122,22 +191,24 @@ export const runMigration = async (
     signer,
     upgradedLegacyRegistrar,
     rootDomainId,
-    beaconRegistrar.address,
+    newBeaconRegistrar.address,
     waitBlocks
   );
 
   logger.log("7. Upgrade to legacy and beacon registrars to post-migration version (OG version)");
   logger.log("7a. Upgrade legacy registrar back to original Registrar");
-  await hre.upgrades.upgradeProxy(
+  const originalRegistrarTx = await hre.upgrades.upgradeProxy(
     upgradedLegacyRegistrar,
     new Registrar__factory(signer)
   );
+  await originalRegistrarTx.deployed()
 
   logger.log("7b. Upgrade beacon registrars to original Registrar");
-  await hre.upgrades.upgradeBeacon(
+  const originalBeaconRegistrarTx = await hre.upgrades.upgradeBeacon(
     upgradedBeacon.address,
     new Registrar__factory(signer)
   );
+  await originalBeaconRegistrarTx.deployed();
 
   return;
 }

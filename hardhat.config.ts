@@ -18,6 +18,10 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   }
 });
 
+task("tester", "tests", async () => {
+
+})
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -77,11 +81,13 @@ const config: HardhatUserConfig = {
       accounts: [
         {
           privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+          // privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
           balance: "10000000000000000000000",
         },
       ],
       forking: {
-        url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        // url: "https://mainnet.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
       },
     },
     mainnet: {
@@ -106,8 +112,8 @@ const config: HardhatUserConfig = {
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     goerli: {
-      accounts: process.env.ASTRO_PRIVATE_KEY
-        ? [`0x${process.env.ASTRO_PRIVATE_KEY}`]
+      accounts: process.env.TESTNET_PRIVATE_KEY
+        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
         : [],
       url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
@@ -129,4 +135,6 @@ const config: HardhatUserConfig = {
     outDir: "typechain",
   },
 };
+
+const thing = 39309021144720815864318807681738966234032524071017289203515664704373336409897
 export default config;

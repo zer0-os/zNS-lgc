@@ -244,7 +244,6 @@ contract MigrationRegistrar is
     bool locked,
     address subdomainContract
   ) external onlyOwner returns (uint256) {
-    // por que?
     uint256 id = _registerDomain(
       parentId,
       label,

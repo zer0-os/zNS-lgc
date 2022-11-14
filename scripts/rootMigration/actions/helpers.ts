@@ -4,6 +4,7 @@ import {
   ZNSHub,
   Registrar,
   MigrationRegistrar,
+  Registrar__factory,
 } from "../../../typechain";
 import { getAddressesForNetwork } from "./addresses";
 import { BigNumber, Contract, ContractTransaction, Signer } from "ethers";
@@ -83,5 +84,27 @@ export const updateRegistrarValues = async (
   await tx.wait(waitBlocks);
   tx = await registrar.connect(signer).setParentRegistrar(beaconRegistrarAddress);
   await tx.wait(waitBlocks);
-  // also update each subdomain.parentId?
+}
+
+export const transferOwnership = async (
+  signer: SignerWithAddress,
+  registrar: Registrar,
+  newOwnerAddress: string
+) => {
+  const tx = await registrar.connect(signer).transferOwnership(newOwnerAddress);
+  await tx.wait()
+}
+
+export const getGnosisNetworkConfig = (
+  network: string
+) => {
+  // if hardhat use tasks defined for acessing gnosis safe
+  // return those instead
+  const addresses = getAddressesForNetwork(network);
+  return {
+    multiSendAddress: addresses.safe.multiSendAddress,
+    multiSendCallOnlyAddress: addresses.safe.multiSendCallOnlyAddress,
+    safeMasterCopyAddress: addresses.safe.safeMasterCopyAddress,
+    safeProxyFactoryAddress: addresses.safe.safeProxyFactoryAddress
+  }
 }

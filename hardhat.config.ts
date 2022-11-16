@@ -2,6 +2,7 @@
 require("dotenv").config();
 //require('@eth-optimism/smock/build/src/plugins/hardhat-storagelayout')
 
+
 import { task, HardhatUserConfig } from "hardhat/config";
 
 import "@nomiclabs/hardhat-etherscan";
@@ -96,7 +97,7 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: "https://eth-mainnet.alchemyapi.io/v2/-nhhIZg46QlTmzPozXF07vyxpK5BGukx",
       },
     },
     mainnet: {

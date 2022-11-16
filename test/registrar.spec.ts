@@ -43,6 +43,9 @@ describe("Registrar", () => {
     );
   };
 
+  const looksrareAddress = "0xf42aa99F011A1fA7CDA90E5E98b277E306BcA83e";
+  let looksrareSigner: SignerWithAddress;
+
   before(async () => {
     console.log("before");
     accounts = await ethers.getSigners();
@@ -50,6 +53,7 @@ describe("Registrar", () => {
     user1 = accounts[1];
     user2 = accounts[2];
     user3 = accounts[3];
+    looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
   });
 
   describe("root domain", () => {
@@ -105,6 +109,45 @@ describe("Registrar", () => {
       );
       const domainOwner = await registry.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
+    });
+  });
+
+  describe("Approves and transfers", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+    it("approves user1", async () => {
+      await registry.connect(creator).approve(user1.address, rootDomainId);
+    });
+    it("user1 transfers", async () => {
+      const registryLR = await registry.connect(user1);
+      await registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user2.address,
+        rootDomainId
+      );
+      const domainOwner = await registry.ownerOf(rootDomainId);
+      expect(domainOwner).to.be.eq(user2.address);
+    });
+
+  });
+
+  describe("filters operators", () => {
+    before(async () => {
+      await deployRegistry(creator);
+    });
+    it("approves looksrare", async () => {
+      await registry.connect(creator).approve(looksrareAddress, rootDomainId);
+    });
+    it("looksrare is unable to transfer", async () => {
+      console.log(looksrareSigner.address);
+      const registryLR = await registry.connect(looksrareSigner);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
     });
   });
 

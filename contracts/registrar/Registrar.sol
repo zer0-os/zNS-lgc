@@ -119,10 +119,6 @@ contract Registrar is
     _;
   }
 
-  function owner() public view override returns (address) {
-    return zNSHub.owner();
-  }
-
   /**
    * @notice Returns whether or not an account is a a controller registered on this contract
    * @param account Address of account to check
@@ -154,6 +150,10 @@ contract Registrar is
     __ERC721_init(collectionName, collectionSymbol);
 
     initializeFilter(address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6), true);
+  }
+
+  function owner() public view override returns (address) {
+    return zNSHub.owner();
   }
 
   /*

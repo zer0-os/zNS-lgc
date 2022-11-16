@@ -43,8 +43,18 @@ describe("Registrar", () => {
     );
   };
 
+  const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";
+  let blurSigner: SignerWithAddress;
   const looksrareAddress = "0xf42aa99F011A1fA7CDA90E5E98b277E306BcA83e";
   let looksrareSigner: SignerWithAddress;
+  const looksrare1155Address = "0xFED24eC7E22f573c2e08AEF55aA6797Ca2b3A051";
+  let looksrare1155Signer: SignerWithAddress;
+  const x2y2Address = "0xf849de01b080adc3a814fabe1e2087475cf2e354";
+  let x2y2Signer: SignerWithAddress;
+  const x2y21155Address = "0x024ac22acdb367a3ae52a3d94ac6649fdc1f0779";
+  let x2y21155Signer: SignerWithAddress;
+  const sudoswapAddress = "0x2b2e8cda09bba9660dca5cb6233787738ad68329";
+  let sudoswapSigner: SignerWithAddress;
 
   before(async () => {
     console.log("before");
@@ -53,7 +63,12 @@ describe("Registrar", () => {
     user1 = accounts[1];
     user2 = accounts[2];
     user3 = accounts[3];
+    blurSigner = await ethers.getImpersonatedSigner(looksrareAddress);
     looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
+    looksrare1155Signer = await ethers.getImpersonatedSigner(looksrareAddress);
+    x2y2Signer = await ethers.getImpersonatedSigner(looksrareAddress);
+    x2y21155Signer = await ethers.getImpersonatedSigner(looksrareAddress);
+    sudoswapSigner = await ethers.getImpersonatedSigner(looksrareAddress);
   });
 
   describe("root domain", () => {
@@ -139,9 +154,68 @@ describe("Registrar", () => {
     it("approves looksrare", async () => {
       await registry.connect(creator).approve(looksrareAddress, rootDomainId);
     });
+    it("approves blurrare", async () => {
+      await registry.connect(creator).approve(blurAddress, rootDomainId);
+    });
+    it("approves x2y2rare", async () => {
+      await registry.connect(creator).approve(x2y2Address, rootDomainId);
+    });
+    it("approves x2y21155", async () => {
+      await registry.connect(creator).approve(x2y21155Address, rootDomainId);
+    });
+    it("approves looksrare1155", async () => {
+      await registry.connect(creator).approve(looksrare1155Address, rootDomainId);
+    });
+    it("approves sudoswap", async () => {
+      await registry.connect(creator).approve(sudoswapAddress, rootDomainId);
+    });
+    it("blur is unable to transfer", async () => {
+      const registryLR = await registry.connect(blurSigner);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
+    });
     it("looksrare is unable to transfer", async () => {
-      console.log(looksrareSigner.address);
       const registryLR = await registry.connect(looksrareSigner);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
+    });
+    it("looksrare1155 is unable to transfer", async () => {
+      const registryLR = await registry.connect(looksrare1155Signer);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
+    });
+    it("x2y2 is unable to transfer", async () => {
+      const registryLR = await registry.connect(x2y2Signer);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
+    });
+    it("x2y21155 is unable to transfer", async () => {
+      const registryLR = await registry.connect(x2y21155Signer);
+      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user3.address,
+        rootDomainId
+      );
+      await expect(tx).to.be.reverted;
+    });
+    it("sudoswap is unable to transfer", async () => {
+      const registryLR = await registry.connect(sudoswapSigner);
       const tx = registryLR["safeTransferFrom(address,address,uint256)"](
         creator.address,
         user3.address,

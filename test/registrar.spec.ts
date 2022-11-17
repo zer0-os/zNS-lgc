@@ -55,6 +55,8 @@ describe("Registrar", () => {
   let x2y21155Signer: SignerWithAddress;
   const sudoswapAddress = "0x2b2e8cda09bba9660dca5cb6233787738ad68329";
   let sudoswapSigner: SignerWithAddress;
+  const customRevertErrorMessage =
+    "VM Exception while processing transaction: reverted with custom error";
 
   before(async () => {
     console.log("before");
@@ -63,12 +65,12 @@ describe("Registrar", () => {
     user1 = accounts[1];
     user2 = accounts[2];
     user3 = accounts[3];
-    blurSigner = await ethers.getImpersonatedSigner(looksrareAddress);
+    blurSigner = await ethers.getImpersonatedSigner(blurAddress);
     looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
-    looksrare1155Signer = await ethers.getImpersonatedSigner(looksrareAddress);
-    x2y2Signer = await ethers.getImpersonatedSigner(looksrareAddress);
-    x2y21155Signer = await ethers.getImpersonatedSigner(looksrareAddress);
-    sudoswapSigner = await ethers.getImpersonatedSigner(looksrareAddress);
+    looksrare1155Signer = await ethers.getImpersonatedSigner(looksrare1155Address);
+    x2y2Signer = await ethers.getImpersonatedSigner(x2y2Address);
+    x2y21155Signer = await ethers.getImpersonatedSigner(x2y21155Address);
+    sudoswapSigner = await ethers.getImpersonatedSigner(sudoswapAddress);
   });
 
   describe("root domain", () => {
@@ -127,7 +129,7 @@ describe("Registrar", () => {
     });
   });
 
-  describe("Approves and transfers", () => {
+  describe("approves and transfers", () => {
     before(async () => {
       await deployRegistry(creator);
     });
@@ -146,29 +148,15 @@ describe("Registrar", () => {
     });
 
   });
-
+  const customError = "VM Exception while processing transaction: reverted with an unrecognized custom error"
   describe("filters operators", () => {
     before(async () => {
       await deployRegistry(creator);
     });
-    it("approves looksrare", async () => {
-      await registry.connect(creator).approve(looksrareAddress, rootDomainId);
-    });
-    it("approves blurrare", async () => {
+    it("approves blur", async () => {
       await registry.connect(creator).approve(blurAddress, rootDomainId);
     });
-    it("approves x2y2rare", async () => {
-      await registry.connect(creator).approve(x2y2Address, rootDomainId);
-    });
-    it("approves x2y21155", async () => {
-      await registry.connect(creator).approve(x2y21155Address, rootDomainId);
-    });
-    it("approves looksrare1155", async () => {
-      await registry.connect(creator).approve(looksrare1155Address, rootDomainId);
-    });
-    it("approves sudoswap", async () => {
-      await registry.connect(creator).approve(sudoswapAddress, rootDomainId);
-    });
+
     it("blur is unable to transfer", async () => {
       const registryLR = await registry.connect(blurSigner);
       const tx = registryLR["safeTransferFrom(address,address,uint256)"](
@@ -176,7 +164,11 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError); //With('OperatorNotAllowed').withArgs(blurAddress);
+    });
+
+    it("approves looksrare", async () => {
+      await registry.connect(creator).approve(looksrareAddress, rootDomainId);
     });
     it("looksrare is unable to transfer", async () => {
       const registryLR = await registry.connect(looksrareSigner);
@@ -185,7 +177,11 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError)
+    });
+
+    it("approves looksrare1155", async () => {
+      await registry.connect(creator).approve(looksrare1155Address, rootDomainId);
     });
     it("looksrare1155 is unable to transfer", async () => {
       const registryLR = await registry.connect(looksrare1155Signer);
@@ -194,7 +190,11 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError)
+    });
+
+    it("approves x2y2", async () => {
+      await registry.connect(creator).approve(x2y2Address, rootDomainId);
     });
     it("x2y2 is unable to transfer", async () => {
       const registryLR = await registry.connect(x2y2Signer);
@@ -203,7 +203,11 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError)
+    });
+
+    it("approves x2y21155", async () => {
+      await registry.connect(creator).approve(x2y21155Address, rootDomainId);
     });
     it("x2y21155 is unable to transfer", async () => {
       const registryLR = await registry.connect(x2y21155Signer);
@@ -212,7 +216,11 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError)
+    });
+
+    it("approves sudoswap", async () => {
+      await registry.connect(creator).approve(sudoswapAddress, rootDomainId);
     });
     it("sudoswap is unable to transfer", async () => {
       const registryLR = await registry.connect(sudoswapSigner);
@@ -221,7 +229,7 @@ describe("Registrar", () => {
         user3.address,
         rootDomainId
       );
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWith(customError)
     });
   });
 

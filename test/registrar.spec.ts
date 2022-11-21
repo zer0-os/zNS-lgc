@@ -49,10 +49,6 @@ describe("Registrar", () => {
   let looksrareSigner: SignerWithAddress;
   const looksrare1155Address = "0xFED24eC7E22f573c2e08AEF55aA6797Ca2b3A051";
   let looksrare1155Signer: SignerWithAddress;
-  const x2y2Address = "0xf849de01b080adc3a814fabe1e2087475cf2e354";
-  let x2y2Signer: SignerWithAddress;
-  const x2y21155Address = "0x024ac22acdb367a3ae52a3d94ac6649fdc1f0779";
-  let x2y21155Signer: SignerWithAddress;
   const sudoswapAddress = "0x2b2e8cda09bba9660dca5cb6233787738ad68329";
   let sudoswapSigner: SignerWithAddress;
   const customRevertErrorMessage =
@@ -68,8 +64,6 @@ describe("Registrar", () => {
     blurSigner = await ethers.getImpersonatedSigner(blurAddress);
     looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
     looksrare1155Signer = await ethers.getImpersonatedSigner(looksrare1155Address);
-    x2y2Signer = await ethers.getImpersonatedSigner(x2y2Address);
-    x2y21155Signer = await ethers.getImpersonatedSigner(x2y21155Address);
     sudoswapSigner = await ethers.getImpersonatedSigner(sudoswapAddress);
   });
 
@@ -185,32 +179,6 @@ describe("Registrar", () => {
     });
     it("looksrare1155 is unable to transfer", async () => {
       const registryLR = await registry.connect(looksrare1155Signer);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError)
-    });
-
-    it("approves x2y2", async () => {
-      await registry.connect(creator).approve(x2y2Address, rootDomainId);
-    });
-    it("x2y2 is unable to transfer", async () => {
-      const registryLR = await registry.connect(x2y2Signer);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError)
-    });
-
-    it("approves x2y21155", async () => {
-      await registry.connect(creator).approve(x2y21155Address, rootDomainId);
-    });
-    it("x2y21155 is unable to transfer", async () => {
-      const registryLR = await registry.connect(x2y21155Signer);
       const tx = registryLR["safeTransferFrom(address,address,uint256)"](
         creator.address,
         user3.address,

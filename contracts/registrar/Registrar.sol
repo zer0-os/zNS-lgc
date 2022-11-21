@@ -59,6 +59,8 @@ contract Registrar is
 
   // The event emitter
   IZNSHub public zNSHub;
+  uint8 private test; // ignore
+  uint256 private gap; // ignore
 
   // 0 is the null case
   mapping(uint256 => DomainGroup) public domainGroups;
@@ -674,7 +676,7 @@ contract Registrar is
     }
   }
 
-  /**`
+  /**
    * Sets metadata via IPFS folder in a bulk fashion via token index (not token ID)
    * @param folderWithIPFSPrefix the IPFS Folder (ie: "ipfs://QmABCDEFG/")
    * @param tokenIndexStart The token index starting point

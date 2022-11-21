@@ -1,7 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
-//require('@eth-optimism/smock/build/src/plugins/hardhat-storagelayout')
-
 
 import { task, HardhatUserConfig } from "hardhat/config";
 

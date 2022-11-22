@@ -73,7 +73,7 @@ const config: HardhatUserConfig = {
           },
           optimizer: {
             enabled: true,
-            runs: 20,
+            runs: 1,
           },
         },
       },

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {EnumerableSet} from "../oz/utils/EnumerableSet.sol";
-
 interface IOperatorFilterRegistry {
   function isOperatorAllowed(address registrant, address operator)
     external
+    view
     returns (bool);
 
   function register(address registrant) external;
@@ -15,6 +14,8 @@ interface IOperatorFilterRegistry {
 
   function registerAndCopyEntries(address registrant, address registrantToCopy)
     external;
+
+  function unregister(address addr) external;
 
   function updateOperator(
     address registrant,

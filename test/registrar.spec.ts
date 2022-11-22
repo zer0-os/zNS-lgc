@@ -90,6 +90,32 @@ describe("Registrar", () => {
         ethers.constants.AddressZero
       );
     });
+    //Mainnet registrar upgrade tests
+    const registrarAddress = "0xc2e9678A71e50E5AEd036e00e9c5caeb1aC5987D";
+    const hubAddress = "0x3F0d0a0051D1E600B3f6B35a07ae7A64eD1A10Ca";
+    const deployerAddress = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
+    var deployer: SignerWithAddress;
+
+    it("Gets deployer", async () => {
+      deployer = await ethers.getImpersonatedSigner(deployerAddress);
+    });
+
+    it("Upgrades registrar", async () => {
+      await upgrades.forceImport(
+        registrarAddress,
+        registryFactory
+      );
+    });
+    it("Upgrades beacon proxy", async () => {
+      const hub = ZNSHub__factory.connect(hubAddress, deployer);
+      const beaconAddress = await hub.beacon();
+      await upgrades.upgradeBeacon(
+        beaconAddress,
+        registryFactory
+      );
+    });
+
+
   });
 
   describe("transferring domains", () => {

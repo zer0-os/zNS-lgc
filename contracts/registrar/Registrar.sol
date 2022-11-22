@@ -596,7 +596,7 @@ contract Registrar is
     address from,
     address to,
     uint256 tokenId
-  ) internal virtual override onlyAllowedOperator(from) {
+  ) internal virtual override onlyAllowedOperator {
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
     zNSHub.domainTransferred(from, to, tokenId);

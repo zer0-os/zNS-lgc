@@ -2,9 +2,13 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers, upgrades } from "hardhat";
 import {
   Registrar,
+  MainnetRegistrar,
   ZNSHub__factory,
+  MainnetZNSHub__factory,
   Registrar__factory,
+  MainnetRegistrar__factory,
   ZNSHub,
+  MainnetZNSHub
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
@@ -18,8 +22,11 @@ const { expect } = chai;
 describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
+  let mainnetRegistryFactory: MainnetRegistrar__factory;
   let registry: Registrar;
+  let mainnetRegistry: MainnetRegistrar;
   let hub: smock.FakeContract<ZNSHub>;
+  let mainnetHub: smock.FakeContract<ZNSHub>;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -40,6 +47,21 @@ describe("Registrar", () => {
       "Zer0 Name Service",
       "ZNS",
       hub.address
+    );
+  };
+
+  const deployMainnetRegistry = async (creator: SignerWithAddress) => {
+    mainnetRegistryFactory = new MainnetRegistrar__factory(creator);
+    mainnetHub = await smock.smock.fake(MainnetZNSHub__factory);
+    mainnetHub.owner.returns(creator.address);
+
+    mainnetRegistry = await mainnetRegistryFactory.deploy();
+    await mainnetRegistry.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.Zero,
+      "Zer0 Name Service",
+      "ZNS",
+      mainnetHub.address
     );
   };
 
@@ -100,14 +122,11 @@ describe("Registrar", () => {
       deployer = await ethers.getImpersonatedSigner(deployerAddress);
     });
     it("Upgrades registrar", async () => {
+      //const mainnetRegistryFactory = await ethers.getContractFactory("MainnetRegistrar");
+      //const mainnetRegistry = await mainnetRegistryFactory.deploy();
+      await deployMainnetRegistry(creator);
       await upgrades.forceImport(
-        registrarAddress,
-        registryFactory
-      );
-    });
-    it("Upgrades registrar", async () => {
-      await upgrades.upgradeProxy(
-        registrarAddress,
+        mainnetRegistry.address,
         registryFactory
       );
     });

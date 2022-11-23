@@ -99,9 +99,14 @@ describe("Registrar", () => {
     it("Gets deployer", async () => {
       deployer = await ethers.getImpersonatedSigner(deployerAddress);
     });
-
     it("Upgrades registrar", async () => {
       await upgrades.forceImport(
+        registrarAddress,
+        registryFactory
+      );
+    });
+    it("Upgrades registrar", async () => {
+      await upgrades.upgradeProxy(
         registrarAddress,
         registryFactory
       );

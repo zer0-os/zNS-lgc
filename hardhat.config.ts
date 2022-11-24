@@ -9,6 +9,7 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "solidity-coverage";
+import "hardhat-contract-sizer";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -95,8 +96,9 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/-nhhIZg46QlTmzPozXF07vyxpK5BGukx",
+        url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },
+      allowUnlimitedContractSize: true
     },
     mainnet: {
       accounts: process.env.MAINNET_PRIVATE_KEY

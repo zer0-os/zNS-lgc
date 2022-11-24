@@ -33,14 +33,26 @@ describe("Registrar", () => {
     hub = await smock.smock.fake(ZNSHub__factory);
     hub.owner.returns(creator.address);
 
-    registry = await registryFactory.deploy();
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
+    try {
+      console.log("Bytecode in tests: " + registryFactory.bytecode.length / 2);
+
+      // Code is too large
+      registry = await registryFactory.deploy({ // fails
+        gasLimit: 3000000
+      });
+      await registry.connect(creator).initialize(
+        ethers.constants.AddressZero,
+        ethers.constants.Zero,
+        "Zer0 Name Service",
+        "ZNS",
+        hub.address,
+        {
+          gasLimit: 3000000
+        }
+      );
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";

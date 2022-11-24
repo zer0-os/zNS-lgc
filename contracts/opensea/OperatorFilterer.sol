@@ -11,7 +11,7 @@ import {IOperatorFilterRegistry} from "./IOperatorFilterRegistry.sol";
  *         - `onlyAllowedOperator` modifier for `transferFrom` and `safeTransferFrom` methods.
  *         - `onlyAllowedOperatorApproval` modifier for `approve` and `setApprovalForAll` methods.
  */
-abstract contract OperatorFilterer {
+contract OperatorFilterer {
   error OperatorNotAllowed(address operator);
 
   IOperatorFilterRegistry public constant OPERATOR_FILTER_REGISTRY =
@@ -43,14 +43,13 @@ abstract contract OperatorFilterer {
     }
   }
 
-  modifier onlyAllowedOperator(address from) virtual {
+  function onlyAllowedOperator(address from) public virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       // Allow spending tokens from addresses with balance
       // Note that this still allows listings and marketplaces with escrow to transfer tokens if transferred
       // from an EOA.
       if (from == msg.sender) {
-        _;
         return;
       }
       if (
@@ -59,7 +58,20 @@ abstract contract OperatorFilterer {
         revert OperatorNotAllowed(msg.sender);
       }
     }
-    _;
+  }
+
+  function register(address filter) public {
+    require(!_isRegistered(filter), "OF: Already registered");
+    OPERATOR_FILTER_REGISTRY.register(filter);
+  }
+
+  function unregister(address filter) public {
+    require(_isRegistered(filter), "OF: Not registered");
+    OPERATOR_FILTER_REGISTRY.register(filter);
+  }
+
+  function _isRegistered(address filter) internal returns (bool) {
+    return OPERATOR_FILTER_REGISTRY.isRegistered(filter);
   }
 
   modifier onlyAllowedOperatorApproval(address operator) virtual {

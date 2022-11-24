@@ -9,13 +9,13 @@ interface IOperatorFilterRegistry {
 
   function register(address registrant) external;
 
+  function unregister(address addr) external;
+
   function registerAndSubscribe(address registrant, address subscription)
     external;
 
   function registerAndCopyEntries(address registrant, address registrantToCopy)
     external;
-
-  function unregister(address addr) external;
 
   function updateOperator(
     address registrant,

@@ -16,7 +16,11 @@ abstract contract RevokableOperatorFilterer is OperatorFilterer {
 
   bool private _isOperatorFilterRegistryRevoked;
 
-  function onlyAllowedOperator(address from) public view override {
+  function onlyAllowedOperator(address from, address registrant)
+    public
+    view
+    override
+  {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (
       !_isOperatorFilterRegistryRevoked &&
@@ -28,10 +32,8 @@ abstract contract RevokableOperatorFilterer is OperatorFilterer {
       if (from == msg.sender) {
         return;
       }
-      if (
-        !OPERATOR_FILTER_REGISTRY.isOperatorAllowed(address(this), msg.sender)
-      ) {
-        revert OperatorNotAllowed(msg.sender);
+      if (!OPERATOR_FILTER_REGISTRY.isOperatorAllowed(registrant, msg.sender)) {
+        revert OperatorNotAllowed(registrant);
       }
     }
   }

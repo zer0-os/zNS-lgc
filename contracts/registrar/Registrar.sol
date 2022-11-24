@@ -603,7 +603,7 @@ contract Registrar is
     address to,
     uint256 tokenId
   ) internal virtual override {
-    filterer.onlyAllowedOperator(from);
+    filterer.onlyAllowedOperator(from, msg.sender);
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
     zNSHub.domainTransferred(from, to, tokenId);

@@ -43,19 +43,20 @@ contract OperatorFilterer {
     }
   }
 
-  function onlyAllowedOperator(address from) public virtual {
+  function onlyAllowedOperator(address from, address registrant)
+    public
+    virtual
+  {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       // Allow spending tokens from addresses with balance
       // Note that this still allows listings and marketplaces with escrow to transfer tokens if transferred
       // from an EOA.
-      if (from == msg.sender) {
+      if (from == registrant) {
         return;
       }
-      if (
-        !OPERATOR_FILTER_REGISTRY.isOperatorAllowed(address(this), msg.sender)
-      ) {
-        revert OperatorNotAllowed(msg.sender);
+      if (!OPERATOR_FILTER_REGISTRY.isOperatorAllowed(registrant, msg.sender)) {
+        revert OperatorNotAllowed(registrant);
       }
     }
   }

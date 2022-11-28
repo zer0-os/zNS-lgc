@@ -5,6 +5,8 @@ import {
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
+  OperatorFilterer__factory,
+  OperatorFilterer,
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
@@ -20,6 +22,8 @@ describe("Subdomain Registrar Functionality", () => {
   let registryFactory: Registrar__factory;
   let registry: Registrar;
   let hub: smock.MockContract<ZNSHub>;
+  let operatorFiltererFactory: OperatorFilterer__factory;
+  let operatorFilterer: OperatorFilterer;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -59,6 +63,9 @@ describe("Subdomain Registrar Functionality", () => {
     );
     hub = await emitterMockFactory.deploy();
 
+    operatorFiltererFactory = new OperatorFilterer__factory(creator);
+    operatorFilterer = await operatorFiltererFactory.deploy();
+
     const beacon = await upgrades.deployBeacon(registryFactory);
 
     registry = await registryFactory.deploy();
@@ -70,7 +77,8 @@ describe("Subdomain Registrar Functionality", () => {
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      hub.address
+      hub.address,
+      operatorFilterer.address
     );
 
     await hub.addRegistrar(rootDomainId, registry.address);

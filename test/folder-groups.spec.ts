@@ -10,6 +10,8 @@ import {
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
+  OperatorFilterer__factory,
+  OperatorFilterer,
 } from "../typechain";
 
 import { domainNameToId } from "./helpers";
@@ -22,6 +24,8 @@ describe("Folder groups functionality", () => {
   let registryFactory: Registrar__factory;
   let registry: Registrar;
   let hub: smock.MockContract<ZNSHub>;
+  let operatorFiltererFactory: OperatorFilterer__factory;
+  let operatorFilterer: OperatorFilterer;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
@@ -32,6 +36,9 @@ describe("Folder groups functionality", () => {
       "ZNSHub"
     );
     hub = await emitterMockFactory.deploy();
+
+    operatorFiltererFactory = new OperatorFilterer__factory(creator);
+    operatorFilterer = await operatorFiltererFactory.deploy();
 
     const beacon = await upgrades.deployBeacon(registryFactory);
 
@@ -44,7 +51,8 @@ describe("Folder groups functionality", () => {
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      hub.address
+      hub.address,
+      operatorFilterer.address
     );
 
     await hub.addRegistrar(rootDomainId, registry.address);
@@ -154,5 +162,5 @@ describe("Folder groups functionality", () => {
     expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
 
-  it("still allows old token uris to work", async () => { });
+  it("still allows old token uris to work", async () => {});
 });

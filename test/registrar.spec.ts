@@ -36,11 +36,14 @@ describe("Registrar", () => {
     registryFactory = new Registrar__factory(creator);
     hubFactory = new ZNSHub__factory(creator);
     hub = await hubFactory.deploy();
-    await hub.initialize(ethers.constants.AddressZero, ethers.constants.AddressZero);
+    await hub.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero
+    );
 
     operatorFiltererFactory = new OperatorFilterer__factory(creator);
     operatorFilterer = await operatorFiltererFactory.deploy();
-    
+
     registry = await registryFactory.deploy();
     await registry.initialize(
       ethers.constants.AddressZero,
@@ -51,9 +54,7 @@ describe("Registrar", () => {
       operatorFilterer.address
     );
 
-    await hub.addRegistrar(
-      rootDomainId, registry.address
-    );
+    await hub.addRegistrar(rootDomainId, registry.address);
   };
 
   before(async () => {

@@ -73,9 +73,10 @@ contract Registrar is
    * Creates a new folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function createDomainGroup(
-    string memory baseMetadataUri
-  ) public returns (uint256) {
+  function createDomainGroup(string memory baseMetadataUri)
+    public
+    returns (uint256)
+  {
     _onlyController();
     domainGroups[numDomainGroups + 1] = DomainGroup({
       baseMetadataUri: baseMetadataUri
@@ -92,10 +93,9 @@ contract Registrar is
    * @param id The id of the folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function updateDomainGroup(
-    uint256 id,
-    string memory baseMetadataUri
-  ) external {
+  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
+    external
+  {
     _onlyController();
     require(id != 0 && id <= numDomainGroups, "Folder group invalid");
     require(
@@ -125,7 +125,8 @@ contract Registrar is
     uint256 rootDomainId_,
     string calldata collectionName,
     string calldata collectionSymbol,
-    address zNSHub_
+    address zNSHub_,
+    address filterer_
   ) public initializer {
     // __Ownable_init(); // Purposely not initializing ownable since we override owner()
 
@@ -142,19 +143,11 @@ contract Registrar is
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
 
+    filterer = OperatorFilterer(filterer_);
     filterer.initializeFilter(
       address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6),
       true
     );
-  }
-
-  // Function is onlyAddressOrOwner already
-  function registerFilter(address filter) public onlyOwner {
-    filterer.register(filter);
-  }
-
-  function unregisterFilter(address _filter) public onlyOwner {
-    filterer.unregister(_filter);
   }
 
   function owner() public view override returns (address) {
@@ -293,7 +286,8 @@ contract Registrar is
       id,
       "Zer0 Name Service",
       "ZNS",
-      address(zNSHub)
+      address(zNSHub),
+      address(filterer)
     );
 
     // Indicate that the subdomain has a contract
@@ -402,10 +396,10 @@ contract Registrar is
    * @param id The domain to set on
    * @param amount The royalty amount
    */
-  function setDomainRoyaltyAmount(
-    uint256 id,
-    uint256 amount
-  ) external override {
+  function setDomainRoyaltyAmount(uint256 id, uint256 amount)
+    external
+    override
+  {
     _onlyOwnerOf(id);
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
 
@@ -418,10 +412,10 @@ contract Registrar is
    * @param id The domain to lock
    * @param uri The uri to set
    */
-  function setAndLockDomainMetadata(
-    uint256 id,
-    string memory uri
-  ) external override {
+  function setAndLockDomainMetadata(uint256 id, string memory uri)
+    external
+    override
+  {
     _onlyOwnerOf(id);
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
@@ -433,10 +427,10 @@ contract Registrar is
    * @param id The domain to set on
    * @param uri The uri to set
    */
-  function setDomainMetadataUri(
-    uint256 id,
-    string memory uri
-  ) external override {
+  function setDomainMetadataUri(uint256 id, string memory uri)
+    external
+    override
+  {
     _onlyOwnerOf(id);
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
@@ -478,9 +472,7 @@ contract Registrar is
    * Public View
    */
 
-  function ownerOf(
-    uint256 tokenId
-  )
+  function ownerOf(uint256 tokenId)
     public
     view
     virtual
@@ -516,9 +508,12 @@ contract Registrar is
    * @notice Returns whether or not a domain's metadata is locked
    * @param id The domain
    */
-  function isDomainMetadataLocked(
-    uint256 id
-  ) public view override returns (bool) {
+  function isDomainMetadataLocked(uint256 id)
+    public
+    view
+    override
+    returns (bool)
+  {
     return records[id].metadataLocked;
   }
 
@@ -526,9 +521,12 @@ contract Registrar is
    * @notice Returns who locked a domain's metadata
    * @param id The domain
    */
-  function domainMetadataLockedBy(
-    uint256 id
-  ) public view override returns (address) {
+  function domainMetadataLockedBy(uint256 id)
+    public
+    view
+    override
+    returns (address)
+  {
     return records[id].metadataLockedBy;
   }
 
@@ -544,9 +542,12 @@ contract Registrar is
    * @notice Returns the current royalty amount for a domain
    * @param id The domain
    */
-  function domainRoyaltyAmount(
-    uint256 id
-  ) public view override returns (uint256) {
+  function domainRoyaltyAmount(uint256 id)
+    public
+    view
+    override
+    returns (uint256)
+  {
     return records[id].royaltyAmount;
   }
 
@@ -559,9 +560,7 @@ contract Registrar is
     return records[id].parentId;
   }
 
-  function tokenURI(
-    uint256 tokenId
-  )
+  function tokenURI(uint256 tokenId)
     public
     view
     virtual
@@ -722,10 +721,10 @@ contract Registrar is
     _transfer(from, to, tokenId);
   }
 
-  function adminSetMetadataUri(
-    uint256 id,
-    string memory uri
-  ) external onlyOwner {
+  function adminSetMetadataUri(uint256 id, string memory uri)
+    external
+    onlyOwner
+  {
     _setDomainMetadataUri(id, uri);
   }
 

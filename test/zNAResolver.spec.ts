@@ -1,7 +1,4 @@
 import {
-  FakeContract,
-  MockContract,
-  MockContractFactory,
   smock,
 } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -9,12 +6,17 @@ import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import {
-  IZNSHub,
+  OperatorFilterer,
+  OperatorFilterer__factory,
+  Registrar,
+  Registrar__factory,
+  ResourceType__factory,
   ZNAResolver,
   ZNAResolver__factory,
+  ZNSHub,
+  ZNSHub__factory,
 } from "../typechain";
-import IZNSHubAbi from "../artifacts/contracts/interfaces/IZNSHub.sol/IZNSHub.json";
-import { EventMappingType, getAllEvents } from "./helpers";
+import { calculateDomainHash, EventMappingType, getAllEvents, hashDomainName } from "./helpers";
 import { ResourceType } from "../typechain/ResourceType";
 import { MockResourceRegistry } from "../typechain/MockResourceRegistry";
 import { MockResourceRegistry__factory } from "../typechain/factories/MockResourceRegistry__factory";
@@ -34,37 +36,59 @@ describe("zNAResolver", function () {
     userA: SignerWithAddress;
 
   let resourceTypeLib: ResourceType,
-    zNSHub: FakeContract<IZNSHub>,
-    resourceDAORegistry: MockContract<MockResourceRegistry>,
-    resourceStakingRegistry: MockContract<MockResourceRegistry>,
-    resourceRegistryNot: MockContract<MockResourceRegistry>,
-    zNAResolver: MockContract<ZNAResolver>;
-
-  const wilder_beasts =
-    BigNumber.from("0x290422f1f79e710c65e3a72fe8dddc0691bb638c865f5061a5e639cf244ee5ed");
+    zNSHub: ZNSHub,
+    registrar: Registrar,
+    operatorFilterer: OperatorFilterer,
+    resourceDAORegistry: MockResourceRegistry,
+    resourceStakingRegistry: MockResourceRegistry,
+    resourceRegistryNot: MockResourceRegistry,
+    zNAResolver: ZNAResolver;
+  
+  let RESOURCE_TYPE_DAO: BigNumber,
+  RESOURCE_TYPE_STAKING_POOL: BigNumber;
+  
+  let RESOURCE_TYPE_MANAGER_ROLE: string;
+  
+  let wilder_beasts = BigNumber.from("0x290422f1f79e710c65e3a72fe8dddc0691bb638c865f5061a5e639cf244ee5ed"),
+    wilder_resourceID1: BigNumber,
+    wilder_resourceID2: BigNumber;
   const fake_wilder_beasts =
     BigNumber.from("0x290422f1f79e710c65e3a72fe8dddc0691bb638c865f5061a5e639cf244effff");
-
-  let RESOURCE_TYPE_DAO: BigNumber,
-    RESOURCE_TYPE_STAKING_POOL: BigNumber;
-
-  let RESOURCE_TYPE_MANAGER_ROLE: string;
-
-  const resourceID1 = BigNumber.from(1),
+  const rootDomainId = BigNumber.from(0),
+    resourceID1 = BigNumber.from(1),
     resourceID2 = BigNumber.from(2),
-    notExistingResourceID = BigNumber.from(100);
+    resourceID3 = BigNumber.from(3),
+    resourceID4 = BigNumber.from(4);
+  const notExistingResourceID = BigNumber.from(100);
 
   beforeEach("init setup", async function () {
     [deployer,
-      resourceRegistryManager, resourceRegistryManagerNot, zNAOwner, userA] =
+    resourceRegistryManager, resourceRegistryManagerNot, zNAOwner, userA] =
       await ethers.getSigners();
 
-    zNSHub = (await smock.fake<IZNSHub>(
-      IZNSHubAbi.abi
-    )) as FakeContract<IZNSHub>;
+    const ZNSHubFactory = new ZNSHub__factory(deployer);
+    zNSHub = await ZNSHubFactory.deploy();
+
+    const operatorFiltererFactory = new OperatorFilterer__factory(deployer);
+    operatorFilterer = await operatorFiltererFactory.deploy();
+    
+    const RegistrarFactory = new Registrar__factory(deployer);
+    registrar = await RegistrarFactory.deploy();
+    await registrar.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.Zero,
+      "Zer0 Name Service",
+      "ZNS",
+      zNSHub.address,
+      operatorFilterer.address
+    );
+    await zNSHub.initialize(registrar.address, ethers.constants.AddressZero);
+
+    await registrar.addController(deployer.address);
+    await zNSHub.addRegistrar(rootDomainId, registrar.address);
 
     // Deploy ResourceType Library
-    const ResourceTypeLibFactory = await ethers.getContractFactory("ResourceType");
+    const ResourceTypeLibFactory = new ResourceType__factory(deployer);
     resourceTypeLib = await ResourceTypeLibFactory.deploy() as ResourceType;
 
     // What is Resource Type
@@ -72,11 +96,8 @@ describe("zNAResolver", function () {
     RESOURCE_TYPE_STAKING_POOL = await resourceTypeLib.RESOURCE_TYPE_STAKING_POOL();
 
     // Deploy ZNAResolver
-    const ZNAResolverFactory = (await smock.mock<ZNAResolver__factory>(
-      "ZNAResolver"
-    )) as MockContractFactory<ZNAResolver__factory>;
-    zNAResolver =
-      (await ZNAResolverFactory.deploy()) as MockContract<ZNAResolver>;
+    const ZNAResolverFactory = new ZNAResolver__factory(deployer);
+    zNAResolver = await ZNAResolverFactory.deploy();
     await zNAResolver.initialize(zNSHub.address);
 
     // What is defined Role
@@ -84,12 +105,30 @@ describe("zNAResolver", function () {
       await zNAResolver.RESOURCE_TYPE_MANAGER_ROLE();
 
     // Deploy MockResourceRegistry
-    const MockResourceRegistryFactory = (await smock.mock<MockResourceRegistry__factory>(
-      "MockResourceRegistry"
-    )) as MockContractFactory<MockResourceRegistry__factory>;
-    resourceDAORegistry = (await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_DAO, zNAResolver.address)) as MockContract<MockResourceRegistry>;
-    resourceStakingRegistry = (await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_STAKING_POOL, zNAResolver.address)) as MockContract<MockResourceRegistry>;
-    resourceRegistryNot = (await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_DAO, zNAResolver.address)) as MockContract<MockResourceRegistry>;
+    const MockResourceRegistryFactory = new MockResourceRegistry__factory(deployer);
+    resourceDAORegistry = await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_DAO, zNAResolver.address);
+    resourceStakingRegistry = await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_STAKING_POOL, zNAResolver.address);
+    resourceRegistryNot = await MockResourceRegistryFactory.deploy(RESOURCE_TYPE_DAO, zNAResolver.address);
+
+    // Register domains
+    await registrar.registerDomain(rootDomainId, "wilder.beasts", zNAOwner.address, "", 0, false);
+    await registrar.registerDomain(rootDomainId, "wilder.resourceID1", zNAOwner.address, "", 0, false);
+    await registrar.registerDomain(rootDomainId, "wilder.resourceID2", zNAOwner.address, "", 0, false);
+
+    // Get registered domains
+    const rootDomainHash = ethers.constants.HashZero;
+    wilder_beasts = BigNumber.from(calculateDomainHash(
+      rootDomainHash,
+      hashDomainName("wilder.beasts")
+    ));
+    wilder_resourceID1 = BigNumber.from(calculateDomainHash(
+      rootDomainHash,
+      hashDomainName("wilder.resourceID1")
+    ));
+    wilder_resourceID2 = BigNumber.from(calculateDomainHash(
+      rootDomainHash,
+      hashDomainName("wilder.resourceID2")
+    ));
 
     // Grant Roles
     await zNAResolver.setupResourceRegistryManagerRole(
@@ -98,22 +137,17 @@ describe("zNAResolver", function () {
     await zNAResolver.addResourceRegistry(RESOURCE_TYPE_DAO, resourceDAORegistry.address);
     await zNAResolver.addResourceRegistry(RESOURCE_TYPE_STAKING_POOL, resourceStakingRegistry.address);
 
-    // Fake results
-    zNSHub.ownerOf.whenCalledWith(wilder_beasts).returns(zNAOwner.address);
-    zNSHub.domainExists.whenCalledWith(wilder_beasts).returns(true);
-    zNSHub.domainExists.whenCalledWith(fake_wilder_beasts).returns(false);
-    resourceDAORegistry.resourceExists.whenCalledWith(resourceID1).returns(true);
-    resourceDAORegistry.resourceExists.whenCalledWith(resourceID2).returns(true);
-    resourceDAORegistry.resourceExists.whenCalledWith(notExistingResourceID).returns(false);
-    resourceStakingRegistry.resourceExists.whenCalledWith(resourceID1).returns(true);
-    resourceStakingRegistry.resourceExists.whenCalledWith(resourceID2).returns(true);
-    resourceStakingRegistry.resourceExists.whenCalledWith(notExistingResourceID).returns(false);
+    // Add resources
+    await resourceDAORegistry.addResource(wilder_resourceID1);
+    await resourceDAORegistry.addResource(wilder_resourceID2);
+    await resourceStakingRegistry.addResource(wilder_resourceID1);
+    await resourceStakingRegistry.addResource(wilder_resourceID2);
   });
 
-  async function associateWithResourceType(resourceRegistry: MockContract<MockResourceRegistry>, zNA: BigNumber, resourceType: BigNumber, resourceID: BigNumber): Promise<TxWithEventsType> {
+  async function associateWithResourceType(resourceRegistry: MockResourceRegistry, zNA: BigNumber, resourceType: BigNumber, resourceID: BigNumber): Promise<TxWithEventsType> {
     const tx = await resourceRegistry.addResource(zNA);
     const events = await getAllEvents(tx, zNAResolver.address, zNAResolver.interface);
-
+      
     expect(tx).to.emit(zNAResolver, "ResourceAssociated")
       .withArgs(zNA, resourceType, resourceID);
 
@@ -129,7 +163,7 @@ describe("zNAResolver", function () {
     );
     expect(resourceIDA).to.be.equal(resourceID);
 
-    return { tx, events };
+    return {tx, events};
   }
 
   async function disassociateWithResourceType(zNAOwner: SignerWithAddress, zNA: BigNumber, resourceType: BigNumber): Promise<TxWithEventsType> {
@@ -143,7 +177,7 @@ describe("zNAResolver", function () {
     const events = await getAllEvents(tx, zNAResolver.address, zNAResolver.interface);
 
     expect(tx).to.emit(zNAResolver, "ResourceDisassociated")
-      .withArgs(zNA, resourceType, resourceID);
+    .withArgs(zNA, resourceType, resourceID);
 
     const hasResourceType = await zNAResolver.hasResourceType(
       zNA,
@@ -157,7 +191,7 @@ describe("zNAResolver", function () {
     );
     expect(resourceIDA).to.be.equal(BigNumber.from(0));
 
-    return { tx, events };
+    return {tx, events};
   }
 
   async function addResourceRegistry(resourceRegistryManager: SignerWithAddress, resourceType: BigNumber, resourceDAORegistry: string): Promise<TxWithEventsType> {
@@ -167,13 +201,13 @@ describe("zNAResolver", function () {
 
     expect(tx).to.emit(zNAResolver, "ResourceRegistryAdded")
       .withArgs(resourceType, resourceDAORegistry);
-
+      
     const resourceRegistryA = await zNAResolver.resourceRegistry(
       resourceType
     );
     expect(resourceRegistryA).to.be.equal(resourceDAORegistry);
 
-    return { tx, events };
+    return {tx, events};
   }
 
   async function removeResourceRegistry(resourceRegistryManager: SignerWithAddress, resourceType: BigNumber): Promise<TxWithEventsType> {
@@ -186,7 +220,7 @@ describe("zNAResolver", function () {
     expect(tx).to.emit(zNAResolver, "ResourceRegistryRemoved")
       .withArgs(resourceType, resourceDAORegistry);
 
-    return { tx, events };
+    return {tx, events};
   }
 
   describe("Check for callable permission", async function () {
@@ -281,7 +315,7 @@ describe("zNAResolver", function () {
   describe("Check for resource registry", async function () {
     it("Should add resource registry", async function () {
       await expect(addResourceRegistry(
-        resourceRegistryManager,
+        resourceRegistryManager, 
         RESOURCE_TYPE_DAO,
         resourceDAORegistry.address
       )).to.be.not.reverted;
@@ -289,7 +323,7 @@ describe("zNAResolver", function () {
 
     it("Should remove resource registry", async function () {
       await addResourceRegistry(
-        resourceRegistryManager,
+        resourceRegistryManager, 
         RESOURCE_TYPE_DAO,
         resourceDAORegistry.address
       );
@@ -305,8 +339,8 @@ describe("zNAResolver", function () {
       await addResourceRegistry(resourceRegistryManager, RESOURCE_TYPE_DAO, resourceDAORegistry.address);
 
       // Add new resource registry per same resource type
-      const { tx } = await addResourceRegistry(resourceRegistryManager, RESOURCE_TYPE_DAO, resourceStakingRegistry.address);
-
+      const {tx} = await addResourceRegistry(resourceRegistryManager, RESOURCE_TYPE_DAO, resourceStakingRegistry.address);
+      
       expect(tx).to.emit(zNAResolver, "ResourceRegistryRemoved")
         .withArgs(RESOURCE_TYPE_DAO, resourceDAORegistry.address);
 
@@ -322,30 +356,30 @@ describe("zNAResolver", function () {
 
   describe("Check for association with resource type/ID", async function () {
     it("Should associate with valid zNA and resource type", async function () {
-      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID1);
+      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID3);
 
-      await expect(resourceDAORegistry.addResourceExploit(wilder_beasts, RESOURCE_TYPE_STAKING_POOL)).to.be.revertedWith("Only allow to manage registered resource type");
+      await expect(resourceDAORegistry.addResourceExploit(wilder_beasts, RESOURCE_TYPE_STAKING_POOL)).to.be.revertedWith("Not exist resource");
     });
 
     it("zNA owner can associate/disassociate with different resource type", async function () {
       // Associate zNA with DAO resource type
-      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID1);
+      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID3);
 
       // Associate zNA with Staking resource type
-      const { tx } = await associateWithResourceType(resourceStakingRegistry, wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID1);
+      const {tx} = await associateWithResourceType(resourceStakingRegistry, wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID3);
 
       expect(tx).to.emit(zNAResolver, "ResourceDisassociated")
-        .withArgs(wilder_beasts, RESOURCE_TYPE_DAO, resourceID1);
+        .withArgs(wilder_beasts, RESOURCE_TYPE_DAO, resourceID3);
 
       // zNA should not have DAO association, only have Staking
       const hasDAOResourceType = await zNAResolver.hasResourceType(wilder_beasts, RESOURCE_TYPE_DAO);
       expect(hasDAOResourceType).to.be.equal(false);
 
       // Associate zNA with DAO resource type again
-      const { tx: tx2 } = await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID2);
-
+      const {tx: tx2} = await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID4);
+      
       expect(tx2).to.emit(zNAResolver, "ResourceDisassociated")
-        .withArgs(wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID1);
+        .withArgs(wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID3);
 
       // zNA should only have DAO association
       const hasStakingResourceType2 = await zNAResolver.hasResourceType(wilder_beasts, RESOURCE_TYPE_STAKING_POOL);
@@ -366,48 +400,39 @@ describe("zNAResolver", function () {
 
       // Associate zNA with DAO resource type
       // zNA should have DAO association
-      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID1);
+      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID3);
 
       // Associating zNA with Staking resource type should be reverted
-      await expect(
-        resourceDAORegistry.addResourceExploit(
-          wilder_beasts, RESOURCE_TYPE_STAKING_POOL
-        )
-      ).to.be.revertedWith("Only allow to manage registered resource type");
+      await associateWithResourceType(resourceStakingRegistry, wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID3);
+      await expect(zNAResolver.associateWithResourceType(
+        wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID3
+      )).to.be.revertedWith("Only allow to manage registered resource type");
 
-      // Disassociating zNA from DAO resource type should not be reverted
+      // Disassociating zNA from DAO resource type should be reverted
       await expect(
         disassociateWithResourceType(zNAOwner, wilder_beasts, RESOURCE_TYPE_DAO)
-      ).to.be.not.reverted;
-
+      ).to.be.reverted;
     });
 
     it("zNA owner and Resource Registry can update resource ID with same resource type without disassociating", async function () {
       // Associate zNA with DAO resource type
-      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID1);
+      await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID3);
 
       // Update resource ID with same resource type
-      const { tx } = await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID2);
+      const {tx} = await associateWithResourceType(resourceDAORegistry, wilder_beasts, RESOURCE_TYPE_DAO, resourceID4);
 
       expect(tx).to.not.emit(zNAResolver, "ResourceDisassociated");
 
       const resourceIDA = await zNAResolver.resourceID(wilder_beasts, RESOURCE_TYPE_DAO);
-      expect(resourceIDA).to.be.equal(resourceID2);
-
-      // Associate zNA with DAO resource type by zNA owner
-      const tx2 = await zNAResolver.connect(zNAOwner)
-        .associateWithResourceType(wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID1);
-
-      expect(tx2).to.emit(zNAResolver, "ResourceDisassociated")
-        .withArgs(wilder_beasts, RESOURCE_TYPE_DAO, resourceID2);
-
+      expect(resourceIDA).to.be.equal(resourceID4);
+      
       // Update resource ID with same resource type by zNA owner
       const tx3 = await zNAResolver.connect(zNAOwner)
-        .associateWithResourceType(wilder_beasts, RESOURCE_TYPE_STAKING_POOL, resourceID2);
+        .associateWithResourceType(wilder_beasts, RESOURCE_TYPE_DAO, resourceID2);
 
       expect(tx3).to.not.emit(zNAResolver, "ResourceDisassociated");
 
-      const resourceIDB = await zNAResolver.resourceID(wilder_beasts, RESOURCE_TYPE_STAKING_POOL);
+      const resourceIDB = await zNAResolver.resourceID(wilder_beasts, RESOURCE_TYPE_DAO);
       expect(resourceIDB).to.be.equal(resourceID2);
     });
   });

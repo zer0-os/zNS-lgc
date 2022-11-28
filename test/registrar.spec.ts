@@ -1,16 +1,17 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import {
   Registrar,
   ZNSHub__factory,
   Registrar__factory,
   ZNSHub,
+  OperatorFilterer__factory,
+  OperatorFilterer,
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
-import * as smock from "@defi-wonderland/smock";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -19,7 +20,10 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hub: smock.FakeContract<ZNSHub>;
+  let hubFactory: ZNSHub__factory;
+  let hub: ZNSHub;
+  let operatorFiltererFactory: OperatorFilterer__factory;
+  let operatorFilterer: OperatorFilterer;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -30,41 +34,27 @@ describe("Registrar", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    hub = await smock.smock.fake(ZNSHub__factory);
-    hub.owner.returns(creator.address);
+    hubFactory = new ZNSHub__factory(creator);
+    hub = await hubFactory.deploy();
+    await hub.initialize(ethers.constants.AddressZero, ethers.constants.AddressZero);
 
-    try {
-      console.log("Bytecode in tests: " + registryFactory.bytecode.length / 2);
+    operatorFiltererFactory = new OperatorFilterer__factory(creator);
+    operatorFilterer = await operatorFiltererFactory.deploy();
+    
+    registry = await registryFactory.deploy();
+    await registry.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.Zero,
+      "Zer0 Name Service",
+      "ZNS",
+      hub.address,
+      operatorFilterer.address
+    );
 
-      // Code is too large
-      registry = await registryFactory.deploy({ // fails
-        gasLimit: 3000000
-      });
-      await registry.connect(creator).initialize(
-        ethers.constants.AddressZero,
-        ethers.constants.Zero,
-        "Zer0 Name Service",
-        "ZNS",
-        hub.address,
-        {
-          gasLimit: 3000000
-        }
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    await hub.addRegistrar(
+      rootDomainId, registry.address
+    );
   };
-
-  const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";
-  let blurSigner: SignerWithAddress;
-  const looksrareAddress = "0xf42aa99F011A1fA7CDA90E5E98b277E306BcA83e";
-  let looksrareSigner: SignerWithAddress;
-  const looksrare1155Address = "0xFED24eC7E22f573c2e08AEF55aA6797Ca2b3A051";
-  let looksrare1155Signer: SignerWithAddress;
-  const sudoswapAddress = "0x2b2e8cda09bba9660dca5cb6233787738ad68329";
-  let sudoswapSigner: SignerWithAddress;
-  const customRevertErrorMessage =
-    "VM Exception while processing transaction: reverted with custom error";
 
   before(async () => {
     console.log("before");
@@ -73,10 +63,6 @@ describe("Registrar", () => {
     user1 = accounts[1];
     user2 = accounts[2];
     user3 = accounts[3];
-    blurSigner = await ethers.getImpersonatedSigner(blurAddress);
-    looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
-    looksrare1155Signer = await ethers.getImpersonatedSigner(looksrare1155Address);
-    sudoswapSigner = await ethers.getImpersonatedSigner(sudoswapAddress);
   });
 
   describe("root domain", () => {
@@ -132,84 +118,6 @@ describe("Registrar", () => {
       );
       const domainOwner = await registry.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
-    });
-  });
-
-  describe("approves and transfers", () => {
-    before(async () => {
-      await deployRegistry(creator);
-    });
-    it("approves user1", async () => {
-      await registry.connect(creator).approve(user1.address, rootDomainId);
-    });
-    it("user1 transfers", async () => {
-      const registryLR = await registry.connect(user1);
-      await registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user2.address,
-        rootDomainId
-      );
-      const domainOwner = await registry.ownerOf(rootDomainId);
-      expect(domainOwner).to.be.eq(user2.address);
-    });
-
-  });
-  const customError = "VM Exception while processing transaction: reverted with an unrecognized custom error"
-  describe("filters operators", () => {
-    before(async () => {
-      await deployRegistry(creator);
-    });
-    it("approves blur", async () => {
-      await registry.connect(creator).approve(blurAddress, rootDomainId);
-    });
-
-    it("blur is unable to transfer", async () => {
-      const registryLR = await registry.connect(blurSigner);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError); //With('OperatorNotAllowed').withArgs(blurAddress);
-    });
-
-    it("approves looksrare", async () => {
-      await registry.connect(creator).approve(looksrareAddress, rootDomainId);
-    });
-    it("looksrare is unable to transfer", async () => {
-      const registryLR = await registry.connect(looksrareSigner);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError)
-    });
-
-    it("approves looksrare1155", async () => {
-      await registry.connect(creator).approve(looksrare1155Address, rootDomainId);
-    });
-    it("looksrare1155 is unable to transfer", async () => {
-      const registryLR = await registry.connect(looksrare1155Signer);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError)
-    });
-
-    it("approves sudoswap", async () => {
-      await registry.connect(creator).approve(sudoswapAddress, rootDomainId);
-    });
-    it("sudoswap is unable to transfer", async () => {
-      const registryLR = await registry.connect(sudoswapSigner);
-      const tx = registryLR["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user3.address,
-        rootDomainId
-      );
-      await expect(tx).to.be.revertedWith(customError)
     });
   });
 
@@ -322,11 +230,11 @@ describe("Registrar", () => {
         false
       );
 
-      expect(tx).to.emit(registry, "DomainCreated");
+      expect(tx).to.emit(hub, "EEDomainCreatedV3");
     });
 
     it("emits a DomainCreated event when a domain is registered with the expected params", async () => {
-      await registry.addController(user1.address);
+      await registry.connect(creator).addController(user1.address);
       const registryAsUser1 = registry.connect(user1);
 
       const domainName = "myDomain";
@@ -348,15 +256,18 @@ describe("Registrar", () => {
       const expectedParentHash = rootDomainHash;
 
       expect(tx)
-        .to.emit(registry, "DomainCreated")
+        .to.emit(hub, "EEDomainCreatedV3")
         .withArgs(
+          registryAsUser1.address,
           expectedDomainHash,
           domainName,
           domainNameHash,
-          expectedParentHash,
+          rootDomainId,
           user2.address,
           user1.address,
           "",
+          0,
+          0,
           0
         );
     });
@@ -562,8 +473,8 @@ describe("Registrar", () => {
       await expect(
         registryAsUser1.setDomainMetadataUri(testDomainId, newMetadataUri)
       )
-        .to.emit(registryAsUser1, "MetadataChanged")
-        .withArgs(testDomainId, newMetadataUri);
+        .to.emit(hub, "EEMetadataChanged")
+        .withArgs(registry.address, testDomainId, newMetadataUri);
     });
 
     it("updates state when metadata is changed", async () => {
@@ -628,8 +539,8 @@ describe("Registrar", () => {
       const tx = await registryAsUser1.lockDomainMetadata(testDomainId, true);
 
       expect(tx)
-        .to.emit(registryAsUser1, "MetadataLockChanged")
-        .withArgs(testDomainId, user1.address, true);
+        .to.emit(hub, "EEMetadataLockChanged")
+        .withArgs(registry.address, testDomainId, user1.address, true);
     });
 
     it("updates state when the metadata is locked", async () => {
@@ -668,8 +579,8 @@ describe("Registrar", () => {
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
       await expect(registryAsUser1.lockDomainMetadata(testDomainId, false))
-        .to.emit(registryAsUser1, "MetadataLockChanged")
-        .withArgs(testDomainId, user1.address, false);
+        .to.emit(hub, "EEMetadataLockChanged")
+        .withArgs(registry.address, testDomainId, user1.address, false);
     });
 
     it("updates state of when metadata is unlocked", async () => {
@@ -717,8 +628,8 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(registryAsUser1, "RoyaltiesAmountChanged")
-        .withArgs(testDomainId, currentExpectedRoyaltyAmount);
+        .to.emit(hub, "EERoyaltiesAmountChanged")
+        .withArgs(registry.address, testDomainId, currentExpectedRoyaltyAmount);
     });
 
     it("updates state when a domain's royalty amount changes", async () => {

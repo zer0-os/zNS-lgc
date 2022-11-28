@@ -89,8 +89,8 @@ describe("Subdomain Registrar Functionality", () => {
     });
 
     let subdomainRegistrar: Registrar;
-    let domainName = "foo";
-    let domainId = domainNameToId(domainName);
+    const domainName = "foo";
+    const domainId = domainNameToId(domainName);
 
     it("can create subdomain contracts", async () => {
       const tx = await registry.registerSubdomainContract(
@@ -154,8 +154,8 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("ownerOf", () => {
     let subdomainRegistrar: Registrar;
-    let domainName = "foo";
-    let domainId = domainNameToId(domainName);
+    const domainName = "foo";
+    const domainId = domainNameToId(domainName);
     before(async () => {
       await deployRegistry(creator);
       await registry.addController(creator.address);

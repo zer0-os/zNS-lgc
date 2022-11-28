@@ -68,11 +68,9 @@ contract MigrationRegistrar is
    * Creates a new folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function createDomainGroup(string memory baseMetadataUri)
-    public
-    onlyController
-    returns (uint256)
-  {
+  function createDomainGroup(
+    string memory baseMetadataUri
+  ) public onlyController returns (uint256) {
     domainGroups[numDomainGroups + 1] = DomainGroup({
       baseMetadataUri: baseMetadataUri
     });
@@ -88,10 +86,10 @@ contract MigrationRegistrar is
    * @param id The id of the folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
-    external
-    onlyController
-  {
+  function updateDomainGroup(
+    uint256 id,
+    string memory baseMetadataUri
+  ) external onlyController {
     require(id != 0 && id <= numDomainGroups, "Folder group invalid");
     require(
       keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
@@ -231,8 +229,12 @@ contract MigrationRegistrar is
   // vv TEMPORARY FOR MIGRATION vv
   //
 
-  function burnDomain(uint256 domainId) external onlyOwner {
-    _transfer(msg.sender, address(0), domainId);
+  function burnDomains(
+    uint256 _wilderDomainId,
+    uint256 _rootDomainId
+  ) external onlyOwner {
+    _transfer(msg.sender, address(0), _wilderDomainId);
+    _transfer(msg.sender, address(0), _rootDomainId);
   }
 
   function mintDomain(
@@ -265,24 +267,12 @@ contract MigrationRegistrar is
     return id;
   }
 
-  function setRootDomainId(uint256 _rootDomainId) external onlyOwner {
+  function setRootDomainIdAndParentRegistrar(
+    uint256 _rootDomainId,
+    address _registrar
+  ) external onlyOwner {
     rootDomainId = _rootDomainId;
-  }
-
-  function setParentRegistrar(address _registrar) external onlyOwner {
-    require(
-      parentRegistrar != _registrar,
-      "MR: Can't set the same parentRegistrar"
-    );
     parentRegistrar = _registrar;
-  }
-
-  function setParentDomainId(uint256 _parentId, uint256 _domainId)
-    external
-    onlyOwner
-  {
-    DomainRecord storage domain = records[_domainId];
-    domain.parentId = _parentId;
   }
 
   //
@@ -431,11 +421,10 @@ contract MigrationRegistrar is
    * @param id The domain to set on
    * @param amount The royalty amount
    */
-  function setDomainRoyaltyAmount(uint256 id, uint256 amount)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setDomainRoyaltyAmount(
+    uint256 id,
+    uint256 amount
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
 
     records[id].royaltyAmount = amount;
@@ -447,11 +436,10 @@ contract MigrationRegistrar is
    * @param id The domain to lock
    * @param uri The uri to set
    */
-  function setAndLockDomainMetadata(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setAndLockDomainMetadata(
+    uint256 id,
+    string memory uri
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
     _setDomainLock(id, msg.sender, true);
@@ -462,11 +450,10 @@ contract MigrationRegistrar is
    * @param id The domain to set on
    * @param uri The uri to set
    */
-  function setDomainMetadataUri(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setDomainMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
   }
@@ -533,12 +520,9 @@ contract MigrationRegistrar is
    * @notice Returns whether or not a domain's metadata is locked
    * @param id The domain
    */
-  function isDomainMetadataLocked(uint256 id)
-    public
-    view
-    override
-    returns (bool)
-  {
+  function isDomainMetadataLocked(
+    uint256 id
+  ) public view override returns (bool) {
     bool isLocked = records[id].metadataLocked;
     return isLocked;
   }
@@ -547,12 +531,9 @@ contract MigrationRegistrar is
    * @notice Returns who locked a domain's metadata
    * @param id The domain
    */
-  function domainMetadataLockedBy(uint256 id)
-    public
-    view
-    override
-    returns (address)
-  {
+  function domainMetadataLockedBy(
+    uint256 id
+  ) public view override returns (address) {
     address lockedBy = records[id].metadataLockedBy;
     return lockedBy;
   }
@@ -570,12 +551,9 @@ contract MigrationRegistrar is
    * @notice Returns the current royalty amount for a domain
    * @param id The domain
    */
-  function domainRoyaltyAmount(uint256 id)
-    public
-    view
-    override
-    returns (uint256)
-  {
+  function domainRoyaltyAmount(
+    uint256 id
+  ) public view override returns (uint256) {
     uint256 amount = records[id].royaltyAmount;
     return amount;
   }
@@ -741,10 +719,10 @@ contract MigrationRegistrar is
     _transfer(from, to, tokenId);
   }
 
-  function adminSetMetadataUri(uint256 id, string memory uri)
-    external
-    onlyOwner
-  {
+  function adminSetMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external onlyOwner {
     _setDomainMetadataUri(id, uri);
   }
 
@@ -806,11 +784,9 @@ contract MigrationRegistrar is
     }
   }
 
-  function uint2str(uint256 _i)
-    internal
-    pure
-    returns (string memory _uintAsString)
-  {
+  function uint2str(
+    uint256 _i
+  ) internal pure returns (string memory _uintAsString) {
     if (_i == 0) {
       return "0";
     }

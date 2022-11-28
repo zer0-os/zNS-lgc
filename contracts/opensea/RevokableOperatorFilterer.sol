@@ -16,11 +16,11 @@ abstract contract RevokableOperatorFilterer is OperatorFilterer {
 
   bool private _isOperatorFilterRegistryRevoked;
 
-  function onlyAllowedOperator(address from, address registrant)
-    public
-    view
-    override
-  {
+  function onlyAllowedOperator(
+    address from,
+    address registrant,
+    address msgSender
+  ) public view override {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (
       !_isOperatorFilterRegistryRevoked &&
@@ -29,10 +29,10 @@ abstract contract RevokableOperatorFilterer is OperatorFilterer {
       // Allow spending tokens from addresses with balance
       // Note that this still allows listings and marketplaces with escrow to transfer tokens if transferred
       // from an EOA.
-      if (from == msg.sender) {
+      if (from == msgSender) {
         return;
       }
-      if (!OPERATOR_FILTER_REGISTRY.isOperatorAllowed(registrant, msg.sender)) {
+      if (!OPERATOR_FILTER_REGISTRY.isOperatorAllowed(registrant, msgSender)) {
         revert OperatorNotAllowed(registrant);
       }
     }

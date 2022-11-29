@@ -19,7 +19,8 @@ describe("Registrar", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hub: smock.FakeContract<ZNSHub>;
+  let hubFactory: ZNSHub__factory;
+  let hub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -30,8 +31,12 @@ describe("Registrar", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    hub = await smock.smock.fake(ZNSHub__factory);
-    hub.owner.returns(creator.address);
+    hubFactory = new ZNSHub__factory(creator);
+    hub = await hubFactory.deploy();
+    await hub.initialize(
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero
+    );
 
     registry = await registryFactory.deploy();
     await registry.initialize(
@@ -41,6 +46,8 @@ describe("Registrar", () => {
       "ZNS",
       hub.address
     );
+
+    await hub.addRegistrar(rootDomainId, registry.address);
   };
 
   const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";
@@ -295,6 +302,7 @@ describe("Registrar", () => {
       expect(doesDomainExist).to.be.true;
     });
 
+
     it("emits a DomainCreated event when a domain is registered", async () => {
       await registry.addController(user1.address);
       const registryAsUser1 = registry.connect(user1);
@@ -310,11 +318,11 @@ describe("Registrar", () => {
         false
       );
 
-      expect(tx).to.emit(registry, "DomainCreated");
+      expect(tx).to.emit(hub, "EEDomainCreatedV3");
     });
 
     it("emits a DomainCreated event when a domain is registered with the expected params", async () => {
-      await registry.addController(user1.address);
+      await registry.connect(creator).addController(user1.address);
       const registryAsUser1 = registry.connect(user1);
 
       const domainName = "myDomain";
@@ -336,15 +344,18 @@ describe("Registrar", () => {
       const expectedParentHash = rootDomainHash;
 
       expect(tx)
-        .to.emit(registry, "DomainCreated")
+        .to.emit(hub, "EEDomainCreatedV3")
         .withArgs(
+          registryAsUser1.address,
           expectedDomainHash,
           domainName,
           domainNameHash,
-          expectedParentHash,
+          rootDomainId,
           user2.address,
           user1.address,
           "",
+          0,
+          0,
           0
         );
     });
@@ -550,8 +561,8 @@ describe("Registrar", () => {
       await expect(
         registryAsUser1.setDomainMetadataUri(testDomainId, newMetadataUri)
       )
-        .to.emit(registryAsUser1, "MetadataChanged")
-        .withArgs(testDomainId, newMetadataUri);
+        .to.emit(hub, "EEMetadataChanged")
+        .withArgs(registry.address, testDomainId, newMetadataUri);
     });
 
     it("updates state when metadata is changed", async () => {
@@ -616,8 +627,8 @@ describe("Registrar", () => {
       const tx = await registryAsUser1.lockDomainMetadata(testDomainId, true);
 
       expect(tx)
-        .to.emit(registryAsUser1, "MetadataLockChanged")
-        .withArgs(testDomainId, user1.address, true);
+        .to.emit(hub, "EEMetadataLockChanged")
+        .withArgs(registry.address, testDomainId, user1.address, true);
     });
 
     it("updates state when the metadata is locked", async () => {
@@ -656,8 +667,8 @@ describe("Registrar", () => {
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
       await expect(registryAsUser1.lockDomainMetadata(testDomainId, false))
-        .to.emit(registryAsUser1, "MetadataLockChanged")
-        .withArgs(testDomainId, user1.address, false);
+        .to.emit(hub, "EEMetadataLockChanged")
+        .withArgs(registry.address, testDomainId, user1.address, false);
     });
 
     it("updates state of when metadata is unlocked", async () => {
@@ -705,8 +716,8 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(registryAsUser1, "RoyaltiesAmountChanged")
-        .withArgs(testDomainId, currentExpectedRoyaltyAmount);
+        .to.emit(hub, "EERoyaltiesAmountChanged")
+        .withArgs(registry.address, testDomainId, currentExpectedRoyaltyAmount);
     });
 
     it("updates state when a domain's royalty amount changes", async () => {

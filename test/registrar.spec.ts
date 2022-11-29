@@ -5,8 +5,8 @@ import {
   ZNSHub__factory,
   Registrar__factory,
   ZNSHub,
-  OperatorFilterer__factory,
-  OperatorFilterer,
+  IOperatorFilterRegistry__factory,
+  IOperatorFilterRegistry,
 } from "../typechain";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
@@ -22,8 +22,6 @@ describe("Registrar", () => {
   let registry: Registrar;
   let hubFactory: ZNSHub__factory;
   let hub: ZNSHub;
-  let operatorFiltererFactory: OperatorFilterer__factory;
-  let operatorFilterer: OperatorFilterer;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -41,17 +39,13 @@ describe("Registrar", () => {
       ethers.constants.AddressZero
     );
 
-    operatorFiltererFactory = new OperatorFilterer__factory(creator);
-    operatorFilterer = await operatorFiltererFactory.deploy();
-
     registry = await registryFactory.deploy();
     await registry.initialize(
       ethers.constants.AddressZero,
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      hub.address,
-      operatorFilterer.address
+      hub.address
     );
 
     await hub.addRegistrar(rootDomainId, registry.address);
@@ -645,6 +639,156 @@ describe("Registrar", () => {
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
       ).to.be.revertedWith("ZR: Not owner");
+    });
+  });
+
+  describe("filtering operators", () => {
+    let filterRegistry: IOperatorFilterRegistry;
+
+    const subscriptionAddress = "0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6";
+    const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";
+    let blurSigner: SignerWithAddress;
+    const looksrareAddress = "0xf42aa99F011A1fA7CDA90E5E98b277E306BcA83e";
+    let looksrareSigner: SignerWithAddress;
+    const sudoswapAddress = "0x2b2e8cda09bba9660dca5cb6233787738ad68329";
+    let sudoswapSigner: SignerWithAddress;
+
+    before(async () => {
+      filterRegistry = IOperatorFilterRegistry__factory.connect(
+        "0x000000000000AAeB6D7670E522A718067333cd4E",
+        creator
+      );
+
+      blurSigner = await ethers.getImpersonatedSigner(blurAddress);
+      looksrareSigner = await ethers.getImpersonatedSigner(looksrareAddress);
+      sudoswapSigner = await ethers.getImpersonatedSigner(sudoswapAddress);
+    });
+
+    it("Registrar was already registered to filter registry", async () => {
+      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      expect(isRegistered).to.be.equal(true);
+    });
+
+    it("able to transfer domains even if Registrar was not registered into filter registry", async () => {
+      await filterRegistry.connect(creator).unregister(registry.address);
+
+      await registry["safeTransferFrom(address,address,uint256)"](
+        creator.address,
+        user1.address,
+        rootDomainId
+      );
+      const domainOwner = await registry.ownerOf(rootDomainId);
+      expect(domainOwner).to.be.eq(user1.address);
+
+      // roll back registering and transfering
+      await filterRegistry
+        .connect(creator)
+        .registerAndSubscribe(registry.address, subscriptionAddress);
+      await registry
+        .connect(user1)
+        .transferFrom(user1.address, creator.address, rootDomainId);
+    });
+
+    it("unable to register Registrar into filter registry again", async () => {
+      await expect(filterRegistry.connect(creator).register(registry.address))
+        .to.be.reverted;
+    });
+
+    it("already have filtered operators", async () => {
+      const operators = await filterRegistry.filteredOperators(
+        registry.address
+      );
+      expect(operators.length).to.be.gt(0);
+    });
+
+    describe("Blur.io ExchangeDelegate", () => {
+      it("Blur was already filtered operator", async () => {
+        // Reference: https://etherscan.io/address/0x00000000000111AbE46ff893f3B2fdF1F759a8A8#code
+        const isOperatorFiltered = await filterRegistry.isOperatorFiltered(
+          registry.address,
+          blurAddress
+        );
+        expect(isOperatorFiltered).to.be.equal(true);
+      });
+
+      it("approve Blur", async () => {
+        const isOperatorAllowed = await filterRegistry.isOperatorAllowed(
+          registry.address,
+          blurAddress
+        );
+        console.log("isOperatorAllowed", isOperatorAllowed);
+
+        // await registry.connect(creator).approve(blurAddress, rootDomainId);
+      });
+
+      it("Blur is unable to transfer", async () => {
+        const registryLR = await registry.connect(blurSigner);
+        await expect(
+          registryLR["safeTransferFrom(address,address,uint256)"](
+            creator.address,
+            user1.address,
+            rootDomainId
+          )
+        ).to.be.reverted;
+      });
+
+      it("Blur is able to transfer if not filtered by filter registry", async () => {});
+    });
+
+    describe("LooksRare TransferManagerERC721", () => {
+      it("LooksRare was already filtered operator", async () => {
+        // Reference: https://etherscan.io/address/0xf42aa99F011A1fA7CDA90E5E98b277E306BcA83e#code
+        const isOperatorFiltered = await filterRegistry.isOperatorFiltered(
+          registry.address,
+          looksrareAddress
+        );
+        expect(isOperatorFiltered).to.be.equal(true);
+      });
+
+      it("approve LooksRare", async () => {
+        await registry.connect(creator).approve(looksrareAddress, rootDomainId);
+      });
+
+      it("LooksRare is unable to transfer", async () => {
+        const registryLR = await registry.connect(looksrareSigner);
+        await expect(
+          registryLR["safeTransferFrom(address,address,uint256)"](
+            creator.address,
+            user1.address,
+            rootDomainId
+          )
+        ).to.be.reverted;
+      });
+
+      it("LooksRare is able to transfer if not filtered by filter registry", async () => {});
+    });
+
+    describe("SudoSwap LSSVMPairRouter", () => {
+      it("SudoSwap was already filtered operator", async () => {
+        // Reference: https://etherscan.io/address/0x2b2e8cda09bba9660dca5cb6233787738ad68329#code
+        const isOperatorFiltered = await filterRegistry.isOperatorFiltered(
+          registry.address,
+          sudoswapAddress
+        );
+        expect(isOperatorFiltered).to.be.equal(true);
+      });
+
+      it("approve SudoSwap", async () => {
+        await registry.connect(creator).approve(sudoswapAddress, rootDomainId);
+      });
+
+      it("SudoSwap is unable to transfer", async () => {
+        const registryLR = await registry.connect(sudoswapSigner);
+        await expect(
+          registryLR["safeTransferFrom(address,address,uint256)"](
+            creator.address,
+            user1.address,
+            rootDomainId
+          )
+        ).to.be.reverted;
+      });
+
+      it("SudoSwap is able to transfer if not filtered by filter registry", async () => {});
     });
   });
 });

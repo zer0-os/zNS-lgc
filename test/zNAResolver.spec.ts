@@ -41,7 +41,6 @@ describe("zNAResolver", function () {
   let resourceTypeLib: ResourceType,
     zNSHub: ZNSHub,
     registrar: Registrar,
-    operatorFilterer: OperatorFilterer,
     resourceDAORegistry: MockResourceRegistry,
     resourceStakingRegistry: MockResourceRegistry,
     resourceRegistryNot: MockResourceRegistry,
@@ -78,9 +77,6 @@ describe("zNAResolver", function () {
     const ZNSHubFactory = new ZNSHub__factory(deployer);
     zNSHub = await ZNSHubFactory.deploy();
 
-    const operatorFiltererFactory = new OperatorFilterer__factory(deployer);
-    operatorFilterer = await operatorFiltererFactory.deploy();
-
     const RegistrarFactory = new Registrar__factory(deployer);
     registrar = await RegistrarFactory.deploy();
     await registrar.initialize(
@@ -88,8 +84,7 @@ describe("zNAResolver", function () {
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      zNSHub.address,
-      operatorFilterer.address
+      zNSHub.address
     );
     await zNSHub.initialize(registrar.address, ethers.constants.AddressZero);
 

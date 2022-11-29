@@ -24,8 +24,6 @@ describe("Folder groups functionality", () => {
   let registryFactory: Registrar__factory;
   let registry: Registrar;
   let hub: smock.MockContract<ZNSHub>;
-  let operatorFiltererFactory: OperatorFilterer__factory;
-  let operatorFilterer: OperatorFilterer;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
@@ -36,9 +34,6 @@ describe("Folder groups functionality", () => {
       "ZNSHub"
     );
     hub = await emitterMockFactory.deploy();
-
-    operatorFiltererFactory = new OperatorFilterer__factory(creator);
-    operatorFilterer = await operatorFiltererFactory.deploy();
 
     const beacon = await upgrades.deployBeacon(registryFactory);
 
@@ -51,8 +46,7 @@ describe("Folder groups functionality", () => {
       ethers.constants.Zero,
       "Zer0 Name Service",
       "ZNS",
-      hub.address,
-      operatorFilterer.address
+      hub.address
     );
 
     await hub.addRegistrar(rootDomainId, registry.address);

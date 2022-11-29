@@ -11,7 +11,7 @@ import {IOperatorFilterRegistry} from "./IOperatorFilterRegistry.sol";
  *         - `onlyAllowedOperator` modifier for `transferFrom` and `safeTransferFrom` methods.
  *         - `onlyAllowedOperatorApproval` modifier for `approve` and `setApprovalForAll` methods.
  */
-contract OperatorFilterer {
+abstract contract OperatorFilterer {
   error OperatorNotAllowed(address operator);
 
   IOperatorFilterRegistry public constant OPERATOR_FILTER_REGISTRY =
@@ -20,7 +20,7 @@ contract OperatorFilterer {
   function initializeFilter(
     address subscriptionOrRegistrantToCopy,
     bool subscribe
-  ) public {
+  ) internal {
     // If an inheriting token contract is deployed to a network without the registry deployed, the modifier
     // will not revert, but the contract will need to be registered with the registry once it is deployed in
     // order for the modifier to filter addresses.
@@ -43,21 +43,19 @@ contract OperatorFilterer {
     }
   }
 
-  function onlyAllowedOperator(
-    address from,
-    address registrant,
-    address msgSender
-  ) public virtual {
+  function onlyAllowedOperator(address from) internal virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       // Allow spending tokens from addresses with balance
       // Note that this still allows listings and marketplaces with escrow to transfer tokens if transferred
       // from an EOA.
-      if (from == msgSender) {
+      if (from == msg.sender) {
         return;
       }
-      if (!OPERATOR_FILTER_REGISTRY.isOperatorAllowed(registrant, msgSender)) {
-        revert OperatorNotAllowed(registrant);
+      if (
+        !OPERATOR_FILTER_REGISTRY.isOperatorAllowed(address(this), msg.sender)
+      ) {
+        revert OperatorNotAllowed(msg.sender);
       }
     }
   }
@@ -76,7 +74,7 @@ contract OperatorFilterer {
     return OPERATOR_FILTER_REGISTRY.isRegistered(filter);
   }
 
-  modifier onlyAllowedOperatorApproval(address operator) virtual {
+  function onlyAllowedOperatorApproval(address operator) internal virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       if (
@@ -85,6 +83,5 @@ contract OperatorFilterer {
         revert OperatorNotAllowed(operator);
       }
     }
-    _;
   }
 }

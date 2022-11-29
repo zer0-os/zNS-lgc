@@ -35,15 +35,10 @@ contract OperatorFilterer {
     }
   }
 
-  modifier onlyAllowedOperator() virtual {
-    // Check registry code length to facilitate testing in environments without a deployed registry.
-    if (address(operatorFilterRegistry).code.length > 0) {
-      if (
-        !operatorFilterRegistry.isOperatorAllowed(address(this), msg.sender)
-      ) {
-        revert OperatorNotAllowed(msg.sender);
-      }
+  function onlyAllowedOperator() internal {
+    //Does not facilitate testing in environments with no registry deployed
+    if (!operatorFilterRegistry.isOperatorAllowed(address(this), msg.sender)) {
+      revert OperatorNotAllowed(msg.sender);
     }
-    _;
   }
 }

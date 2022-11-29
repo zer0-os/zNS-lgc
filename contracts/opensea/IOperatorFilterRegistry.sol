@@ -4,17 +4,22 @@ pragma solidity ^0.8.13;
 import {EnumerableSet} from "../oz/utils/EnumerableSet.sol";
 
 interface IOperatorFilterRegistry {
-  function isOperatorAllowed(address registrant, address operator)
-    external
-    returns (bool);
+  function isOperatorAllowed(
+    address registrant,
+    address operator
+  ) external returns (bool);
 
   function register(address registrant) external;
 
-  function registerAndSubscribe(address registrant, address subscription)
-    external;
+  function registerAndSubscribe(
+    address registrant,
+    address subscription
+  ) external;
 
-  function registerAndCopyEntries(address registrant, address registrantToCopy)
-    external;
+  function registerAndCopyEntries(
+    address registrant,
+    address registrantToCopy
+  ) external;
 
   function updateOperator(
     address registrant,
@@ -40,8 +45,10 @@ interface IOperatorFilterRegistry {
     bool filtered
   ) external;
 
-  function subscribe(address registrant, address registrantToSubscribe)
-    external;
+  function subscribe(
+    address registrant,
+    address registrantToSubscribe
+  ) external;
 
   function unsubscribe(address registrant, bool copyExistingEntries) external;
 
@@ -49,35 +56,41 @@ interface IOperatorFilterRegistry {
 
   function subscribers(address registrant) external returns (address[] memory);
 
-  function subscriberAt(address registrant, uint256 index)
-    external
-    returns (address);
+  function subscriberAt(
+    address registrant,
+    uint256 index
+  ) external returns (address);
 
   function copyEntriesOf(address registrant, address registrantToCopy) external;
 
-  function isOperatorFiltered(address registrant, address operator)
-    external
-    returns (bool);
+  function isOperatorFiltered(
+    address registrant,
+    address operator
+  ) external returns (bool);
 
-  function isCodeHashOfFiltered(address registrant, address operatorWithCode)
-    external
-    returns (bool);
+  function isCodeHashOfFiltered(
+    address registrant,
+    address operatorWithCode
+  ) external returns (bool);
 
-  function isCodeHashFiltered(address registrant, bytes32 codeHash)
-    external
-    returns (bool);
+  function isCodeHashFiltered(
+    address registrant,
+    bytes32 codeHash
+  ) external returns (bool);
 
   function filteredOperators(address addr) external returns (address[] memory);
 
   function filteredCodeHashes(address addr) external returns (bytes32[] memory);
 
-  function filteredOperatorAt(address registrant, uint256 index)
-    external
-    returns (address);
+  function filteredOperatorAt(
+    address registrant,
+    uint256 index
+  ) external returns (address);
 
-  function filteredCodeHashAt(address registrant, uint256 index)
-    external
-    returns (bytes32);
+  function filteredCodeHashAt(
+    address registrant,
+    uint256 index
+  ) external returns (bytes32);
 
   function isRegistered(address addr) external returns (bool);
 

@@ -3005,7 +3005,7 @@ cli-cursor@^2.1.0:
   dependencies:
     restore-cursor "^2.0.0"
 
-cli-interact@^0.1.9:
+cli-interact@0.1.9:
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/cli-interact/-/cli-interact-0.1.9.tgz#e58ae8505bbf7ed2e12671057cd559b12fdce28f"
   integrity sha512-QHrR2djQOfT1WfHSj9DidBGp+ImgV3t9dTP4cPWTnt9fnOcZqBzCoqd2RysWSIgUXuer5WpmKuT1jqjvwoxdCQ==

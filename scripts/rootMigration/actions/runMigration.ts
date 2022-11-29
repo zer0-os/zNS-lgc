@@ -35,13 +35,12 @@ export const runMigration = async (
   const waitBlocks = network === "hardhat" ? 0 : 3;
 
   const legacyRegistrarAddress = addresses.registrar;
-  const legacyRegistrarOwner = addresses.registrarOwner;
   const zNSHubAddress = addresses.zNSHub;
   const beaconAddress = addresses.subregistrarBeacon;
   const wilderDomainId = addresses.wilderDomainId;
 
-  // The address for the legacy registrar is not in the manifest we must force
-  // hardhat to use it to be able to allow us to upgrade it.
+  // The address for the legacy registrar is not in the manifest so we must force
+  // hardhat to be able to allow us to upgrade it.
   if (network === "hardhat") {
     await hre.upgrades.forceImport(legacyRegistrarAddress, new Registrar__factory());
   }
@@ -56,29 +55,29 @@ export const runMigration = async (
 
   logger.log("2.a. Upgrade legacy Registrar");
   confirmContinue();
-  const upgradeRegistrarTx = await hre.upgrades.upgradeProxy(
+  const upgradeWildRegistrar = await hre.upgrades.upgradeProxy(
     legacyRegistrarAddress,
     new MigrationRegistrar__factory(signer)
   );
-  const upgradedLegacyRegistrar = await upgradeRegistrarTx.deployed() as MigrationRegistrar;
+  const wildRegistrar = await upgradeWildRegistrar.deployed() as MigrationRegistrar;
 
-  logger.log("2.b. Upgrade Beacon registrars");
+  logger.log("2.b. Upgrade Beacon Registrars");
   confirmContinue();
-  const upgradeBeaconTx = await hre.upgrades.upgradeBeacon(
+  const upgradeSubdomainRegistrar = await hre.upgrades.upgradeBeacon(
     beaconAddress,
     new MigrationRegistrar__factory(signer)
   );
   // Beacon is the subdomain contract for wolf
-  const upgradedLegacyRegistrarBeacon = await upgradeBeaconTx.deployed() as MigrationRegistrar;
+  await upgradeSubdomainRegistrar.deployed() as MigrationRegistrar;
 
   logger.log("3. Burn root and wilder domains on legacy registrar");
   confirmContinue();
-  const burnDomainsTx = await upgradedLegacyRegistrar.connect(signer).burnDomains(wilderDomainId, rootDomainId);
-  await burnDomainsTx.wait(waitBlocks);
+  const burnDomains = await wildRegistrar.connect(signer).burnDomains(wilderDomainId, rootDomainId);
+  await burnDomains.wait(waitBlocks);
 
   logger.log("Verify burn...");
-  const wilderDomainExists = await upgradedLegacyRegistrar.domainExists(wilderDomainId);
-  const rootDomainExists = await upgradedLegacyRegistrar.domainExists(rootDomainId);
+  const wilderDomainExists = await wildRegistrar.domainExists(wilderDomainId);
+  const rootDomainExists = await wildRegistrar.domainExists(rootDomainId);
 
   if (wilderDomainExists || rootDomainExists) {
     throw Error("Burn didn't work");
@@ -87,8 +86,8 @@ export const runMigration = async (
 
   logger.log("4. Deploy new root registrar as proxy to existing subdomain registrar beacon");
   confirmContinue();
-  const newRegistrarTx = await hre.upgrades.deployBeaconProxy(
-    upgradedLegacyRegistrarBeacon.address,
+  const deployRootRegistrar = await hre.upgrades.deployBeaconProxy(
+    beaconAddress,
     new MigrationRegistrar__factory(signer),
     [
       hre.ethers.constants.AddressZero, // Parent registrar
@@ -99,34 +98,33 @@ export const runMigration = async (
     ]
   );
 
-  const newBeaconRegistrar = await newRegistrarTx.deployed() as MigrationRegistrar;
+  const rootRegistrar = await deployRootRegistrar.deployed() as MigrationRegistrar;
 
-  logger.log(`New Beacon Registrar Address: ${newBeaconRegistrar.address}`);
+  logger.log(`New Root Registrar Address: ${rootRegistrar.address}`);
 
-  logger.log("Register the new Beacon Registrar on zNSHub")
-  confirmContinue();
   // Must call zNSHub.addRegistrar for the newBeaconRegistrar to mint below
-  const addRegistrarTx = await zNSHub.addRegistrar(rootDomainId, newBeaconRegistrar.address);
-  await addRegistrarTx.wait(waitBlocks);
+  logger.log("Register the new Registrar on zNSHub")
+  confirmContinue();
+  const addRegistrar = await zNSHub.addRegistrar(rootDomainId, rootRegistrar.address);
+  await addRegistrar.wait(waitBlocks);
 
   logger.log("5. Mint wilder in new root registrar");
   confirmContinue();
-  const tx = await newBeaconRegistrar.connect(signer).mintDomain(
+  const mintWilderDomainTx = await rootRegistrar.connect(signer).mintDomain(
     hre.ethers.constants.HashZero, // Parent domainId
     "wilder",
     signerAddress,
     "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
     0,
     false,
-    newBeaconRegistrar.address
+    legacyRegistrarAddress
   );
-  const receipt = await tx.wait(waitBlocks);
 
+  const receipt = await mintWilderDomainTx.wait(waitBlocks);
   const newWilderDomainId = BigNumber.from(receipt.events![0].args!["tokenId"]);
 
   logger.log("Verify mint...");
-  const newWilderDomainExists = await newBeaconRegistrar.domainExists(newWilderDomainId);
-
+  const newWilderDomainExists = await rootRegistrar.domainExists(newWilderDomainId);
   if (!newWilderDomainExists) {
     throw Error("Mint didn't work");
   }
@@ -142,43 +140,41 @@ export const runMigration = async (
 
   logger.log("6. Update the rootDomainId and parentRegistrar values on upgraded legacy registrar");
   confirmContinue();
-  const updateValuesTx = await upgradedLegacyRegistrar.connect(signer)
+  const updateValuesTx = await wildRegistrar.connect(signer)
     .setRootDomainIdAndParentRegistrar(
       rootDomainId,
-      newBeaconRegistrar.address
+      rootRegistrar.address
     );
   await updateValuesTx.wait(waitBlocks);
 
-  const rootDomainIdAfterUpdate = await upgradedLegacyRegistrar.rootDomainId();
-  const parentRegistrarAfterUpdate = await upgradedLegacyRegistrar.parentRegistrar();
-
+  const rootDomainIdAfterUpdate = await wildRegistrar.rootDomainId();
+  const parentRegistrarAfterUpdate = await wildRegistrar.parentRegistrar();
 
   if (
     rootDomainIdAfterUpdate.toString() !== rootDomainId ||
-    parentRegistrarAfterUpdate !== newBeaconRegistrar.address
+    parentRegistrarAfterUpdate !== rootRegistrar.address
   ) {
-    const rootsMessage = `${rootDomainIdAfterUpdate.toString()} - ${rootDomainId}`
-    const parentRegistrarMessage = `${parentRegistrarAfterUpdate} - ${newBeaconRegistrar.address}`
-    const message = `Values after updating don't match their expected value.\n${rootsMessage}\n${parentRegistrarMessage}`
-    throw Error(message)
+    const rootIds = `${rootDomainIdAfterUpdate.toString()} - ${rootDomainId}`;
+    const parentRegistrars = `${parentRegistrarAfterUpdate} - ${rootRegistrar.address}`;
+    throw Error(`Values after updating don't match their expected value.\n${rootIds}\n${parentRegistrars}`);
   }
 
   logger.log("7. Upgrade legacy and beacon registrars back to post-migration version (OG version)");
   logger.log("7a. Upgrade legacy registrar back to original Registrar");
   confirmContinue();
-  const originalRegistrarTx = await hre.upgrades.upgradeProxy(
-    upgradedLegacyRegistrar,
+  let originalRegistrarTx = await hre.upgrades.upgradeProxy(
+    legacyRegistrarAddress,
     new Registrar__factory(signer)
   );
   await originalRegistrarTx.deployed()
 
   logger.log("7b. Upgrade beacon registrars to original Registrar");
   confirmContinue();
-  const originalBeaconRegistrarTx = await hre.upgrades.upgradeBeacon(
-    upgradedLegacyRegistrarBeacon.address,
+  originalRegistrarTx = await hre.upgrades.upgradeBeacon(
+    beaconAddress,
     new Registrar__factory(signer)
   );
-  await originalBeaconRegistrarTx.deployed();
+  await originalRegistrarTx.deployed();
 
   return;
 }

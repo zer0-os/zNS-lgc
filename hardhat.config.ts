@@ -140,7 +140,7 @@ const config: HardhatUserConfig = {
   },
   contractSizer: {
     alphaSort: true,
-    runOnCompile: true,
+    runOnCompile: false,
     disambiguatePaths: false,
   },
   etherscan: {

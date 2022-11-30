@@ -43,7 +43,21 @@ abstract contract OperatorFilterer {
     }
   }
 
-  function onlyAllowedOperator(address from) internal virtual {
+  function _register(address filter) internal {
+    require(!_isRegistered(filter), "OF: Already registered");
+    OPERATOR_FILTER_REGISTRY.register(filter);
+  }
+
+  function _unregister(address filter) internal {
+    require(_isRegistered(filter), "OF: Not registered");
+    OPERATOR_FILTER_REGISTRY.register(filter);
+  }
+
+  function _isRegistered(address filter) internal view returns (bool) {
+    return OPERATOR_FILTER_REGISTRY.isRegistered(filter);
+  }
+
+  function _onlyAllowedOperator(address from) internal virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       // Allow spending tokens from addresses with balance
@@ -60,21 +74,7 @@ abstract contract OperatorFilterer {
     }
   }
 
-  function register(address filter) public {
-    require(!_isRegistered(filter), "OF: Already registered");
-    OPERATOR_FILTER_REGISTRY.register(filter);
-  }
-
-  function unregister(address filter) public {
-    require(_isRegistered(filter), "OF: Not registered");
-    OPERATOR_FILTER_REGISTRY.register(filter);
-  }
-
-  function _isRegistered(address filter) internal returns (bool) {
-    return OPERATOR_FILTER_REGISTRY.isRegistered(filter);
-  }
-
-  function onlyAllowedOperatorApproval(address operator) internal virtual {
+  function _onlyAllowedOperatorApproval(address operator) internal virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {
       if (

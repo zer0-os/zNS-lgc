@@ -43,7 +43,7 @@
     "clean": "hardhat clean",
     "compile": "hardhat compile",
     "hardhat": "hardhat",
-    "sizes": "hardhat size-contracts",
+    "size": "hardhat size-contracts",
     "test": "hardhat test",
     "coverage": "yarn run build && hardhat coverage --temp artifacts --network hardhat",
     "fix": "yarn run fix:contracts && yarn run fix:ts",

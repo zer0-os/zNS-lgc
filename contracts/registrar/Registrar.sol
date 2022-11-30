@@ -9,7 +9,7 @@ import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 import {OperatorFilterer} from "../opensea/OperatorFilterer.sol";
-import {StringsUpgradeable} from "../oz/utils/StringsUpgradeable.sol";
+import {CustomStrings} from "../CustomStrings.sol";
 
 contract Registrar is
   IRegistrar,
@@ -150,6 +150,15 @@ contract Registrar is
    * External Methods
    */
 
+  // These two functions push the Registrar over the bytecode size limit
+  // function registrerFilter(address _filter) external onlyOwner {
+  //   _register(_filter);
+  // }
+
+  // function unregistrerFilter(address _filter) external onlyOwner {
+  //   _unregister(_filter);
+  // }
+
   /**
    * @notice Authorizes a controller to control the registrar
    * @param controller The address of the controller
@@ -159,7 +168,7 @@ contract Registrar is
       msg.sender == owner() || msg.sender == parentRegistrar,
       "ZR: Not authorized"
     );
-    require(!controllers[controller], "ZR: Controller is already added");
+    require(controllers[controller], "ZR: Controller is already added");
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -558,15 +567,13 @@ contract Registrar is
       "ERC721Metadata: URI query for nonexistent token"
     );
 
-    //DomainRecord memory domain = records[tokenId];
-
+    // figure out uri based on domain group
     if (records[tokenId].domainGroup != 0) {
-      // figure out uri based on domain group
       return
         string(
           abi.encodePacked(
             domainGroups[records[tokenId].domainGroup].baseMetadataUri,
-            StringsUpgradeable.toString(records[tokenId].domainGroupFileIndex)
+            CustomStrings.toString(records[tokenId].domainGroupFileIndex)
           )
         );
     }
@@ -579,7 +586,7 @@ contract Registrar is
    */
 
   function _approve(address to, uint256 tokenId) internal virtual override {
-    onlyAllowedOperatorApproval(to);
+    _onlyAllowedOperatorApproval(to);
     super._approve(to, tokenId);
   }
 
@@ -588,7 +595,7 @@ contract Registrar is
     address to,
     uint256 tokenId
   ) internal virtual override {
-    onlyAllowedOperator(from);
+    _onlyAllowedOperator(from);
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
     zNSHub.domainTransferred(from, to, tokenId);
@@ -671,7 +678,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            StringsUpgradeable.toString(ipfsFolderIndexOffset + i)
+            CustomStrings.toString(ipfsFolderIndexOffset + i)
           )
         )
       );
@@ -697,7 +704,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            StringsUpgradeable.toString(ipfsFolderIndexStart + i)
+            CustomStrings.toString(ipfsFolderIndexStart + i)
           )
         )
       );
@@ -739,10 +746,10 @@ contract Registrar is
     for (uint256 i = startingIndex; i < endingIndex; i++) {
       result = _registerDomain(
         parentId,
-        StringsUpgradeable.toString(i + namingOffset),
+        CustomStrings.toString(i + namingOffset),
         minter,
         string(
-          abi.encodePacked(folderWithIPFSPrefix, StringsUpgradeable.toString(i))
+          abi.encodePacked(folderWithIPFSPrefix, CustomStrings.toString(i))
         ),
         royaltyAmount,
         locked
@@ -766,7 +773,7 @@ contract Registrar is
     for (uint256 i = startingIndex; i < endingIndex; i++) {
       tokenId = _registerDomainV2(
         parentId,
-        StringsUpgradeable.toString(i + namingOffset),
+        CustomStrings.toString(i + namingOffset),
         minter,
         "",
         royaltyAmount,

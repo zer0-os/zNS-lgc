@@ -10,8 +10,6 @@ import {
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
-  OperatorFilterer__factory,
-  OperatorFilterer,
 } from "../typechain";
 
 import { domainNameToId } from "./helpers";
@@ -155,6 +153,4 @@ describe("Folder groups functionality", () => {
     const tokenUri = await registry.tokenURI(domainId);
     expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
-
-  it("still allows old token uris to work", async () => {});
 });

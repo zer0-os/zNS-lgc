@@ -90,7 +90,7 @@ describe("zNS Hub", () => {
 
     it("can transfer ownership", () => {
       console.log("ZZZ");
-      console.log(hub);
+      // console.log(hub);
       //await hub["transferOwnership"](user1.address);
       //expect(await hub.registrarBeacon()).to.eq(user1.address);
     });

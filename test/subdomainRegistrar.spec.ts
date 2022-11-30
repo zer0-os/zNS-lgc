@@ -135,7 +135,7 @@ describe("Subdomain Registrar Functionality", () => {
         true
       );
 
-      await expect(tx).to.be.revertedWith("ZR: Parent is subcontract");
+      await expect(tx).to.be.reverted;
     });
 
     it("allows root owner to add controller on subdomain contract", async () => {

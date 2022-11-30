@@ -19,6 +19,25 @@ contract Registrar is
 {
   using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
 
+  error InvalidFolderGroup();
+  error SameFolderGroup();
+  error NotAuthorized();
+  error ControllerAlreadyAdded();
+  error ControllerNotExists();
+  error NotController();
+  error EmptyDomainName();
+  error SubdomainParent();
+  error DomainGroupNotExists();
+  error ShouldUpdateViaDomainGroup();
+  error NoParentDomain();
+  error LockedMetadata();
+  error NotLockedMetadata();
+  error NotMetadataLocker();
+  error NotApprovedOrOwner();
+  error DomainNotExists();
+  error NotDomainOwner();
+  error InvalidDomainIndex();
+
   // Data recorded for each domain
   struct DomainRecord {
     address minter;
@@ -95,12 +114,15 @@ contract Registrar is
     string memory baseMetadataUri
   ) external {
     _onlyController();
-    require(id != 0 && id <= numDomainGroups, "Folder group invalid");
-    require(
-      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
-        keccak256(abi.encodePacked(baseMetadataUri)),
-      "Folder groups are the same"
-    );
+    if (id == 0 || id > numDomainGroups) {
+      revert InvalidFolderGroup();
+    }
+    if (
+      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) ==
+      keccak256(abi.encodePacked(baseMetadataUri))
+    ) {
+      revert SameFolderGroup();
+    }
     domainGroups[id].baseMetadataUri = baseMetadataUri;
 
     zNSHub.domainGroupUpdated(id, baseMetadataUri);
@@ -155,11 +177,12 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function addController(address controller) external {
-    require(
-      msg.sender == owner() || msg.sender == parentRegistrar,
-      "ZR: Not authorized"
-    );
-    require(!controllers[controller], "ZR: Controller is already added");
+    if (msg.sender != owner() && msg.sender != parentRegistrar) {
+      revert NotAuthorized();
+    }
+    if (controllers[controller]) {
+      revert ControllerAlreadyAdded();
+    }
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -169,11 +192,12 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
-    require(
-      msg.sender == owner() || msg.sender == parentRegistrar,
-      "ZR: Not authorized"
-    );
-    require(controllers[controller], "ZR: Controller does not exist");
+    if (msg.sender != owner() && msg.sender != parentRegistrar) {
+      revert NotAuthorized();
+    }
+    if (!controllers[controller]) {
+      revert ControllerNotExists();
+    }
     controllers[controller] = false;
     emit ControllerRemoved(controller);
   }
@@ -323,16 +347,18 @@ contract Registrar is
     uint256 groupId, // 0 is null
     uint256 groupFileIndex // ignored if groupId is 0
   ) internal returns (uint256) {
-    require(bytes(label).length > 0, "ZR: Empty name");
+    if (bytes(label).length == 0) {
+      revert EmptyDomainName();
+    }
     // subdomain cannot be minted on domains which are subdomain contracts
-    require(
-      records[parentId].subdomainContract == address(0),
-      "ZR: Parent is subcontract"
-    );
-    require(groupId <= numDomainGroups, "ZR: Domain group doesn't exist");
-    if (parentId != rootDomainId) {
-      // Domain parents must exist
-      require(_exists(parentId), "ZR: No parent");
+    if (records[parentId].subdomainContract != address(0)) {
+      revert SubdomainParent();
+    }
+    if (groupId > numDomainGroups) {
+      revert DomainGroupNotExists();
+    }
+    if (parentId != rootDomainId && !_exists(parentId)) {
+      revert NoParentDomain();
     }
 
     // Create the child domain under the parent domain
@@ -392,7 +418,9 @@ contract Registrar is
     uint256 amount
   ) external override {
     _onlyOwnerOf(id);
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
 
     records[id].royaltyAmount = amount;
     zNSHub.royaltiesAmountChanged(id, amount);
@@ -408,7 +436,9 @@ contract Registrar is
     string memory uri
   ) external override {
     _onlyOwnerOf(id);
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
     _setDomainMetadataUri(id, uri);
     _setDomainLock(id, msg.sender, true);
   }
@@ -423,7 +453,9 @@ contract Registrar is
     string memory uri
   ) external override {
     _onlyOwnerOf(id);
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
     _setDomainMetadataUri(id, uri);
   }
 
@@ -450,10 +482,9 @@ contract Registrar is
   ) public {
     for (uint256 i = 0; i < tokenIds.length; ++i) {
       uint256 tokenId = tokenIds[i];
-      require(
-        _isApprovedOrOwner(_msgSender(), tokenId),
-        "ERC721: transfer caller is not owner nor approved"
-      );
+      if (!_isApprovedOrOwner(_msgSender(), tokenId)) {
+        revert NotApprovedOrOwner();
+      }
 
       _transfer(from, to, tokenId);
     }
@@ -557,7 +588,9 @@ contract Registrar is
    * @param id The domain
    */
   function parentOf(uint256 id) public view override returns (uint256) {
-    require(_exists(id), "ZR: Does not exist");
+    if (!_exists(id)) {
+      revert DomainNotExists();
+    }
     return records[id].parentId;
   }
 
@@ -570,10 +603,9 @@ contract Registrar is
     override(IERC721MetadataUpgradeable, ERC721Upgradeable)
     returns (string memory)
   {
-    require(
-      _exists(tokenId),
-      "ERC721Metadata: URI query for nonexistent token"
-    );
+    if (!_exists(tokenId)) {
+      revert DomainNotExists();
+    }
 
     // figure out uri based on domain group
     if (records[tokenId].domainGroup != 0) {
@@ -605,28 +637,40 @@ contract Registrar is
   }
 
   function _onlyOwnerOf(uint256 id) internal view {
-    require(ownerOf(id) == msg.sender, "ZR: Not owner");
+    if (ownerOf(id) != msg.sender) {
+      revert NotDomainOwner();
+    }
   }
 
   function _onlyController() internal {
     if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
-      revert("ZR: Not controller");
+      revert NotController();
     }
   }
 
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
-    require(records[id].domainGroup == 0, "Must update via domain group");
+    if (records[id].domainGroup != 0) {
+      revert ShouldUpdateViaDomainGroup();
+    }
     _setTokenURI(id, uri);
     zNSHub.metadataChanged(id, uri);
   }
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
     if (toLock) {
-      require(ownerOf(id) == msg.sender, "ZR: Not owner");
-      require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+      if (ownerOf(id) != msg.sender) {
+        revert NotDomainOwner();
+      }
+      if (isDomainMetadataLocked(id)) {
+        revert LockedMetadata();
+      }
     } else {
-      require(isDomainMetadataLocked(id), "ZR: Not locked");
-      require(domainMetadataLockedBy(id) == msg.sender, "ZR: Not locker");
+      if (!isDomainMetadataLocked(id)) {
+        revert NotLockedMetadata();
+      }
+      if (domainMetadataLockedBy(id) != msg.sender) {
+        revert NotMetadataLocker();
+      }
     }
   }
 
@@ -744,7 +788,9 @@ contract Registrar is
     bool locked
   ) external {
     _onlyController();
-    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+    if (endingIndex <= startingIndex) {
+      revert InvalidDomainIndex();
+    }
     uint256 result;
     for (uint256 i = startingIndex; i < endingIndex; i++) {
       result = _registerDomain(
@@ -771,7 +817,9 @@ contract Registrar is
     address sendTo
   ) external {
     _onlyController();
-    require(startingIndex < endingIndex, "Invalid number of domains");
+    if (endingIndex <= startingIndex) {
+      revert InvalidDomainIndex();
+    }
     uint256 tokenId;
     for (uint256 i = startingIndex; i < endingIndex; i++) {
       tokenId = _registerDomainV2(

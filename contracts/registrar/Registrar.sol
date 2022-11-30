@@ -459,6 +459,22 @@ contract Registrar is
     }
   }
 
+  function setApprovalForAll(
+    address operator,
+    bool approved
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    _onlyAllowedOperatorApproval(operator);
+    super.setApprovalForAll(operator, approved);
+  }
+
+  function approve(
+    address operator,
+    uint256 tokenId
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    _onlyAllowedOperatorApproval(operator);
+    super.approve(operator, tokenId);
+  }
+
   /*
    * Public View
    */
@@ -576,11 +592,6 @@ contract Registrar is
   /*
    * Internal Methods
    */
-
-  function _approve(address to, uint256 tokenId) internal virtual override {
-    _onlyAllowedOperatorApproval(to);
-    super._approve(to, tokenId);
-  }
 
   function _transfer(
     address from,

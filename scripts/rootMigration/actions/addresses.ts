@@ -33,7 +33,6 @@ const addresses = {
 // Use Rinkeby addresses for hardhat testing locally
 export const getAddressesForNetwork = (network: string) => {
   if (network === "mainnet") {
-    // if (network === "mainnet" || network === "hardhat") {
     return addresses.mainnet;
   } else if (network === "goerli" || network === "hardhat") {
     return addresses.goerli

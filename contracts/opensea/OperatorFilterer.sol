@@ -43,20 +43,6 @@ abstract contract OperatorFilterer {
     }
   }
 
-  function _register(address filter) internal {
-    require(!_isRegistered(filter), "OF: Already registered");
-    OPERATOR_FILTER_REGISTRY.register(filter);
-  }
-
-  function _unregister(address filter) internal {
-    require(_isRegistered(filter), "OF: Not registered");
-    OPERATOR_FILTER_REGISTRY.register(filter);
-  }
-
-  function _isRegistered(address filter) internal view returns (bool) {
-    return OPERATOR_FILTER_REGISTRY.isRegistered(filter);
-  }
-
   function _onlyAllowedOperator(address from) internal virtual {
     // Check registry code length to facilitate testing in environments without a deployed registry.
     if (address(OPERATOR_FILTER_REGISTRY).code.length > 0) {

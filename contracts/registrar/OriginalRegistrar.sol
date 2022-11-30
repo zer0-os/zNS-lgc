@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-// This is just a sample contract to test the upgrade
-// It should be deleted from this repository and is only being
-// committed now because it's used as a WIP
+// This is just a sample contract to test the upgrade of Registrar -> Registrar containing OS OperatorFilterer contracts
+// It should be deleted from this repository and is only being committed now because it's used as an example
 
 // This is only kept for backward compatability / upgrading
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
@@ -72,11 +71,9 @@ contract OriginalRegistrar is
    * Creates a new folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function createDomainGroup(string memory baseMetadataUri)
-    public
-    onlyController
-    returns (uint256)
-  {
+  function createDomainGroup(
+    string memory baseMetadataUri
+  ) public onlyController returns (uint256) {
     domainGroups[numDomainGroups + 1] = DomainGroup({
       baseMetadataUri: baseMetadataUri
     });
@@ -92,10 +89,10 @@ contract OriginalRegistrar is
    * @param id The id of the folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
-    external
-    onlyController
-  {
+  function updateDomainGroup(
+    uint256 id,
+    string memory baseMetadataUri
+  ) external onlyController {
     require(id != 0 && id <= numDomainGroups, "Folder group invalid");
     require(
       keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
@@ -388,11 +385,10 @@ contract OriginalRegistrar is
    * @param id The domain to set on
    * @param amount The royalty amount
    */
-  function setDomainRoyaltyAmount(uint256 id, uint256 amount)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setDomainRoyaltyAmount(
+    uint256 id,
+    uint256 amount
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
 
     records[id].royaltyAmount = amount;
@@ -404,11 +400,10 @@ contract OriginalRegistrar is
    * @param id The domain to lock
    * @param uri The uri to set
    */
-  function setAndLockDomainMetadata(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setAndLockDomainMetadata(
+    uint256 id,
+    string memory uri
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
     _setDomainLock(id, msg.sender, true);
@@ -419,11 +414,10 @@ contract OriginalRegistrar is
    * @param id The domain to set on
    * @param uri The uri to set
    */
-  function setDomainMetadataUri(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
+  function setDomainMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external override onlyOwnerOf(id) {
     require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
     _setDomainMetadataUri(id, uri);
   }
@@ -464,7 +458,9 @@ contract OriginalRegistrar is
    * Public View
    */
 
-  function ownerOf(uint256 tokenId)
+  function ownerOf(
+    uint256 tokenId
+  )
     public
     view
     virtual
@@ -511,12 +507,9 @@ contract OriginalRegistrar is
    * @notice Returns whether or not a domain's metadata is locked
    * @param id The domain
    */
-  function isDomainMetadataLocked(uint256 id)
-    public
-    view
-    override
-    returns (bool)
-  {
+  function isDomainMetadataLocked(
+    uint256 id
+  ) public view override returns (bool) {
     bool isLocked = records[id].metadataLocked;
     return isLocked;
   }
@@ -525,12 +518,9 @@ contract OriginalRegistrar is
    * @notice Returns who locked a domain's metadata
    * @param id The domain
    */
-  function domainMetadataLockedBy(uint256 id)
-    public
-    view
-    override
-    returns (address)
-  {
+  function domainMetadataLockedBy(
+    uint256 id
+  ) public view override returns (address) {
     address lockedBy = records[id].metadataLockedBy;
     return lockedBy;
   }
@@ -548,12 +538,9 @@ contract OriginalRegistrar is
    * @notice Returns the current royalty amount for a domain
    * @param id The domain
    */
-  function domainRoyaltyAmount(uint256 id)
-    public
-    view
-    override
-    returns (uint256)
-  {
+  function domainRoyaltyAmount(
+    uint256 id
+  ) public view override returns (uint256) {
     uint256 amount = records[id].royaltyAmount;
     return amount;
   }
@@ -569,7 +556,9 @@ contract OriginalRegistrar is
     return parentId;
   }
 
-  function tokenURI(uint256 tokenId)
+  function tokenURI(
+    uint256 tokenId
+  )
     public
     view
     virtual
@@ -719,10 +708,10 @@ contract OriginalRegistrar is
     _transfer(from, to, tokenId);
   }
 
-  function adminSetMetadataUri(uint256 id, string memory uri)
-    external
-    onlyOwner
-  {
+  function adminSetMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external onlyOwner {
     _setDomainMetadataUri(id, uri);
   }
 
@@ -784,11 +773,9 @@ contract OriginalRegistrar is
     }
   }
 
-  function uint2str(uint256 _i)
-    internal
-    pure
-    returns (string memory _uintAsString)
-  {
+  function uint2str(
+    uint256 _i
+  ) internal pure returns (string memory _uintAsString) {
     if (_i == 0) {
       return "0";
     }

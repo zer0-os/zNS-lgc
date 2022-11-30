@@ -55,6 +55,7 @@ describe("Folder groups functionality", () => {
     creator = accounts[0];
     controller = accounts[1];
     await deployRegistry(creator);
+    await registry.addController(controller.address);
   });
 
   it("runs", async () => {
@@ -62,10 +63,7 @@ describe("Folder groups functionality", () => {
     const numDomainGroups = await registry.numDomainGroups();
     expect(numDomainGroups).to.eq(0);
   });
-
   it("create domain groups", async () => {
-    await registry.addController(controller.address);
-
     const asController = registry.connect(controller);
 
     // Test folders
@@ -100,6 +98,9 @@ describe("Folder groups functionality", () => {
   it("registers domains in a domain group", async () => {
     const asController = registry.connect(controller);
     const controllerAddress = await controller.getAddress();
+
+    const isController = await registry.isController(controller.address);
+    expect(isController).to.be.true;
 
     const params = {
       parentId: "0",

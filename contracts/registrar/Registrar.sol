@@ -150,15 +150,6 @@ contract Registrar is
    * External Methods
    */
 
-  // These two functions push the Registrar over the bytecode size limit
-  // function registrerFilter(address _filter) external onlyOwner {
-  //   _register(_filter);
-  // }
-
-  // function unregistrerFilter(address _filter) external onlyOwner {
-  //   _unregister(_filter);
-  // }
-
   /**
    * @notice Authorizes a controller to control the registrar
    * @param controller The address of the controller
@@ -168,7 +159,7 @@ contract Registrar is
       msg.sender == owner() || msg.sender == parentRegistrar,
       "ZR: Not authorized"
     );
-    require(controllers[controller], "ZR: Controller is already added");
+    require(!controllers[controller], "ZR: Controller is already added");
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -542,6 +533,7 @@ contract Registrar is
     uint256 id
   ) public view override returns (uint256) {
     return records[id].royaltyAmount;
+    // return domainManager._domainRoyaltyAmount(id);
   }
 
   /**

@@ -14,10 +14,19 @@ import {IOperatorFilterRegistry} from "./IOperatorFilterRegistry.sol";
 abstract contract OperatorFilterer {
   error OperatorNotAllowed(address operator);
 
+  // OPERATOR_FILTER_REGISTRY should have deployed contract address,
+  // so we can reduce checking their code length to facilitate testing
+  // in environments without a deployed registry.
+  // We've already removed checking in `_initializeFilter`,
+  // `_onlyAllowedOperator` and `_onlyAllowedOperator` functions.
+  //   i.e. address(OPERATOR_FILTER_REGISTRY).code.length > 0
+  // OperatorFilterRegistry was already deployed with same address on the
+  // different networks:
+  //   https://github.com/ProjectOpenSea/operator-filter-registry#deployments
   IOperatorFilterRegistry public constant OPERATOR_FILTER_REGISTRY =
     IOperatorFilterRegistry(0x000000000000AAeB6D7670E522A718067333cd4E);
 
-  function initializeFilter(
+  function _initializeFilter(
     address subscriptionOrRegistrantToCopy,
     bool subscribe
   ) internal {

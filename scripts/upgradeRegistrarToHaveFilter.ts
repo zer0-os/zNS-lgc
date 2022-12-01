@@ -21,45 +21,19 @@ const main = async () => {
 
   let registrarAddress;
 
-  if (network === "hardhat") {
-    const ogRegistrarFactory = new OriginalRegistrar__factory(deployer);
-
-    const ogRegistrarDeploy = await hre.upgrades.deployProxy(
-      ogRegistrarFactory,
-      [
-        ethers.constants.AddressZero,
-        ethers.constants.HashZero,
-        "Zer0 Name Service",
-        "ZNS",
-        hubAddress
-      ],
-      {
-        initializer: "initialize"
-      }
-    )
-    const ogRegistrar = await ogRegistrarDeploy.deployed();
-    registrarAddress = ogRegistrar.address;
-  } else {
-    const addresses = zer0ProtocolAddresses[hre.network.name];
-    if (!addresses) {
-      throw Error(`Network ${hre.network.name} not supported.`)
-    }
-    registrarAddress = addresses.zNS.registrar;
+  const addresses = zer0ProtocolAddresses[hre.network.name];
+  if (!addresses) {
+    throw Error(`Network ${hre.network.name} not supported.`)
   }
 
-  logger.log("Comparing bytecode length")
-  const regFactory = new Registrar__factory(deployer);
-  logger.log("Bytecode for new Registrar " + regFactory.bytecode.length / 2);
-  logger.log("Bytecode for original Registrar " + new OriginalRegistrar__factory(deployer).bytecode.length / 2);
-
-  await regFactory.deploy();
+  registrarAddress = addresses.zNS.registrar;
 
   logger.log(`Upgrading Registrar at ${registrarAddress} to include OpenSea filter functionality`);
 
   // Factory for registrar that includes of the OS changes
   const upgradeRegistrarTx = await hre.upgrades.upgradeProxy(
     registrarAddress!,
-    regFactory
+    new Registrar__factory(deployer)
   );
 
   const upgradedRegistrar = await upgradeRegistrarTx.deployed();

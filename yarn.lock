@@ -1365,7 +1365,7 @@
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"
   integrity sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==
 
-"@zero-tech/zero-contracts@^0.0.7":
+"@zero-tech/zero-contracts@0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@zero-tech/zero-contracts/-/zero-contracts-0.0.7.tgz#67adb33ecce6267225a0bd97f2f07a29a8c5f5d1"
   integrity sha512-0B192LZOF8X33v2FUsfVcVSQPOoElHT/16Z5KB80Zp2A3IvFnzfikhUKwTIwzZQCl/fvJz2OV5gS7l7oDcPAkw==

@@ -161,7 +161,10 @@ contract Registrar is
 
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
-    initializeFilter(address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6), true);
+    _initializeFilter(
+      address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6),
+      true
+    );
   }
 
   function owner() public view override returns (address) {

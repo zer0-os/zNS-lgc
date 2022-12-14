@@ -1,15 +1,15 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import {
   Registrar,
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
+  UpgradeableBeacon__factory,
 } from "../typechain";
 import chai from "chai";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
-import * as smock from "@defi-wonderland/smock";
 
 const { expect } = chai;
 
@@ -17,10 +17,10 @@ describe("Subdomain Registrar Functionality", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hub: smock.MockContract<ZNSHub>;
+  let hubFactory: ZNSHub__factory;
+  let hub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
-  let user1: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
 
   const createSubdomainContract = async (
@@ -52,16 +52,17 @@ describe("Subdomain Registrar Functionality", () => {
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    const emitterMockFactory = await smock.smock.mock<ZNSHub__factory>(
-      "ZNSHub"
-    );
-    hub = await emitterMockFactory.deploy();
-
-    const beacon = await upgrades.deployBeacon(registryFactory);
-
+    hubFactory = new ZNSHub__factory(creator);
+    hub = await hubFactory.deploy();
     registry = await registryFactory.deploy();
 
-    await hub.initialize(registry.address, beacon.address);
+    const beaconFactory = new UpgradeableBeacon__factory(creator);
+    const beacon = await beaconFactory.deploy(registry.address);
+
+    await hub.initialize(
+      registry.address,
+      beacon.address
+    );
 
     await registry.initialize(
       ethers.constants.AddressZero,
@@ -77,7 +78,6 @@ describe("Subdomain Registrar Functionality", () => {
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
-    user1 = accounts[1];
   });
 
   describe("Subdomain contract creation", () => {

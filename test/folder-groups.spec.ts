@@ -9,6 +9,7 @@ import {
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
+  UpgradeableBeacon__factory,
 } from "../typechain";
 
 import { domainNameToId } from "./helpers";
@@ -19,23 +20,25 @@ describe("Folder groups functionality", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hub: smock.MockContract<ZNSHub>;
+  let hubFactory: ZNSHub__factory;
+  let hub: ZNSHub;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    const emitterMockFactory = await smock.smock.mock<ZNSHub__factory>(
-      "ZNSHub"
-    );
-    hub = await emitterMockFactory.deploy();
-
-    const beacon = await upgrades.deployBeacon(registryFactory);
-
+    hubFactory = new ZNSHub__factory(creator);
+    hub = await hubFactory.deploy();
     registry = await registryFactory.deploy();
 
-    await hub.initialize(registry.address, beacon.address);
+    const beaconFactory = new UpgradeableBeacon__factory(creator);
+    const beacon = await beaconFactory.deploy(registry.address);
+
+    await hub.initialize(
+      registry.address,
+      beacon.address
+    );
 
     await registry.initialize(
       ethers.constants.AddressZero,

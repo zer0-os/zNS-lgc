@@ -12,17 +12,12 @@ async function main() {
 
   const deployer: SignerWithAddress = signers[0];
 
-  if (
-    network.name === "goerli" ||
-    network.name === "rinkeby" ||
-    network.name === "mainnet"
-  ) {
+  if (network.name === "goerli" || network.name === "mainnet") {
     console.log("Deploying ZNAResolver proxy contract...");
     const ZNAResolverFactory = new ZNAResolver__factory(deployer);
-    const zNAResolver = (await upgrades.deployProxy(
-      ZNAResolverFactory,
-      [config[network.name].zNSHub]
-    )) as ZNAResolver;
+    const zNAResolver = (await upgrades.deployProxy(ZNAResolverFactory, [
+      config.resolverConfig[network.name].zNSHub,
+    ])) as ZNAResolver;
     await zNAResolver.deployed();
     console.log(`\ndeployed: ${zNAResolver.address}`);
 

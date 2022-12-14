@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import {
   Registrar,
   ZNSHub,
@@ -7,8 +7,7 @@ import {
   Registrar__factory,
 } from "../typechain";
 import chai from "chai";
-import { BigNumber, BigNumberish } from "ethers";
-import { domainNameToId, getEvent } from "./helpers";
+import { BigNumber } from "ethers";
 
 const { expect } = chai;
 

@@ -59,10 +59,7 @@ describe("Subdomain Registrar Functionality", () => {
     const beaconFactory = new UpgradeableBeacon__factory(creator);
     const beacon = await beaconFactory.deploy(registry.address);
 
-    await hub.initialize(
-      registry.address,
-      beacon.address
-    );
+    await hub.initialize(registry.address, beacon.address);
 
     await registry.initialize(
       ethers.constants.AddressZero,
@@ -139,21 +136,20 @@ describe("Subdomain Registrar Functionality", () => {
     });
 
     it("allows subdomains to be minted on subdomain contract", async () => {
-      const tx = await subdomainRegistrar.registerDomain(
-        domainId,
-        "bar",
-        creator.address,
-        "metdata1",
-        0,
-        true
-      );
+      await expect(
+        subdomainRegistrar.registerDomain(
+          domainId,
+          "bar",
+          creator.address,
+          "metdata1",
+          0,
+          true
+        )
+      ).to.be.not.reverted;
     });
   });
 
   describe("ownerOf", () => {
-    let subdomainRegistrar: Registrar;
-    const domainName = "foo";
-    const domainId = domainNameToId(domainName);
     before(async () => {
       await deployRegistry(creator);
       await registry.addController(creator.address);

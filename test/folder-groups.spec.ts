@@ -1,8 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import chai from "chai";
 import { BigNumber } from "ethers";
-import * as smock from "@defi-wonderland/smock";
 
 import {
   Registrar,
@@ -35,10 +34,7 @@ describe("Folder groups functionality", () => {
     const beaconFactory = new UpgradeableBeacon__factory(creator);
     const beacon = await beaconFactory.deploy(registry.address);
 
-    await hub.initialize(
-      registry.address,
-      beacon.address
-    );
+    await hub.initialize(registry.address, beacon.address);
 
     await registry.initialize(
       ethers.constants.AddressZero,

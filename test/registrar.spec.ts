@@ -16,12 +16,10 @@ import { OperatorFilterRegistry__factory } from "../typechain/factories/Operator
 const { expect } = chai;
 
 describe("Registrar", () => {
-  let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
   let hubFactory: ZNSHub__factory;
   let hub: ZNSHub;
-  const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -266,7 +264,6 @@ describe("Registrar", () => {
         rootDomainHash,
         domainNameHash
       );
-      const expectedParentHash = rootDomainHash;
 
       expect(tx)
         .to.emit(hub, "EEDomainCreatedV3")

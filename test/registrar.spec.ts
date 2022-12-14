@@ -12,6 +12,7 @@ import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
+import * as helpers from "@nomicfoundation/hardhat-network-helpers"
 
 chai.use(solidity);
 const { expect } = chai;
@@ -53,11 +54,14 @@ describe("Registrar", () => {
 
   before(async () => {
     console.log("before");
-    accounts = await ethers.getSigners();
-    creator = accounts[creatorAccountIndex];
-    user1 = accounts[1];
-    user2 = accounts[2];
-    user3 = accounts[3];
+    [creator] = await ethers.getSigners();
+    user1 = await ethers.getImpersonatedSigner("0xa74b2de2D65809C613010B3C8Dc653379a63C55b");
+    await helpers.setBalance(user1.address, ethers.utils.parseEther("10").toHexString());
+    user2 = await ethers.getImpersonatedSigner("0x0f3b88095e750bdD54A25B2109c7b166A34B6dDb")
+    await helpers.setBalance(user2.address, ethers.utils.parseEther("10").toHexString());
+    user3 = await ethers.getImpersonatedSigner("0xd5B840269Ac41E070aFF85554dF9aad406A4d091")
+    await helpers.setBalance(user3.address, ethers.utils.parseEther("10").toHexString());
+
   });
 
   describe("root domain", () => {
@@ -701,7 +705,11 @@ describe("Registrar", () => {
       await expect(tx).to.not.be.reverted;
     });
     it("Filtered addresses can't transfer domains", async () => {
+      const isBlurFiltered = await filterRegistry.isOperatorFiltered(registry.address, blurAddress);
+      expect(isBlurFiltered).to.be.true;
+
       const registryLR = await registry.connect(blurSigner);
+
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
           creator.address,
@@ -711,14 +719,18 @@ describe("Registrar", () => {
       ).to.be.reverted;
     });
     it("Unfiltered addresses can transfer domains", async () => {
-      const registryLR = await registry.connect(user1);
+      const isUserFiltered = await filterRegistry.isOperatorFiltered(registry.address, creator.address);
+      expect(isUserFiltered).to.be.false;
+
+      const registryLR = await registry.connect(creator);
+
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
           creator.address,
           user1.address,
           rootDomainId
-        )
-      ).to.be.reverted;
+        )).to.not.be.reverted;
+
     });
     it("Blur can transfer if the Registrar is unregistered from OpenSea's filter list.", async () => {
       await filterRegistry.unregister(registry.address);

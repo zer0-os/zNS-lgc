@@ -722,7 +722,7 @@ contract Registrar is
     uint256[] memory orderedIds,
     uint256 ipfsFolderIndexOffset
   ) external onlyOwner {
-    for (uint256 i = 0; i < orderedIds.length; i++) {
+    for (uint256 i = 0; i < orderedIds.length; ++i) {
       _setDomainMetadataUri(
         orderedIds[i],
         string(
@@ -748,7 +748,7 @@ contract Registrar is
     uint256 ipfsFolderIndexStart,
     uint256 count
   ) external onlyOwner {
-    for (uint256 i = 0; i < count; i++) {
+    for (uint256 i = 0; i < count; ++i) {
       _setDomainMetadataUri(
         tokenByIndex(tokenIndexStart + i),
         string(
@@ -795,7 +795,7 @@ contract Registrar is
       revert InvalidDomainIndex();
     }
     uint256 result;
-    for (uint256 i = startingIndex; i < endingIndex; i++) {
+    for (uint256 i = startingIndex; i < endingIndex; ++i) {
       result = _registerDomain(
         parentId,
         CustomStrings.toString(i + namingOffset),
@@ -824,7 +824,7 @@ contract Registrar is
       revert InvalidDomainIndex();
     }
     uint256 tokenId;
-    for (uint256 i = startingIndex; i < endingIndex; i++) {
+    for (uint256 i = startingIndex; i < endingIndex; ++i) {
       tokenId = _registerDomainV2(
         parentId,
         CustomStrings.toString(i + namingOffset),

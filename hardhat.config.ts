@@ -5,6 +5,7 @@ import { task, HardhatUserConfig } from "hardhat/config";
 
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
+import "@nomicfoundation/hardhat-network-helpers";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";

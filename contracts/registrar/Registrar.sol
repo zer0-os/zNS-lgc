@@ -655,7 +655,10 @@ contract Registrar is
     if (records[id].domainGroup != 0) {
       revert ShouldUpdateViaDomainGroup();
     }
-    if (tokenURI(id) == uri) {
+    if (
+      keccak256(abi.encodePacked(tokenURI(id))) ==
+      keccak256(abi.encodePacked(uri))
+    ) {
       // the call to public function `tokenUri` will perform an `_exists` check
       revert SameMetadataUri(); // this error must be made
     }

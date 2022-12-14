@@ -5,16 +5,12 @@ import {
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
-  OperatorFilterer__factory,
-  OperatorFilterer,
 } from "../typechain";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
 import * as smock from "@defi-wonderland/smock";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("Subdomain Registrar Functionality", () => {

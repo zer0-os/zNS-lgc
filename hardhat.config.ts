@@ -3,12 +3,11 @@ require("dotenv").config();
 
 import { task, HardhatUserConfig } from "hardhat/config";
 
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
 import "@nomicfoundation/hardhat-network-helpers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
-import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import "solidity-coverage";
 import "hardhat-contract-sizer";

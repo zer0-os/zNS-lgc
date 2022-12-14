@@ -5,16 +5,14 @@ import {
   ZNSHub__factory,
   Registrar__factory,
   ZNSHub,
-  IOperatorFilterRegistry__factory,
-  IOperatorFilterRegistry,
+  OperatorFilterRegistry,
 } from "../typechain";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
-import * as helpers from "@nomicfoundation/hardhat-network-helpers"
+import * as helpers from "@nomicfoundation/hardhat-network-helpers";
+import { OperatorFilterRegistry__factory } from "../typechain/factories/OperatorFilterRegistry__factory";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("Registrar", () => {
@@ -55,13 +53,27 @@ describe("Registrar", () => {
   before(async () => {
     console.log("before");
     [creator] = await ethers.getSigners();
-    user1 = await ethers.getImpersonatedSigner("0xa74b2de2D65809C613010B3C8Dc653379a63C55b");
-    await helpers.setBalance(user1.address, ethers.utils.parseEther("10").toHexString());
-    user2 = await ethers.getImpersonatedSigner("0x0f3b88095e750bdD54A25B2109c7b166A34B6dDb")
-    await helpers.setBalance(user2.address, ethers.utils.parseEther("10").toHexString());
-    user3 = await ethers.getImpersonatedSigner("0xd5B840269Ac41E070aFF85554dF9aad406A4d091")
-    await helpers.setBalance(user3.address, ethers.utils.parseEther("10").toHexString());
-
+    user1 = await ethers.getImpersonatedSigner(
+      "0xa74b2de2D65809C613010B3C8Dc653379a63C55b"
+    );
+    await helpers.setBalance(
+      user1.address,
+      ethers.utils.parseEther("10").toHexString()
+    );
+    user2 = await ethers.getImpersonatedSigner(
+      "0x0f3b88095e750bdD54A25B2109c7b166A34B6dDb"
+    );
+    await helpers.setBalance(
+      user2.address,
+      ethers.utils.parseEther("10").toHexString()
+    );
+    user3 = await ethers.getImpersonatedSigner(
+      "0xd5B840269Ac41E070aFF85554dF9aad406A4d091"
+    );
+    await helpers.setBalance(
+      user3.address,
+      ethers.utils.parseEther("10").toHexString()
+    );
   });
 
   describe("root domain", () => {
@@ -152,7 +164,9 @@ describe("Registrar", () => {
 
     it("prevents non-owners from adding controllers", async () => {
       const registryAsUser1 = registry.connect(user1);
-      await expect(registryAsUser1.addController(user1.address)).to.be.revertedWithCustomError(registry, "NotAuthorized");
+      await expect(
+        registryAsUser1.addController(user1.address)
+      ).to.be.revertedWithCustomError(registry, "NotAuthorized");
     });
   });
 
@@ -647,18 +661,25 @@ describe("Registrar", () => {
   });
 
   describe("Filter Operators", () => {
-    let filterRegistry: IOperatorFilterRegistry;
+    let filterRegistry: OperatorFilterRegistry;
 
     const blurAddress = "0x00000000000111AbE46ff893f3B2fdF1F759a8A8";
     let blurSigner: SignerWithAddress;
 
+    const subscriptionOrRegistrantToCopy =
+      "0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6";
+
     beforeEach(async () => {
       await deployRegistry(creator);
-      filterRegistry = IOperatorFilterRegistry__factory.connect(
+      filterRegistry = OperatorFilterRegistry__factory.connect(
         "0x000000000000AAeB6D7670E522A718067333cd4E",
         creator
       );
       blurSigner = await ethers.getImpersonatedSigner(blurAddress);
+      await helpers.setBalance(
+        blurSigner.address,
+        ethers.utils.parseEther("10").toHexString()
+      );
     });
 
     it("Already has the Registrar address in the filter", async () => {
@@ -668,18 +689,25 @@ describe("Registrar", () => {
 
     it("Is Able to transfer domains even if Registrar was not registered into filter registry", async () => {
       await filterRegistry.connect(creator).unregister(registry.address);
-      await registry.connect(creator)["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user1.address,
-        rootDomainId
-      );
+      // make sure successfully unregistered
+      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      expect(isRegistered).to.be.false;
+
+      await registry
+        .connect(creator)
+        ["safeTransferFrom(address,address,uint256)"](
+          creator.address,
+          user1.address,
+          rootDomainId
+        );
       const domainOwner = await registry.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
     });
 
     it("Unable to call to register with an existing registrant", async () => {
-      await expect(filterRegistry.connect(creator).register(registry.address))
-        .to.be.reverted;
+      await expect(
+        filterRegistry.connect(creator).register(registry.address)
+      ).to.be.revertedWithCustomError(filterRegistry, "AlreadyRegistered");
     });
 
     it("Has filtered operators", async () => {
@@ -688,6 +716,7 @@ describe("Registrar", () => {
       );
       expect(operators.length).to.be.gt(0);
     });
+
     it("Access to OpenSea list is shown by Blur already being filtered", async () => {
       // Reference: https://etherscan.io/address/0x00000000000111AbE46ff893f3B2fdF1F759a8A8#code
       const isOperatorFiltered = await filterRegistry.isOperatorFiltered(
@@ -696,19 +725,58 @@ describe("Registrar", () => {
       );
       expect(isOperatorFiltered).to.be.true;
     });
+
     it("Can't approve when on the filtered list", async () => {
+      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      expect(isRegistered).to.be.true;
+
       const tx = registry.connect(creator).approve(blurAddress, rootDomainId);
-      await expect(tx).to.be.reverted;
+      await expect(tx).to.be.revertedWithCustomError(
+        filterRegistry,
+        "AddressFiltered"
+      );
     });
+
     it("Can approve when not on filtered list", async () => {
       const tx = registry.connect(creator).approve(user1.address, rootDomainId);
       await expect(tx).to.not.be.reverted;
     });
+
     it("Filtered addresses can't transfer domains", async () => {
-      const isBlurFiltered = await filterRegistry.isOperatorFiltered(registry.address, blurAddress);
+      // Unregister registrant to approve blur for root domain
+      await filterRegistry.connect(creator).unregister(registry.address);
+      await expect(registry.connect(creator).approve(blurAddress, rootDomainId))
+        .to.be.not.reverted;
+
+      // Register and subscribe again
+      await filterRegistry
+        .connect(creator)
+        .registerAndSubscribe(registry.address, subscriptionOrRegistrantToCopy);
+      // Ensure if blur was already filtered
+      const isBlurFiltered = await filterRegistry.isOperatorFiltered(
+        registry.address,
+        blurAddress
+      );
       expect(isBlurFiltered).to.be.true;
 
       const registryLR = await registry.connect(blurSigner);
+      await expect(
+        registryLR["safeTransferFrom(address,address,uint256)"](
+          creator.address,
+          user1.address,
+          rootDomainId
+        )
+      ).to.be.revertedWithCustomError(filterRegistry, "AddressFiltered");
+    });
+
+    it("Unfiltered addresses can transfer domains", async () => {
+      const isUserFiltered = await filterRegistry.isOperatorFiltered(
+        registry.address,
+        creator.address
+      );
+      expect(isUserFiltered).to.be.false;
+
+      const registryLR = registry.connect(creator);
 
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
@@ -716,50 +784,47 @@ describe("Registrar", () => {
           user1.address,
           rootDomainId
         )
-      ).to.be.reverted;
+      ).to.not.be.reverted;
     });
-    it("Unfiltered addresses can transfer domains", async () => {
-      const isUserFiltered = await filterRegistry.isOperatorFiltered(registry.address, creator.address);
-      expect(isUserFiltered).to.be.false;
 
-      const registryLR = await registry.connect(creator);
+    it("Blur can transfer if the Registrar is unregistered from OpenSea's filter list.", async () => {
+      await filterRegistry.unregister(registry.address);
 
+      const approval = registry
+        .connect(creator)
+        .approve(blurAddress, rootDomainId);
+      await expect(approval).to.not.be.reverted;
+
+      const transfer = registry
+        .connect(blurSigner)
+        ["safeTransferFrom(address,address,uint256)"](
+          creator.address,
+          user1.address,
+          rootDomainId
+        );
+      await expect(transfer).to.not.be.reverted;
+    });
+
+    it("Blur can transfer even if the Registrar is registered to OpenSea's filter list.", async () => {
+      // Unregister registrant to approve blur for root domain
+      await filterRegistry.connect(creator).unregister(registry.address);
+      await expect(registry.connect(creator).approve(blurAddress, rootDomainId))
+        .to.be.not.reverted;
+
+      // Register and subscribe again
+      await filterRegistry.connect(creator).register(registry.address);
+      // Registrar is registered with the filter list
+      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      expect(isRegistered).to.be.true;
+
+      const registryLR = registry.connect(blurSigner);
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
           creator.address,
           user1.address,
           rootDomainId
-        )).to.not.be.reverted;
-
+        )
+      ).to.be.not.reverted;
     });
-    it("Blur can transfer if the Registrar is unregistered from OpenSea's filter list.", async () => {
-      await filterRegistry.unregister(registry.address);
-
-      const approval = registry.connect(creator).approve(blurAddress, rootDomainId);
-      await expect(approval).to.not.be.reverted;
-
-      const transfer = registry.connect(blurSigner)["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user1.address,
-        rootDomainId
-      );
-      await expect(transfer).to.not.be.reverted;
-
-    });
-    it("Blur cannot transfer if the Registrar is registered to OpenSea's filter list.", async () => {
-      // Registrar is registered by default with the filter list
-      const isRegistered = await filterRegistry.isRegistered(registry.address);
-      expect(isRegistered).to.be.true;
-
-      const approval = registry.connect(creator).approve(blurAddress, rootDomainId);
-      await expect(approval).to.be.reverted;
-
-      const transfer = registry.connect(blurSigner)["safeTransferFrom(address,address,uint256)"](
-        creator.address,
-        user1.address,
-        rootDomainId
-      );
-      await expect(transfer).to.be.reverted;
-    })
   });
 });

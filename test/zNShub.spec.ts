@@ -7,11 +7,9 @@ import {
   Registrar__factory,
 } from "../typechain";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("zNS Hub", () => {
@@ -83,7 +81,7 @@ describe("zNS Hub", () => {
   describe("ownership", () => {
     before(async () => {
       console.log("before");
-      console.log(creator);
+      // console.log(creator);
       const hubFactory = new ZNSHub__factory(creator);
       hub = await hubFactory.deploy();
     });

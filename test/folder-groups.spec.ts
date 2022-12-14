@@ -1,7 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers, upgrades } from "hardhat";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
 import * as smock from "@defi-wonderland/smock";
 
@@ -14,7 +13,6 @@ import {
 
 import { domainNameToId } from "./helpers";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("Folder groups functionality", () => {

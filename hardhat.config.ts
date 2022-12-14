@@ -6,6 +6,7 @@ import { task, HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@nomicfoundation/hardhat-network-helpers";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
@@ -90,12 +91,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      accounts: [
-        {
-          privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
-          balance: "10000000000000000000000",
-        },
-      ],
+      // accounts: [
+      //   {
+      //     privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+      //     balance: "10000000000000000000000",
+      //   },
+      // ],
       forking: {
         url: `https://goerli.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },

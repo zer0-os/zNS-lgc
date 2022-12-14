@@ -152,7 +152,7 @@ describe("Registrar", () => {
 
     it("prevents non-owners from adding controllers", async () => {
       const registryAsUser1 = registry.connect(user1);
-      await expect(registryAsUser1.addController(user1.address)).to.be.reverted;
+      await expect(registryAsUser1.addController(user1.address)).to.be.revertedWithCustomError(registry, "NotAuthorized");
     });
   });
 
@@ -398,7 +398,7 @@ describe("Registrar", () => {
           0,
           false
         )
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NoParentDomain");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
@@ -488,7 +488,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainMetadataUri(testDomainId, newMetadataUri)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
     });
   });
 
@@ -523,7 +523,7 @@ describe("Registrar", () => {
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, false)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NotLockedMetadata");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -531,7 +531,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, true)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
@@ -556,7 +556,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, true)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "LockedMetadata");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -564,7 +564,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, false)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NotMetadataLocker");
     });
 
     it("prevents metadata from being set if it is locked", async () => {
@@ -573,7 +573,7 @@ describe("Registrar", () => {
           testDomainId,
           "https://www.chuckecheese.com/"
         )
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "LockedMetadata");
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
@@ -642,7 +642,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
     });
   });
 

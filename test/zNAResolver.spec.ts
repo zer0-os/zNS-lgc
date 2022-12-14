@@ -4,8 +4,6 @@ import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import {
-  OperatorFilterer,
-  OperatorFilterer__factory,
   Registrar,
   Registrar__factory,
   ResourceType__factory,

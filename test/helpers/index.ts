@@ -1,7 +1,5 @@
 import { Interface } from "@ethersproject/abi";
 import {
-  BaseContract,
-  Contract,
   ContractTransaction,
   ethers,
   providers,

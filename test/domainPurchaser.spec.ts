@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import * as hre from "hardhat";
 
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import * as smock from "@defi-wonderland/smock";
 import {
   DomainPurchaser,
@@ -16,7 +15,6 @@ import {
 } from "../typechain";
 import { BigNumber, ethers } from "ethers";
 
-chai.use(solidity);
 chai.use(smock.smock.matchers);
 const { expect } = chai;
 
@@ -31,8 +29,8 @@ describe("DomainPurchaser", () => {
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
 
-  const rootDomainHash = ethers.constants.HashZero;
-  const rootDomainId = BigNumber.from(0);
+  // const rootDomainHash = ethers.constants.HashZero;
+  // const rootDomainId = BigNumber.from(0);
 
   const pricingData = {
     short: 3,

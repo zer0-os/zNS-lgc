@@ -1,6 +1,0 @@
-yarn run v1.22.17
-$ hardhat run scripts/upgradeRegistrarToHaveFilter.ts --network goerli
-No need to generate any newer typings.
-   zns::scripts::test-filter Using deployer address 0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53
-   zns::scripts::test-filter Upgrading Registrar at 0x009A11617dF427319210e842D6B202f3831e0116 to include OpenSea filter functionality
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

@@ -29,6 +29,7 @@ contract Registrar is
   error SubdomainParent();
   error DomainGroupNotExists();
   error ShouldUpdateViaDomainGroup();
+  error SameMetadataUri();
   error NoParentDomain();
   error LockedMetadata();
   error NotLockedMetadata();
@@ -583,7 +584,6 @@ contract Registrar is
     uint256 id
   ) public view override returns (uint256) {
     return records[id].royaltyAmount;
-    // return domainManager._domainRoyaltyAmount(id);
   }
 
   /**
@@ -654,6 +654,13 @@ contract Registrar is
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
     if (records[id].domainGroup != 0) {
       revert ShouldUpdateViaDomainGroup();
+    }
+    if (
+      keccak256(abi.encodePacked(tokenURI(id))) ==
+      keccak256(abi.encodePacked(uri))
+    ) {
+      // the call to public function `tokenUri` will perform an `_exists` check
+      revert SameMetadataUri(); // this error must be made
     }
     _setTokenURI(id, uri);
     zNSHub.metadataChanged(id, uri);

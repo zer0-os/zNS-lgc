@@ -162,6 +162,9 @@ contract Registrar is
 
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
+    // The following address is OpenSea Curated Subscription Address
+    // where the OpenSea's list of filtered operators are registered.
+    // Reference: https://github.com/ProjectOpenSea/operator-filter-registry
     _initializeFilter(
       address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6),
       true

@@ -70,24 +70,18 @@ describe("zNS Hub", () => {
   // };
 
   before(async () => {
-    console.log("before");
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
     user1 = accounts[1];
-    console.log("A");
   });
 
   describe("ownership", () => {
     before(async () => {
-      console.log("before");
-      // console.log(creator);
       const hubFactory = new ZNSHub__factory(creator);
       hub = await hubFactory.deploy();
     });
 
     it("can transfer ownership", () => {
-      console.log("ZZZ");
-      // console.log(hub);
       //await hub["transferOwnership"](user1.address);
       //expect(await hub.registrarBeacon()).to.eq(user1.address);
     });

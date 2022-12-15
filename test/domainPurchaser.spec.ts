@@ -29,9 +29,6 @@ describe("DomainPurchaser", () => {
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
 
-  // const rootDomainHash = ethers.constants.HashZero;
-  // const rootDomainId = BigNumber.from(0);
-
   const pricingData = {
     short: 3,
     medium: 2,

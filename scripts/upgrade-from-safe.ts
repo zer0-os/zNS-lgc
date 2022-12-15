@@ -15,7 +15,7 @@ const logger = getLogger("scripts::upgrade-from-safe");
 
 const GnosisSafeAddress: { [key in EthereumNetwork]: string } = {
   goerli: "0x44B735109ECF3F1A5FE56F50b9874cEf5Ae52fEa",
-  mainnet: "", // todo
+  mainnet: "0x1A1d3644fc9906B1EE3d35842789A83D33e99943",
 };
 
 const main = async () => {
@@ -33,7 +33,7 @@ const main = async () => {
     registrarAddress = addresses.zNS.registrar!;
     beaconAddress = addresses.zNS.subregistrarBeacon!;
     logger.log(`Registrar Proxy is at ${registrarAddress}`);
-    logger.log(`UpgradeableBeacon is at ${registrarAddress}`);
+    logger.log(`UpgradeableBeacon is at ${beaconAddress}`);
 
     logger.log("Deploying new implementation ...");
     const RegistrarFactory = new Registrar__factory(deployer);

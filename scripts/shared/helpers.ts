@@ -62,11 +62,7 @@ export const proposeTransaction = async (
   });
 
   const data = moduleInterface.encodeFunctionData(methodName, params);
-  const allTransactions = await safeService.getMultisigTransactions(
-    safe.getAddress()
-  );
-  const num =
-    allTransactions.count === 0 ? 1 : allTransactions.results[0].nonce + 1;
+  
   const transaction: SafeTransactionDataPartial = {
     to: contract.address,
     data: data,
@@ -77,7 +73,6 @@ export const proposeTransaction = async (
     gasPrice: 0, // Optional
     gasToken: "0x0000000000000000000000000000000000000000", // Optional
     refundReceiver: "0x0000000000000000000000000000000000000000", // Optional
-    nonce: num, // Optional
   };
   const safeTransaction = await safe.createTransaction({
     safeTransactionData: transaction,

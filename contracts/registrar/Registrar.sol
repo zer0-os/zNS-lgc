@@ -8,13 +8,36 @@ import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import {OperatorFilterer} from "../opensea/OperatorFilterer.sol";
+import {CustomStrings} from "../CustomStrings.sol";
 
 contract Registrar is
   IRegistrar,
   OwnableUpgradeable,
-  ERC721PausableUpgradeable
+  ERC721PausableUpgradeable,
+  OperatorFilterer
 {
   using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
+
+  error InvalidFolderGroup();
+  error SameFolderGroup();
+  error NotAuthorized();
+  error ControllerAlreadyAdded();
+  error ControllerNotExists();
+  error NotController();
+  error EmptyDomainName();
+  error SubdomainParent();
+  error DomainGroupNotExists();
+  error ShouldUpdateViaDomainGroup();
+  error SameMetadataUri();
+  error NoParentDomain();
+  error LockedMetadata();
+  error NotLockedMetadata();
+  error NotMetadataLocker();
+  error NotApprovedOrOwner();
+  error DomainNotExists();
+  error NotDomainOwner();
+  error InvalidDomainIndex();
 
   // Data recorded for each domain
   struct DomainRecord {
@@ -68,15 +91,14 @@ contract Registrar is
    * Creates a new folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function createDomainGroup(string memory baseMetadataUri)
-    public
-    onlyController
-    returns (uint256)
-  {
+  function createDomainGroup(
+    string memory baseMetadataUri
+  ) public returns (uint256) {
+    _onlyController();
     domainGroups[numDomainGroups + 1] = DomainGroup({
       baseMetadataUri: baseMetadataUri
     });
-    numDomainGroups++; // increment number of folders
+    ++numDomainGroups; // increment number of folders
 
     zNSHub.domainGroupUpdated(numDomainGroups, baseMetadataUri);
 
@@ -88,16 +110,20 @@ contract Registrar is
    * @param id The id of the folder group
    * @param baseMetadataUri The entire base uri (include ipfs://.../)
    */
-  function updateDomainGroup(uint256 id, string memory baseMetadataUri)
-    external
-    onlyController
-  {
-    require(id != 0 && id <= numDomainGroups, "Folder group invalid");
-    require(
-      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) !=
-        keccak256(abi.encodePacked(baseMetadataUri)),
-      "Folder groups are the same"
-    );
+  function updateDomainGroup(
+    uint256 id,
+    string memory baseMetadataUri
+  ) external {
+    _onlyController();
+    if (id == 0 || id > numDomainGroups) {
+      revert InvalidFolderGroup();
+    }
+    if (
+      keccak256(abi.encodePacked(domainGroups[id].baseMetadataUri)) ==
+      keccak256(abi.encodePacked(baseMetadataUri))
+    ) {
+      revert SameFolderGroup();
+    }
     domainGroups[id].baseMetadataUri = baseMetadataUri;
 
     zNSHub.domainGroupUpdated(id, baseMetadataUri);
@@ -107,16 +133,12 @@ contract Registrar is
     return StorageSlot.getAddressSlot(_ADMIN_SLOT).value;
   }
 
-  modifier onlyController() {
-    if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
-      revert("ZR: Not controller");
-    }
-    _;
-  }
-
-  modifier onlyOwnerOf(uint256 id) {
-    require(ownerOf(id) == msg.sender, "ZR: Not owner");
-    _;
+  /**
+   * @notice Returns whether or not an account is a a controller registered on this contract
+   * @param account Address of account to check
+   */
+  function isController(address account) external view override returns (bool) {
+    return controllers[account];
   }
 
   function initialize(
@@ -140,6 +162,13 @@ contract Registrar is
 
     __ERC721Pausable_init();
     __ERC721_init(collectionName, collectionSymbol);
+    // The following address is OpenSea Curated Subscription Address
+    // where the OpenSea's list of filtered operators are registered.
+    // Reference: https://github.com/ProjectOpenSea/operator-filter-registry
+    _initializeFilter(
+      address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6),
+      true
+    );
   }
 
   function owner() public view override returns (address) {
@@ -155,11 +184,12 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function addController(address controller) external {
-    require(
-      msg.sender == owner() || msg.sender == parentRegistrar,
-      "ZR: Not authorized"
-    );
-    require(!controllers[controller], "ZR: Controller is already added");
+    if (msg.sender != owner() && msg.sender != parentRegistrar) {
+      revert NotAuthorized();
+    }
+    if (controllers[controller]) {
+      revert ControllerAlreadyAdded();
+    }
     controllers[controller] = true;
     emit ControllerAdded(controller);
   }
@@ -169,11 +199,12 @@ contract Registrar is
    * @param controller The address of the controller
    */
   function removeController(address controller) external override onlyOwner {
-    require(
-      msg.sender == owner() || msg.sender == parentRegistrar,
-      "ZR: Not authorized"
-    );
-    require(controllers[controller], "ZR: Controller does not exist");
+    if (msg.sender != owner() && msg.sender != parentRegistrar) {
+      revert NotAuthorized();
+    }
+    if (!controllers[controller]) {
+      revert ControllerNotExists();
+    }
     controllers[controller] = false;
     emit ControllerRemoved(controller);
   }
@@ -208,7 +239,8 @@ contract Registrar is
     string memory metadataUri,
     uint256 royaltyAmount,
     bool locked
-  ) external override onlyController returns (uint256) {
+  ) external override returns (uint256) {
+    _onlyController();
     return
       _registerDomain(
         parentId,
@@ -228,7 +260,8 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked,
     address sendToUser
-  ) external override onlyController returns (uint256) {
+  ) external override returns (uint256) {
+    _onlyController();
     // Register the domain
     uint256 id = _registerDomain(
       parentId,
@@ -253,7 +286,8 @@ contract Registrar is
     uint256 royaltyAmount,
     bool locked,
     address sendToUser
-  ) external onlyController returns (uint256) {
+  ) external returns (uint256) {
+    _onlyController();
     // Register domain, `minter` is the minter
     uint256 id = _registerDomain(
       parentId,
@@ -320,16 +354,18 @@ contract Registrar is
     uint256 groupId, // 0 is null
     uint256 groupFileIndex // ignored if groupId is 0
   ) internal returns (uint256) {
-    require(bytes(label).length > 0, "ZR: Empty name");
+    if (bytes(label).length == 0) {
+      revert EmptyDomainName();
+    }
     // subdomain cannot be minted on domains which are subdomain contracts
-    require(
-      records[parentId].subdomainContract == address(0),
-      "ZR: Parent is subcontract"
-    );
-    require(groupId <= numDomainGroups, "ZR: Domain group doesn't exist");
-    if (parentId != rootDomainId) {
-      // Domain parents must exist
-      require(_exists(parentId), "ZR: No parent");
+    if (records[parentId].subdomainContract != address(0)) {
+      revert SubdomainParent();
+    }
+    if (groupId > numDomainGroups) {
+      revert DomainGroupNotExists();
+    }
+    if (parentId != rootDomainId && !_exists(parentId)) {
+      revert NoParentDomain();
     }
 
     // Create the child domain under the parent domain
@@ -384,12 +420,14 @@ contract Registrar is
    * @param id The domain to set on
    * @param amount The royalty amount
    */
-  function setDomainRoyaltyAmount(uint256 id, uint256 amount)
-    external
-    override
-    onlyOwnerOf(id)
-  {
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+  function setDomainRoyaltyAmount(
+    uint256 id,
+    uint256 amount
+  ) external override {
+    _onlyOwnerOf(id);
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
 
     records[id].royaltyAmount = amount;
     zNSHub.royaltiesAmountChanged(id, amount);
@@ -400,12 +438,14 @@ contract Registrar is
    * @param id The domain to lock
    * @param uri The uri to set
    */
-  function setAndLockDomainMetadata(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+  function setAndLockDomainMetadata(
+    uint256 id,
+    string memory uri
+  ) external override {
+    _onlyOwnerOf(id);
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
     _setDomainMetadataUri(id, uri);
     _setDomainLock(id, msg.sender, true);
   }
@@ -415,12 +455,14 @@ contract Registrar is
    * @param id The domain to set on
    * @param uri The uri to set
    */
-  function setDomainMetadataUri(uint256 id, string memory uri)
-    external
-    override
-    onlyOwnerOf(id)
-  {
-    require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+  function setDomainMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external override {
+    _onlyOwnerOf(id);
+    if (isDomainMetadataLocked(id)) {
+      revert LockedMetadata();
+    }
     _setDomainMetadataUri(id, uri);
   }
 
@@ -447,20 +489,37 @@ contract Registrar is
   ) public {
     for (uint256 i = 0; i < tokenIds.length; ++i) {
       uint256 tokenId = tokenIds[i];
-      require(
-        _isApprovedOrOwner(_msgSender(), tokenId),
-        "ERC721: transfer caller is not owner nor approved"
-      );
+      if (!_isApprovedOrOwner(_msgSender(), tokenId)) {
+        revert NotApprovedOrOwner();
+      }
 
       _transfer(from, to, tokenId);
     }
+  }
+
+  function setApprovalForAll(
+    address operator,
+    bool approved
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    _onlyAllowedOperatorApproval(operator);
+    super.setApprovalForAll(operator, approved);
+  }
+
+  function approve(
+    address operator,
+    uint256 tokenId
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    _onlyAllowedOperatorApproval(operator);
+    super.approve(operator, tokenId);
   }
 
   /*
    * Public View
    */
 
-  function ownerOf(uint256 tokenId)
+  function ownerOf(
+    uint256 tokenId
+  )
     public
     view
     virtual
@@ -477,21 +536,11 @@ contract Registrar is
   }
 
   /**
-   * @notice Returns whether or not an account is a a controller registered on this contract
-   * @param account Address of account to check
-   */
-  function isController(address account) external view override returns (bool) {
-    bool accountIsController = controllers[account];
-    return accountIsController;
-  }
-
-  /**
    * @notice Returns whether or not a domain is exists
    * @param id The domain
    */
   function domainExists(uint256 id) public view override returns (bool) {
-    bool domainNftExists = _exists(id);
-    return domainNftExists;
+    return _exists(id);
   }
 
   /**
@@ -499,36 +548,27 @@ contract Registrar is
    * @param id The domain
    */
   function minterOf(uint256 id) public view override returns (address) {
-    address minter = records[id].minter;
-    return minter;
+    return records[id].minter;
   }
 
   /**
    * @notice Returns whether or not a domain's metadata is locked
    * @param id The domain
    */
-  function isDomainMetadataLocked(uint256 id)
-    public
-    view
-    override
-    returns (bool)
-  {
-    bool isLocked = records[id].metadataLocked;
-    return isLocked;
+  function isDomainMetadataLocked(
+    uint256 id
+  ) public view override returns (bool) {
+    return records[id].metadataLocked;
   }
 
   /**
    * @notice Returns who locked a domain's metadata
    * @param id The domain
    */
-  function domainMetadataLockedBy(uint256 id)
-    public
-    view
-    override
-    returns (address)
-  {
-    address lockedBy = records[id].metadataLockedBy;
-    return lockedBy;
+  function domainMetadataLockedBy(
+    uint256 id
+  ) public view override returns (address) {
+    return records[id].metadataLockedBy;
   }
 
   /**
@@ -536,22 +576,17 @@ contract Registrar is
    * @param id The domain
    */
   function domainController(uint256 id) public view override returns (address) {
-    address controller = records[id].controller;
-    return controller;
+    return records[id].controller;
   }
 
   /**
    * @notice Returns the current royalty amount for a domain
    * @param id The domain
    */
-  function domainRoyaltyAmount(uint256 id)
-    public
-    view
-    override
-    returns (uint256)
-  {
-    uint256 amount = records[id].royaltyAmount;
-    return amount;
+  function domainRoyaltyAmount(
+    uint256 id
+  ) public view override returns (uint256) {
+    return records[id].royaltyAmount;
   }
 
   /**
@@ -559,33 +594,32 @@ contract Registrar is
    * @param id The domain
    */
   function parentOf(uint256 id) public view override returns (uint256) {
-    require(_exists(id), "ZR: Does not exist");
-
-    uint256 parentId = records[id].parentId;
-    return parentId;
+    if (!_exists(id)) {
+      revert DomainNotExists();
+    }
+    return records[id].parentId;
   }
 
-  function tokenURI(uint256 tokenId)
+  function tokenURI(
+    uint256 tokenId
+  )
     public
     view
     virtual
     override(IERC721MetadataUpgradeable, ERC721Upgradeable)
     returns (string memory)
   {
-    require(
-      _exists(tokenId),
-      "ERC721Metadata: URI query for nonexistent token"
-    );
+    if (!_exists(tokenId)) {
+      revert DomainNotExists();
+    }
 
-    DomainRecord memory domain = records[tokenId];
-
-    if (domain.domainGroup != 0) {
-      // figure out uri based on domain group
+    // figure out uri based on domain group
+    if (records[tokenId].domainGroup != 0) {
       return
         string(
           abi.encodePacked(
-            domainGroups[domain.domainGroup].baseMetadataUri,
-            uint2str(domain.domainGroupFileIndex)
+            domainGroups[records[tokenId].domainGroup].baseMetadataUri,
+            CustomStrings.toString(records[tokenId].domainGroupFileIndex)
           )
         );
     }
@@ -602,24 +636,54 @@ contract Registrar is
     address to,
     uint256 tokenId
   ) internal virtual override {
+    _onlyAllowedOperator(from);
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
     zNSHub.domainTransferred(from, to, tokenId);
   }
 
+  function _onlyOwnerOf(uint256 id) internal view {
+    if (ownerOf(id) != msg.sender) {
+      revert NotDomainOwner();
+    }
+  }
+
+  function _onlyController() internal {
+    if (!controllers[msg.sender] && !zNSHub.isController(msg.sender)) {
+      revert NotController();
+    }
+  }
+
   function _setDomainMetadataUri(uint256 id, string memory uri) internal {
-    require(records[id].domainGroup == 0, "Must update via domain group");
+    if (records[id].domainGroup != 0) {
+      revert ShouldUpdateViaDomainGroup();
+    }
+    if (
+      keccak256(abi.encodePacked(tokenURI(id))) ==
+      keccak256(abi.encodePacked(uri))
+    ) {
+      // the call to public function `tokenUri` will perform an `_exists` check
+      revert SameMetadataUri(); // this error must be made
+    }
     _setTokenURI(id, uri);
     zNSHub.metadataChanged(id, uri);
   }
 
   function _validateLockDomainMetadata(uint256 id, bool toLock) internal view {
     if (toLock) {
-      require(ownerOf(id) == msg.sender, "ZR: Not owner");
-      require(!isDomainMetadataLocked(id), "ZR: Metadata locked");
+      if (ownerOf(id) != msg.sender) {
+        revert NotDomainOwner();
+      }
+      if (isDomainMetadataLocked(id)) {
+        revert LockedMetadata();
+      }
     } else {
-      require(isDomainMetadataLocked(id), "ZR: Not locked");
-      require(domainMetadataLockedBy(id) == msg.sender, "ZR: Not locker");
+      if (!isDomainMetadataLocked(id)) {
+        revert NotLockedMetadata();
+      }
+      if (domainMetadataLockedBy(id) != msg.sender) {
+        revert NotMetadataLocker();
+      }
     }
   }
 
@@ -668,13 +732,13 @@ contract Registrar is
     uint256[] memory orderedIds,
     uint256 ipfsFolderIndexOffset
   ) external onlyOwner {
-    for (uint256 i = 0; i < orderedIds.length; i++) {
+    for (uint256 i = 0; i < orderedIds.length; ++i) {
       _setDomainMetadataUri(
         orderedIds[i],
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            uint2str(ipfsFolderIndexOffset + i)
+            CustomStrings.toString(ipfsFolderIndexOffset + i)
           )
         )
       );
@@ -694,13 +758,13 @@ contract Registrar is
     uint256 ipfsFolderIndexStart,
     uint256 count
   ) external onlyOwner {
-    for (uint256 i = 0; i < count; i++) {
+    for (uint256 i = 0; i < count; ++i) {
       _setDomainMetadataUri(
         tokenByIndex(tokenIndexStart + i),
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            uint2str(ipfsFolderIndexStart + i)
+            CustomStrings.toString(ipfsFolderIndexStart + i)
           )
         )
       );
@@ -715,10 +779,10 @@ contract Registrar is
     _transfer(from, to, tokenId);
   }
 
-  function adminSetMetadataUri(uint256 id, string memory uri)
-    external
-    onlyOwner
-  {
+  function adminSetMetadataUri(
+    uint256 id,
+    string memory uri
+  ) external onlyOwner {
     _setDomainMetadataUri(id, uri);
   }
 
@@ -735,15 +799,20 @@ contract Registrar is
     string memory folderWithIPFSPrefix, // e.g., ipfs://Qm.../
     uint256 royaltyAmount,
     bool locked
-  ) external onlyController {
-    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+  ) external {
+    _onlyController();
+    if (endingIndex <= startingIndex) {
+      revert InvalidDomainIndex();
+    }
     uint256 result;
-    for (uint256 i = startingIndex; i < endingIndex; i++) {
+    for (uint256 i = startingIndex; i < endingIndex; ++i) {
       result = _registerDomain(
         parentId,
-        uint2str(i + namingOffset),
+        CustomStrings.toString(i + namingOffset),
         minter,
-        string(abi.encodePacked(folderWithIPFSPrefix, uint2str(i))),
+        string(
+          abi.encodePacked(folderWithIPFSPrefix, CustomStrings.toString(i))
+        ),
         royaltyAmount,
         locked
       );
@@ -759,13 +828,16 @@ contract Registrar is
     address minter,
     uint256 royaltyAmount,
     address sendTo
-  ) external onlyController {
-    require(endingIndex - startingIndex > 0, "Invalid number of domains");
+  ) external {
+    _onlyController();
+    if (endingIndex <= startingIndex) {
+      revert InvalidDomainIndex();
+    }
     uint256 tokenId;
-    for (uint256 i = startingIndex; i < endingIndex; i++) {
+    for (uint256 i = startingIndex; i < endingIndex; ++i) {
       tokenId = _registerDomainV2(
         parentId,
-        uint2str(i + namingOffset),
+        CustomStrings.toString(i + namingOffset),
         minter,
         "",
         royaltyAmount,
@@ -778,31 +850,5 @@ contract Registrar is
         _transfer(minter, sendTo, tokenId);
       }
     }
-  }
-
-  function uint2str(uint256 _i)
-    internal
-    pure
-    returns (string memory _uintAsString)
-  {
-    if (_i == 0) {
-      return "0";
-    }
-    uint256 j = _i;
-    uint256 len;
-    while (j != 0) {
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint256 k = len;
-    while (_i != 0) {
-      k = k - 1;
-      uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
-      bytes1 b1 = bytes1(temp);
-      bstr[k] = b1;
-      _i /= 10;
-    }
-    return string(bstr);
   }
 }

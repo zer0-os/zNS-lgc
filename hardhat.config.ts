@@ -3,12 +3,14 @@ require("dotenv").config();
 
 import { task, HardhatUserConfig } from "hardhat/config";
 
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
-import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-etherscan";
+import "@nomicfoundation/hardhat-network-helpers";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@typechain/hardhat";
 import "@openzeppelin/hardhat-upgrades";
 import "solidity-coverage";
+import "hardhat-contract-sizer";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -63,6 +65,20 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.8.13",
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
     ],
   },
   paths: {
@@ -76,13 +92,14 @@ const config: HardhatUserConfig = {
     hardhat: {
       // accounts: [
       //   {
-      //     privateKey: `0x${process.env.MAINNET_PRIVATE_KEY}`,
+      //     privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
       //     balance: "10000000000000000000000",
       //   },
       // ],
       forking: {
-        url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
+        url: `https://goerli.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },
+      allowUnlimitedContractSize: true
     },
     mainnet: {
       accounts: process.env.MAINNET_PRIVATE_KEY
@@ -106,8 +123,8 @@ const config: HardhatUserConfig = {
       url: "https://rinkeby.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
     goerli: {
-      accounts: process.env.ASTRO_PRIVATE_KEY
-        ? [`0x${process.env.ASTRO_PRIVATE_KEY}`]
+      accounts: process.env.TESTNET_PRIVATE_KEY
+        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
         : [],
       url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },
@@ -121,6 +138,11 @@ const config: HardhatUserConfig = {
         mnemonic: "test test test test test test test test test test test test",
       },
     },
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: false,
+    disambiguatePaths: false,
   },
   etherscan: {
     apiKey: "FZ1ANB251FC8ISFDXFGFCUDCANSJNWPF9Q",

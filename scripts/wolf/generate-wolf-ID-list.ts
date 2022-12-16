@@ -6,7 +6,7 @@ const registrarAddress = "0x1A178CFD768F74b3308cbca9998C767F4E5B2CF8"; // "0x1A1
 //const registrarAddress = "0xf2f1c79E1b2Ed2B14f3bd577248f9780e50c9BEa"; // Rinkeby jellybeans
 
 const main = async () => {
-  let deployer = (await hre.ethers.getSigners())[0];
+  const deployer = (await hre.ethers.getSigners())[0];
 
   const instance: Registrar = Registrar__factory.connect(
     registrarAddress,

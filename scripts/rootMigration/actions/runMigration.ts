@@ -10,6 +10,7 @@ import {
 } from "../../../typechain";
 import { getAddressesForNetwork } from "./addresses";
 import { getLogger } from "../../../utilities";
+import { exit } from "process";
 
 const logger = getLogger("scripts::runMigration");
 
@@ -18,7 +19,7 @@ const confirmContinue = () => {
   let val: boolean = input(`Proceed?`);
 
   if (!val) {
-    throw Error("Did not continue");
+    exit();
   }
 }
 
@@ -54,23 +55,25 @@ export const runMigration = async (
   logger.log("2. Upgrade existing proxies to have needed functionality");
 
   logger.log("2.a. Upgrade legacy Registrar");
+
   confirmContinue();
-  const upgradeWildRegistrar = await hre.upgrades.upgradeProxy(
+  const wildRegistrar = await hre.upgrades.upgradeProxy(
     legacyRegistrarAddress,
     new MigrationRegistrar__factory(signer)
-  );
-  const wildRegistrar = await upgradeWildRegistrar.deployed() as MigrationRegistrar;
+  ) as MigrationRegistrar;
+  await wildRegistrar.deployTransaction.wait(waitBlocks);
 
   logger.log("2.b. Upgrade Beacon Registrars");
+
   confirmContinue();
-  const upgradeSubdomainRegistrar = await hre.upgrades.upgradeBeacon(
+  const subdomainRegistrar = await hre.upgrades.upgradeBeacon(
     beaconAddress,
     new MigrationRegistrar__factory(signer)
   );
-  // Beacon is the subdomain contract for wolf
-  await upgradeSubdomainRegistrar.deployed() as MigrationRegistrar;
+  await subdomainRegistrar.deployTransaction.wait(waitBlocks);
 
   logger.log("3. Burn root and wilder domains on legacy registrar");
+
   confirmContinue();
   const burnDomains = await wildRegistrar.connect(signer).burnDomains(wilderDomainId, rootDomainId);
   await burnDomains.wait(waitBlocks);
@@ -86,7 +89,7 @@ export const runMigration = async (
 
   logger.log("4. Deploy new root registrar as proxy to existing subdomain registrar beacon");
   confirmContinue();
-  const deployRootRegistrar = await hre.upgrades.deployBeaconProxy(
+  const rootRegistrar = await hre.upgrades.deployBeaconProxy(
     beaconAddress,
     new MigrationRegistrar__factory(signer),
     [
@@ -96,9 +99,8 @@ export const runMigration = async (
       "ZNS",
       zNSHub.address
     ]
-  );
-
-  const rootRegistrar = await deployRootRegistrar.deployed() as MigrationRegistrar;
+  ) as MigrationRegistrar;
+  await rootRegistrar.deployTransaction.wait(waitBlocks);
 
   logger.log(`New Root Registrar Address: ${rootRegistrar.address}`);
 
@@ -138,7 +140,7 @@ export const runMigration = async (
 
   logger.log(`New Wilder domainId: ${newWilderDomainId.toHexString()}`);
 
-  logger.log("6. Update the rootDomainId and parentRegistrar values on upgraded legacy registrar");
+  logger.log("6. Update the rootDomainId and parentRegistrar values on legacy registrar");
   confirmContinue();
   const updateValuesTx = await wildRegistrar.connect(signer)
     .setRootDomainIdAndParentRegistrar(
@@ -154,27 +156,28 @@ export const runMigration = async (
     rootDomainIdAfterUpdate.toString() !== rootDomainId ||
     parentRegistrarAfterUpdate !== rootRegistrar.address
   ) {
-    const rootIds = `${rootDomainIdAfterUpdate.toString()} - ${rootDomainId}`;
-    const parentRegistrars = `${parentRegistrarAfterUpdate} - ${rootRegistrar.address}`;
+    const rootIds = `${rootDomainIdAfterUpdate.toString()} :: ${rootDomainId}`;
+    const parentRegistrars = `${parentRegistrarAfterUpdate} :: ${rootRegistrar.address}`;
     throw Error(`Values after updating don't match their expected value.\n${rootIds}\n${parentRegistrars}`);
   }
 
-  logger.log("7. Upgrade legacy and beacon registrars back to post-migration version (OG version)");
+  logger.log("7. Upgrade legacy and beacon registrars back to post-migration version (original registrar)");
   logger.log("7a. Upgrade legacy registrar back to original Registrar");
   confirmContinue();
-  let originalRegistrarTx = await hre.upgrades.upgradeProxy(
+  const originalWildRegistrar = await hre.upgrades.upgradeProxy(
     legacyRegistrarAddress,
     new Registrar__factory(signer)
   );
-  await originalRegistrarTx.deployed()
+  await originalWildRegistrar.deployTransaction.wait(waitBlocks);
 
   logger.log("7b. Upgrade beacon registrars to original Registrar");
   confirmContinue();
-  originalRegistrarTx = await hre.upgrades.upgradeBeacon(
+  const originalSubdomainRegistrar = await hre.upgrades.upgradeBeacon(
     beaconAddress,
     new Registrar__factory(signer)
   );
-  await originalRegistrarTx.deployed();
+  await originalSubdomainRegistrar.deployTransaction.wait(waitBlocks);
 
+  logger.log("Migration complete")
   return;
 }

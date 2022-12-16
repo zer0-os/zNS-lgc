@@ -12,7 +12,7 @@ import { Registrar__factory, ZNSHub, ZNSHub__factory } from "../../typechain";
  */
 
 const main = async () => {
-  let deployer = (await hre.ethers.getSigners())[0];
+  const deployer = (await hre.ethers.getSigners())[0];
 
   // Deploy the zNS Registrar Beacon
   console.log(`deploying beacon`);

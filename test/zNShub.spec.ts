@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import {
   Registrar,
   ZNSHub,
@@ -7,11 +7,8 @@ import {
   Registrar__factory,
 } from "../typechain";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
-import { BigNumber, BigNumberish } from "ethers";
-import { domainNameToId, getEvent } from "./helpers";
+import { BigNumber } from "ethers";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("zNS Hub", () => {
@@ -73,24 +70,18 @@ describe("zNS Hub", () => {
   // };
 
   before(async () => {
-    console.log("before");
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
     user1 = accounts[1];
-    console.log("A");
   });
 
   describe("ownership", () => {
     before(async () => {
-      console.log("before");
-      console.log(creator);
       const hubFactory = new ZNSHub__factory(creator);
       hub = await hubFactory.deploy();
     });
 
     it("can transfer ownership", () => {
-      console.log("ZZZ");
-      console.log(hub);
       //await hub["transferOwnership"](user1.address);
       //expect(await hub.registrarBeacon()).to.eq(user1.address);
     });

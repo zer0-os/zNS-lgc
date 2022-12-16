@@ -7,7 +7,7 @@ import { Registrar__factory, ZNSHub__factory } from "../../typechain";
 const hubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
 
 const main = async () => {
-  let deployer = (await hre.ethers.getSigners())[0];
+  const deployer = (await hre.ethers.getSigners())[0];
 
   const tx = await hre.upgrades.upgradeProxy(
     hubAddress,

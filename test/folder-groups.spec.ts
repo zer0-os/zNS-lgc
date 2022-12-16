@@ -1,41 +1,38 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
-import * as smock from "@defi-wonderland/smock";
 
 import {
   Registrar,
   ZNSHub,
   ZNSHub__factory,
   Registrar__factory,
+  UpgradeableBeacon__factory,
 } from "../typechain";
 
 import { domainNameToId } from "./helpers";
 
-chai.use(solidity);
 const { expect } = chai;
 
 describe("Folder groups functionality", () => {
   let accounts: SignerWithAddress[];
   let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hub: smock.MockContract<ZNSHub>;
+  let hubFactory: ZNSHub__factory;
+  let hub: ZNSHub;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
 
   const deployRegistry = async (creator: SignerWithAddress) => {
     registryFactory = new Registrar__factory(creator);
-    const emitterMockFactory = await smock.smock.mock<ZNSHub__factory>(
-      "ZNSHub"
-    );
-    hub = await emitterMockFactory.deploy();
-
-    const beacon = await upgrades.deployBeacon(registryFactory);
-
+    hubFactory = new ZNSHub__factory(creator);
+    hub = await hubFactory.deploy();
     registry = await registryFactory.deploy();
+
+    const beaconFactory = new UpgradeableBeacon__factory(creator);
+    const beacon = await beaconFactory.deploy(registry.address);
 
     await hub.initialize(registry.address, beacon.address);
 
@@ -55,6 +52,7 @@ describe("Folder groups functionality", () => {
     creator = accounts[0];
     controller = accounts[1];
     await deployRegistry(creator);
+    await registry.addController(controller.address);
   });
 
   it("runs", async () => {
@@ -63,8 +61,6 @@ describe("Folder groups functionality", () => {
     expect(numDomainGroups).to.eq(0);
   });
   it("create domain groups", async () => {
-    await registry.addController(controller.address);
-
     const asController = registry.connect(controller);
 
     // Test folders
@@ -99,6 +95,9 @@ describe("Folder groups functionality", () => {
   it("registers domains in a domain group", async () => {
     const asController = registry.connect(controller);
     const controllerAddress = await controller.getAddress();
+
+    const isController = await registry.isController(controller.address);
+    expect(isController).to.be.true;
 
     const params = {
       parentId: "0",
@@ -152,6 +151,4 @@ describe("Folder groups functionality", () => {
     const tokenUri = await registry.tokenURI(domainId);
     expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
-
-  it("still allows old token uris to work", async () => {});
 });

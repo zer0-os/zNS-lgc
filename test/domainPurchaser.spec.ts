@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import * as hre from "hardhat";
 
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
 import * as smock from "@defi-wonderland/smock";
 import {
   DomainPurchaser,
@@ -16,7 +15,6 @@ import {
 } from "../typechain";
 import { BigNumber, ethers } from "ethers";
 
-chai.use(solidity);
 chai.use(smock.smock.matchers);
 const { expect } = chai;
 
@@ -30,9 +28,6 @@ describe("DomainPurchaser", () => {
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
-
-  const rootDomainHash = ethers.constants.HashZero;
-  const rootDomainId = BigNumber.from(0);
 
   const pricingData = {
     short: 3,
@@ -211,9 +206,9 @@ describe("DomainPurchaser", () => {
       expect(await purchaser.platformFee()).to.eq(100);
     });
 
-    it("prevents the owner to set the platform fee beyond 99.9%", async () => {
+    it("prevents the owner to set the platform fee beyond 99.99%", async () => {
       const tx = purchaser.setPlatformFee(1000);
-      await expect(tx).to.be.revertedWith("DP: Fee beyond 99.9%");
+      await expect(tx).to.be.revertedWith("DP: Fee beyond 99.99%");
     });
 
     it("allows the owner to set the platform wallet", async () => {

@@ -6,6 +6,7 @@ import {
   Registrar__factory,
   ZNSHub,
   OperatorFilterRegistry,
+  OperatorFiltererLib__factory,
 } from "../typechain";
 import chai from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
@@ -28,8 +29,29 @@ describe("Registrar", () => {
   const rootDomainId = BigNumber.from(0);
 
   const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
+    const CreateProxyLibFactory = await ethers.getContractFactory(
+      "CreateProxyLib",
+      creator
+    );
+    const createProxyLib = await CreateProxyLibFactory.deploy();
+
+    const OperatorFiltererLibFactory = await ethers.getContractFactory(
+      "OperatorFiltererLib",
+      creator
+    );
+    const operatorFiltererLib = await OperatorFiltererLibFactory.deploy();
+
+    registryFactory = new Registrar__factory(
+      {
+        "contracts/libraries/CreateProxyLib.sol:CreateProxyLib":
+          createProxyLib.address,
+        "contracts/libraries/OperatorFiltererLib.sol:OperatorFiltererLib":
+          operatorFiltererLib.address,
+      },
+      creator
+    );
     hubFactory = new ZNSHub__factory(creator);
+
     hub = await hubFactory.deploy();
     await hub.initialize(
       ethers.constants.AddressZero,

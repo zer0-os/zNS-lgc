@@ -2,20 +2,19 @@
 pragma solidity ^0.8.11;
 
 // This is only kept for backward compatability / upgrading
+import {IRegistrar} from "../interfaces/IRegistrar.sol";
+import {CreateProxyLib} from "../libraries/CreateProxyLib.sol";
+import {OperatorFiltererLib} from "../libraries/OperatorFiltererLib.sol";
 import {OwnableUpgradeable} from "../oz/access/OwnableUpgradeable.sol";
 import {EnumerableMapUpgradeable, ERC721PausableUpgradeable, IERC721Upgradeable, ERC721Upgradeable, IERC721MetadataUpgradeable} from "../oz/token/ERC721/ERC721PausableUpgradeable.sol";
-import {IRegistrar} from "../interfaces/IRegistrar.sol";
 import {StorageSlot} from "../oz/utils/StorageSlot.sol";
 import {BeaconProxy} from "../oz/proxy/beacon/BeaconProxy.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import {OperatorFilterer} from "../opensea/OperatorFilterer.sol";
-import {CustomStrings} from "../CustomStrings.sol";
 
 contract Registrar is
   IRegistrar,
   OwnableUpgradeable,
-  ERC721PausableUpgradeable,
-  OperatorFilterer
+  ERC721PausableUpgradeable
 {
   using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
 
@@ -144,10 +143,10 @@ contract Registrar is
   function initialize(
     address parentRegistrar_,
     uint256 rootDomainId_,
-    string calldata collectionName,
-    string calldata collectionSymbol,
+    string memory collectionName,
+    string memory collectionSymbol,
     address zNSHub_
-  ) public initializer {
+  ) external initializer {
     // __Ownable_init(); // Purposely not initializing ownable since we override owner()
 
     if (parentRegistrar_ == address(0)) {
@@ -165,7 +164,8 @@ contract Registrar is
     // The following address is OpenSea Curated Subscription Address
     // where the OpenSea's list of filtered operators are registered.
     // Reference: https://github.com/ProjectOpenSea/operator-filter-registry
-    _initializeFilter(
+    OperatorFiltererLib.initializeFilter(
+      address(this),
       address(0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6),
       true
     );
@@ -299,17 +299,16 @@ contract Registrar is
     );
 
     // Create subdomain contract as a beacon proxy
-    address subdomainContract = address(
-      new BeaconProxy(zNSHub.registrarBeacon(), "")
-    );
-
-    // More maintainable instead of using `data` in constructor
-    Registrar(subdomainContract).initialize(
-      address(this),
-      id,
-      "Zer0 Name Service",
-      "ZNS",
-      address(zNSHub)
+    address subdomainContract = CreateProxyLib.createBeaconProxy(
+      zNSHub.registrarBeacon(),
+      abi.encodeWithSelector(
+        Registrar.initialize.selector,
+        address(this),
+        id,
+        "Zer0 Name Service",
+        "ZNS",
+        address(zNSHub)
+      )
     );
 
     // Indicate that the subdomain has a contract
@@ -415,6 +414,29 @@ contract Registrar is
     return domainId;
   }
 
+  function toString(
+    uint256 value
+  ) internal pure returns (string memory _uintAsString) {
+    if (value == 0) {
+      return "0";
+    }
+    uint256 temp = value;
+    uint256 digits;
+    while (temp != 0) {
+      digits++;
+      temp /= 10;
+    }
+    bytes memory buffer = new bytes(digits);
+    while (value != 0) {
+      digits -= 1;
+      uint8 tempo = (48 + uint8(value - (value / 10) * 10));
+      bytes1 b1 = bytes1(tempo);
+      buffer[digits] = b1;
+      value /= 10;
+    }
+    return string(buffer);
+  }
+
   /**
    * @notice Sets the domain royalty amount
    * @param id The domain to set on
@@ -485,7 +507,7 @@ contract Registrar is
   function transferFromBulk(
     address from,
     address to,
-    uint256[] calldata tokenIds
+    uint256[] memory tokenIds
   ) public {
     for (uint256 i = 0; i < tokenIds.length; ++i) {
       uint256 tokenId = tokenIds[i];
@@ -501,7 +523,7 @@ contract Registrar is
     address operator,
     bool approved
   ) public override(ERC721Upgradeable, IERC721Upgradeable) {
-    _onlyAllowedOperatorApproval(operator);
+    OperatorFiltererLib.onlyAllowedOperatorApproval(address(this), operator);
     super.setApprovalForAll(operator, approved);
   }
 
@@ -509,7 +531,7 @@ contract Registrar is
     address operator,
     uint256 tokenId
   ) public override(ERC721Upgradeable, IERC721Upgradeable) {
-    _onlyAllowedOperatorApproval(operator);
+    OperatorFiltererLib.onlyAllowedOperatorApproval(address(this), operator);
     super.approve(operator, tokenId);
   }
 
@@ -619,7 +641,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             domainGroups[records[tokenId].domainGroup].baseMetadataUri,
-            CustomStrings.toString(records[tokenId].domainGroupFileIndex)
+            toString(records[tokenId].domainGroupFileIndex)
           )
         );
     }
@@ -636,7 +658,7 @@ contract Registrar is
     address to,
     uint256 tokenId
   ) internal virtual override {
-    _onlyAllowedOperator(from);
+    OperatorFiltererLib.onlyAllowedOperator(address(this), msg.sender, from);
     super._transfer(from, to, tokenId);
     // Need to emit transfer events on event emitter
     zNSHub.domainTransferred(from, to, tokenId);
@@ -738,7 +760,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            CustomStrings.toString(ipfsFolderIndexOffset + i)
+            toString(ipfsFolderIndexOffset + i)
           )
         )
       );
@@ -764,7 +786,7 @@ contract Registrar is
         string(
           abi.encodePacked(
             folderWithIPFSPrefix,
-            CustomStrings.toString(ipfsFolderIndexStart + i)
+            toString(ipfsFolderIndexStart + i)
           )
         )
       );
@@ -808,11 +830,9 @@ contract Registrar is
     for (uint256 i = startingIndex; i < endingIndex; ++i) {
       result = _registerDomain(
         parentId,
-        CustomStrings.toString(i + namingOffset),
+        toString(i + namingOffset),
         minter,
-        string(
-          abi.encodePacked(folderWithIPFSPrefix, CustomStrings.toString(i))
-        ),
+        string(abi.encodePacked(folderWithIPFSPrefix, toString(i))),
         royaltyAmount,
         locked
       );
@@ -837,7 +857,7 @@ contract Registrar is
     for (uint256 i = startingIndex; i < endingIndex; ++i) {
       tokenId = _registerDomainV2(
         parentId,
-        CustomStrings.toString(i + namingOffset),
+        toString(i + namingOffset),
         minter,
         "",
         royaltyAmount,

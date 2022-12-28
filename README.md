@@ -27,7 +27,7 @@ yarn
 
 This will:
 
-- Install required node packages (*this may take awhile*)
+- Install required node packages (_this may take awhile_)
 - Compile the smart contracts
 - Generate [typechain](https://github.com/ethereum-ts/TypeChain) helper types
 
@@ -87,6 +87,7 @@ yarn fix
 ## Deploying
 
 Deployment is done in multiple steps which are to be performed in order.
+
 ### Requirements
 
 Before you can deploy you must choose the wallet to deploy from.
@@ -105,22 +106,24 @@ If you are deploying to mainnet set the `MAINNET_MNEMONIC` variable.
 
 **Do not under any circumstance commit your `.env` file to source control**
 
-> Some additional recommendations:  
+> Some additional recommendations:
+>
 > - **Delete** your `.env` file after you finish deploying contracts
 > - Never use the same mnemonic for testnets and mainnet
 > - Never use your personal wallet or mnemonic
 > - Always use a different mnemonic for each new mainnet deployment
 
-
 ### Deploy Registrar
 
-The Registrar can must be deployed by running the command:
+#### Deploy
+
+The Registrar must be deployed by running the command:
 
 ```bash
-yarn hardhat run .\scripts\deploy-registrar.ts --network <network>
+yarn hardhat run .\scripts\deploy-registrar-impl.ts --network <network>
 ```
 
-> Replace `<network>` with `mainnet`, `kovan`, `ropsten`, or `rinkeby`.
+> Replace `<network>` with `mainnet`, `goerli`.
 
 This will deploy the `Registrar` contract using an OpenZeppelin upgradeability proxy.
 
@@ -128,9 +131,36 @@ You may notice a `deployments` folder being created, if you inspect the `./deplo
 
 > It is recommended you commit and push any changes to `./deployments/<network>.json` file for historical tracking of deployed instances
 
+#### Verify
+
+The Registrar is using deployed two libraries: `CreateProxyLib` and `OperatorFiltererLib`.
+
+To verify these two libraries, we can use flatten files.
+
+```bash
+npx hardhat flatten contracts/libraries/CreateProxyLib.sol>temp/CreateProxyLibFlatten.sol
+npx hardhat flatten contracts/libraries/OperatorFiltererLib.sol>temp/OperatorFiltererLibFlatten.sol
+```
+
+To verify Registrar contract, we should pass verified libraries.
+
+```bash
+npx hardhat verify --libraries scripts/libraries.ts --network <network> <Registrar address>
+```
+
+`scripts/deploy-registrar-impl.ts` will output addresses of libraries to `temp/libraries.ts`.
+The `libraries.ts` file format looks like:
+
+```typescript
+export default {
+  CreateProxyLib: "0x03701A0339f496395b80551722458E1276421126",
+  OperatorFiltererLib: "0x9403E5361CA3706daf640eCE4476ade6538BFeCC",
+};
+```
+
 ### Deploy Basic Controller
 
-The Basic Controller can must be deployed by running the command:
+The Basic Controller can be deployed by running the command:
 
 > The Registrar must already be deployed to run this command.
 
@@ -182,6 +212,7 @@ yarn hardhat run .\scripts\simulate.ts --network <network>
 ```
 
 This will:
+
 - Create domains
 - Create subdomains
 - Transfer domains and subdomains to different users

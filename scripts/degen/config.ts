@@ -14,12 +14,12 @@ export const domainConfigs: RootDomainConfigs = {
   goerli: {
     degen: {
       label: "degen",
-      metadataUri: "ipfs://QmPGRFipDvgcENvPa2dGYT4a4UR9A59FUwrrz4vvR1nTEx",
+      metadataUri: "ipfs://Qmbc8XR1BrxRFGLv7DnaGiTc4RnNYdgHB3K9JTzT8kQmSR",
       minter: "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53",
     },
     dgen: {
       label: "dgen",
-      metadataUri: "ipfs://QmUUFzmBzLdhLhezWSxKrZLeVhut4naH4Udh7zf97NLQ5M",
+      metadataUri: "ipfs://Qmbc8XR1BrxRFGLv7DnaGiTc4RnNYdgHB3K9JTzT8kQmSR",
       minter: "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53",
     },
   },

@@ -59,15 +59,16 @@ const main = async () => {
 
       confirmContinue();
 
-      const tx = await registrar.registerDomain(
+      const tx = await registrar.registerSubdomainContract(
         parentId,
         domainConfig.label,
         domainConfig.minter,
         domainConfig.metadataUri,
         0,
-        false
+        false,
+        domainConfig.minter
       );
-      await tx.wait();
+      await tx.wait(3);
     }
 
     logger.log("Congratulations! You registered domains successfully!");

@@ -1,6 +1,7 @@
 import { run } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
 import { ethers } from "ethers";
+import { exit } from "process";
 
 export const sleep = (m: number): Promise<void> => new Promise((r) => setTimeout(r, m));
 
@@ -37,4 +38,14 @@ export const calculateGasMargin = (
   return value
     .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
     .div(ethers.BigNumber.from(10000));
+};
+
+export const confirmContinue = () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const input = require("cli-interact").getYesNo;
+  const val: boolean = input(`Proceed?`);
+
+  if (!val) {
+    exit();
+  }
 };

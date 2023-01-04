@@ -13,7 +13,7 @@ import "../../proxy/Initializable.sol";
  * period, or having an emergency switch for freezing all token transfers in the
  * event of a large bug.
  */
-abstract contract ERC721PausableUpgradeable is
+abstract contract ERC721PausableUpgradeableBurnable is
   Initializable,
   ERC721Upgradeable,
   PausableUpgradeable

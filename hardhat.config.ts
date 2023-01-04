@@ -151,4 +151,6 @@ const config: HardhatUserConfig = {
     outDir: "typechain",
   },
 };
+
+const thing = 39309021144720815864318807681738966234032524071017289203515664704373336409897
 export default config;

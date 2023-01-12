@@ -1,6 +1,9 @@
-import { run } from "hardhat";
+import { run, network } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
 import { ethers } from "ethers";
+import { getLogger } from "../../utilities";
+
+const logger = getLogger("shared::helpers");
 
 export const sleep = (m: number): Promise<void> => new Promise((r) => setTimeout(r, m));
 
@@ -9,11 +12,10 @@ export const verifyContract = async (
   constructorArguments: unknown[] = []
 ): Promise<void> => {
   try {
-    console.log("Sleeping for 10 seconds before verification...");
+    logger.log("Sleeping for 10 seconds before verification...");
     await sleep(10000);
-    console.log("\n>>>>>>>>>>>> Verification >>>>>>>>>>>>\n");
 
-    console.log("Verifying: ", address);
+    logger.log("Verifying: ", address);
     await run("verify:verify", {
       address,
       constructorArguments,
@@ -23,9 +25,9 @@ export const verifyContract = async (
       error instanceof NomicLabsHardhatPluginError &&
       error.message.includes("Reason: Already Verified")
     ) {
-      console.log("Already verified, skipping...");
+      logger.log(`Contract already verified on ${network.name}, skipping...`);
     } else {
-      console.error(error);
+      logger.error(error);
     }
   }
 };

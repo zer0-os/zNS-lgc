@@ -1,5 +1,6 @@
 import * as hre from "hardhat"
 import { runMigration } from "./actions/runMigration";
+import { runMigrationFromSafe } from "./actions/runMigrationFromSafe";
 
 // 0. Make code changes for migration registrar, version M
 //    0a. Make this a new version, maintain the old version, PM, for post migration
@@ -15,7 +16,7 @@ const migrate = async () => {
   await hre.run("compile");
 
   const [signer] = await hre.ethers.getSigners();
-  runMigration(signer, hre.network.name);
+  runMigrationFromSafe(signer, hre.network.name);
 }
 
 migrate();

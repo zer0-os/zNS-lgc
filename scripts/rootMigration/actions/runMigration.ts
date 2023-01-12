@@ -45,6 +45,7 @@ export const runMigration = async (
   if (network === "hardhat") {
     await hre.upgrades.forceImport(legacyRegistrarAddress, new Registrar__factory());
   }
+  const astroAddress = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53"
 
   const zNSHub = ZNSHub__factory.connect(zNSHubAddress, signer);
 
@@ -75,7 +76,13 @@ export const runMigration = async (
   logger.log("3. Burn root and wilder domains on legacy registrar");
 
   confirmContinue();
-  const burnDomains = await wildRegistrar.connect(signer).burnDomains(wilderDomainId, rootDomainId);
+  // Mainnet owner of:
+  // rootDomain: 0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471
+  // wilderDomain: 0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C
+
+  // A: transfer ownership of domains to gnosis safe
+  // B: Modify migration registrar code to also take owner addresses
+  const burnDomains = await wildRegistrar.connect(signer).burnDomains(wilderDomainId, rootDomainId, astroAddress, astroAddress);
   await burnDomains.wait(waitBlocks);
 
   logger.log("Verify burn...");

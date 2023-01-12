@@ -96,6 +96,7 @@ const config: HardhatUserConfig = {
       //     balance: "10000000000000000000000",
       //   },
       // ],
+      chainId: 5, // to make it think it's goerli
       forking: {
         url: `https://goerli.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },
@@ -152,5 +153,4 @@ const config: HardhatUserConfig = {
   },
 };
 
-const thing = 39309021144720815864318807681738966234032524071017289203515664704373336409897
 export default config;

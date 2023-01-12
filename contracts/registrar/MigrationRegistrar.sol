@@ -231,10 +231,12 @@ contract MigrationRegistrar is
 
   function burnDomains(
     uint256 _wilderDomainId,
-    uint256 _rootDomainId
+    uint256 _rootDomainId,
+    address _wilderOwner,
+    address _rootOwner
   ) external onlyOwner {
-    _transfer(msg.sender, address(0), _wilderDomainId);
-    _transfer(msg.sender, address(0), _rootDomainId);
+    _transfer(_wilderOwner, address(0), _wilderDomainId);
+    _transfer(_rootOwner, address(0), _rootDomainId);
   }
 
   function mintDomain(

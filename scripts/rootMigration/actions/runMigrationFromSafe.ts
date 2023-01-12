@@ -243,12 +243,15 @@ export const runMigrationFromSafe = async (
 
   const upgradedDefaultRegistrar = migrationRegistrarFactory.attach(defaultRegistrarAddress);
 
+  const wilderOwner = "0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C";
+  const rootOwner = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
+
   await createAndProposeTransaction(
     safeAddress,
     signer,
     upgradedDefaultRegistrar,
     "burnDomains(uint256,uint256)",
-    [wilderDomainId, rootDomainId],
+    [wilderDomainId, rootDomainId, wilderOwner, rootOwner],
   );
 
   // logger.log(`Successfully proposed burning of wilder domain ID and root domain ID on default registrar`);

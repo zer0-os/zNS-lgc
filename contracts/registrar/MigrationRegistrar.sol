@@ -235,8 +235,12 @@ contract MigrationRegistrar is
     address _wilderOwner,
     address _rootOwner
   ) external onlyOwner {
+    // ERC721 transfer will check owner internally
     _transfer(_wilderOwner, address(0), _wilderDomainId);
     _transfer(_rootOwner, address(0), _rootDomainId);
+
+    delete records[_wilderDomainId];
+    delete records[_rootDomainId];
   }
 
   function mintDomain(
@@ -258,7 +262,7 @@ contract MigrationRegistrar is
     );
     records[id].subdomainContract = subdomainContract;
 
-    // Call to '_registerDomain` above calls function
+    // The call to '_registerDomain` above calls a function
     // that has 'onlyRegistrar' modifier to emit event data,
     // if we register after domain creation it fails,
     // and if we register before, the below fails

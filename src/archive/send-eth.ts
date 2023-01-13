@@ -1,7 +1,7 @@
 import { ethers, network } from "hardhat";
 import { getLogger } from "../utilities";
 
-const logger = getLogger("scripts::send-eth");
+const logger = getLogger("src::send-eth");
 
 async function main() {
   if (network.name != "kovan") {

@@ -17,7 +17,7 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-basic-controller");
+const logger = getLogger("src::deploy-basic-controller");
 
 async function main() {
   await run("compile");

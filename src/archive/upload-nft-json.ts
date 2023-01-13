@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { getLogger } from "../utilities";
 
-const logger = getLogger("scripts::upload-nft-json");
+const logger = getLogger("src::upload-nft-json");
 
 const ipfsBaseUri = "https://ipfs.io/ipfs/";
 

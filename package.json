@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "contracts",
-    "scripts",
+    "src",
     "typechain",
     "utilities",
     "hardhat.config.ts"

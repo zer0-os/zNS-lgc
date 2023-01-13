@@ -9,7 +9,7 @@ import { calculateDomainHash, hashDomainName } from "../test/helpers";
 import { Registrar, Registrar__factory } from "../typechain";
 import { getDeploymentData, getLogger, getWord } from "../utilities";
 
-const logger = getLogger("scripts::simulate");
+const logger = getLogger("src::simulate");
 
 async function main() {
   if (network.name != "kovan") {

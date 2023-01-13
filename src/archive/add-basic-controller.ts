@@ -3,7 +3,7 @@ import { Registrar, Registrar__factory } from "../../typechain";
 import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../../utilities";
 
-const logger = getLogger("scripts::add-basic-controller");
+const logger = getLogger("src::add-basic-controller");
 
 // Astro
 const deployerNew = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53";

@@ -7,7 +7,7 @@ import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
 import { confirmContinue } from "../shared/helpers";
 import { domainConfigs } from "./config";
 
-const logger = getLogger("scripts::create-degen-root-domain");
+const logger = getLogger("src::create-degen-root-domain");
 
 const main = async () => {
   const [deployer] = await hre.ethers.getSigners();

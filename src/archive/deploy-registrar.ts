@@ -1,23 +1,20 @@
 import { ethers, upgrades, network, run } from "hardhat";
-import {
-  AuthBasicController__factory,
-  Registrar,
-  Registrar__factory,
-} from "../../typechain";
+import { Registrar__factory } from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../utilities";
+} from "../../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-auth-controller");
+const logger = getLogger("src::deploy-registrar");
+const goerliZNSHubAddress = "0x35921570D157D6E9DA51e67B47d43bAF5da1e108";
 
 async function main() {
   await run("compile");
@@ -31,6 +28,34 @@ async function main() {
     `'${deploymentAccount.address}' will be used as the deployment account`
   );
 
+  const registrarFactory = new Registrar__factory(deploymentAccount);
+  const bytecodeHash = hashBytecodeWithoutMetadata(registrarFactory.bytecode);
+
+  logger.log(`Implementation version is ${bytecodeHash}`);
+
+  /**
+   * address parentRegistrar_,
+    uint256 rootDomainId_,
+    string calldata collectionName,
+    string calldata collectionSymbol,
+    address zNSHub_
+   */
+  const instance = await upgrades.deployProxy(registrarFactory,
+    [
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero,
+      "Zer0 Name Service",
+      "ZNS",
+      goerliZNSHubAddress
+    ],
+    {
+      initializer: "initialize",
+    }
+  );
+  await instance.deployed();
+
+  logger.log(`Deployed Registrar to '${instance.address}'`);
+
   const fileName = `${network.name}.json`;
   const filepath = `${deploymentsFolder}/${fileName}`;
   let deploymentData: DeploymentOutput;
@@ -43,36 +68,8 @@ async function main() {
     deploymentData = {};
   }
 
-  if (!deploymentData.registrar) {
-    logger.error(
-      `Registrar must be deployed before controller can be deployed!`
-    );
-    process.exit(1);
-  }
-
-  const registrarFactory = new Registrar__factory(deploymentAccount);
-  const registrar: Registrar = await registrarFactory.attach(
-    deploymentData.registrar.address
-  );
-
-  const controllerFactory = new AuthBasicController__factory(deploymentAccount);
-  const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
-
-  logger.log(`Implementation version is ${bytecodeHash}`);
-
-  const instance = await upgrades.deployProxy(
-    controllerFactory,
-    [registrar.address],
-    {
-      initializer: "initialize",
-    }
-  );
-  await instance.deployed();
-
-  logger.log(`Deployed AuthBasicController to '${instance.address}'`);
-
-  const deploymentRecord: DeployedContract = {
-    name: "AuthBasicController",
+  const registrarObject: DeployedContract = {
+    name: "Registrar",
     address: instance.address,
     version: bytecodeHash,
     date: new Date().toISOString(),
@@ -83,10 +80,10 @@ async function main() {
   const implementationContract = manifest.impls[bytecodeHash];
 
   if (implementationContract) {
-    deploymentRecord.implementation = implementationContract.address;
+    registrarObject.implementation = implementationContract.address;
   }
 
-  deploymentData.authController = deploymentRecord;
+  deploymentData.registrar = registrarObject;
 
   const jsonToWrite = JSON.stringify(deploymentData, undefined, 2);
 
@@ -96,8 +93,11 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
-    logger.log(`Waiting for 5 confirmations`);
-    await instance.deployTransaction.wait(5);
+    logger.log(`Waiting for 3 confirmations`);
+    // infinite loops on homestead / hardhat network
+    if (network.name !== "hardhat" && network.name !== "homestead") {
+      await instance.deployTransaction.wait(5);
+    }
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

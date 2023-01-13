@@ -17,7 +17,7 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-staking-controller");
+const logger = getLogger("src::deploy-staking-controller");
 
 // change for target staking token
 const tokenAddress = "0x43b8219aC1883373C0428688eE1a76e19E6B6D9d";

@@ -1,6 +1,8 @@
 {
   "name": "zns-contracts",
-  "version": "0.0.0",
+  "version": "0.0.0-test.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "contracts",
     "scripts",
@@ -9,11 +11,13 @@
     "hardhat.config.ts"
   ],
   "scripts": {
+    "prepublish": "yarn build && tsc",
     "postinstall": "hardhat typechain",
     "typechain": "hardhat typechain",
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
+    "tsc": "tsc",
     "hardhat": "hardhat",
     "size": "hardhat size-contracts",
     "test": "hardhat test",

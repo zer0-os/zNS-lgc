@@ -13,3 +13,6 @@ typechain/
 .openzeppelin/.session
 coverage/
 coverage.json
+
+# IDEs
+.idea

@@ -98,21 +98,6 @@
       "address": "0x539c41ea6297C9Af7195EdD743495E281E31DC97",
       "txHash": "0xcdabe5e1e2c77ae59502351d59c9cf5faec52c52aaa6920167c3cff3b3cf5761",
       "kind": "beacon"
-    },
-    {
-      "address": "0x8c36C62c1d4419228b40A09D1B4c9AB45486F447",
-      "txHash": "0x5fbf6022a38487212dc538a95603c4cbf226783bf6af59407e0929093376b78d",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x4ED96a857fc902e79b7D9551034c3eFa0a369B60",
-      "txHash": "0xd6c3a68bde84b5c10d086e727c98a68ca22dcf835d4b5f1a046aa8079289f4e0",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x9Be9832E2f056BB7C9BE2AbD67eec12ecC4B051a",
-      "txHash": "0x6e5633189d5846a0fad94dfae1397ab5d6582433dc1c285b149d372146137dc2",
-      "kind": "beacon"
     }
   ],
   "impls": {
@@ -2422,7 +2407,7 @@
     },
     "0143af1dace09111d9f66ff1e5dfd70160d61ee2ffe3f9ff33d390d6c005b20e": {
       "address": "0xDf38aF30A957a491CF8C0Ef78534d3A611367212",
-      "txHash": "0xa77dbb4dfa3d28d3a5b93f9e1c5637793eb9c71d830fde0c47438ef88415789b",
+      "txHash": "0xe1a3deb783c976c99c3de27a462a4f26b342082c98f582abdeab01439a85d44a",
       "layout": {
         "solcVersion": "0.8.13",
         "storage": [

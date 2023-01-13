@@ -46,8 +46,8 @@ describe("Verify entire migration scenario", () => {
 
   // Effects from goerli
   let defaultRegistrar: MigrationRegistrar;
-  let subdomainRegistrar: MigrationRegistrar;
-  let rootRegistrar: MigrationRegistrar; // could just be regular registrar
+  let subregistrarBeacon: MigrationRegistrar;
+  let rootRegistrar: MigrationRegistrar;
 
   before(async () => {
     accounts = await hre.ethers.getSigners(); // needed?
@@ -74,16 +74,44 @@ describe("Verify entire migration scenario", () => {
     expect(defaultRegistrar.functions.burnDomains).to.exist;
 
     // 2.b. Upgrade subdomain Registrar
-    subdomainRegistrar = await hre.upgrades.upgradeBeacon(
-      addresses.subregistrarBeacon,
+    subregistrarBeacon = await hre.upgrades.upgradeBeacon(
+      addresses.subdomainBeacon,
       migrationRegistrarFactory
     ) as MigrationRegistrar;
-    await subdomainRegistrar.deployed();
+    await subregistrarBeacon.deployed();
 
-    const implAddress = await hre.upgrades.beacon.getImplementationAddress(subdomainRegistrar.address);
+    const implAddress = await hre.upgrades.beacon.getImplementationAddress(subregistrarBeacon.address);
+
     const impl = migrationRegistrarFactory.attach(implAddress);
 
-    expect(impl.functions.burnDomains).to.exist;
+    const initTx = await impl.connect(signer).initialize(
+      hre.ethers.constants.AddressZero,
+      rootDomainId,
+      "Zero Name Service",
+      "ZNS",
+      hub.address
+    );
+    await initTx.wait()
+
+    const registerTx = await hub.addRegistrar(rootDomainId, implAddress);
+    await registerTx.wait();
+
+    const mintTx1 = await impl.connect(signer).mintDomain(rootDomainId, "tester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
+    const receipt1 = await mintTx1.wait();
+    const testerId = hre.ethers.BigNumber.from(receipt1.events![0].args!["tokenId"]);
+
+    const mintTx2 = await impl.connect(signer).mintDomain(rootDomainId, "zester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
+    const receipt2 = await mintTx2.wait();
+    const zesterId = hre.ethers.BigNumber.from(receipt2.events![0].args!["tokenId"]);
+
+    const burnTx = await impl.burnDomains(testerId, zesterId, signer.address, signer.address);
+    await burnTx.wait()
+
+    const testerExists = await impl.domainExists(testerId);
+    const zesterExists = await impl.domainExists(zesterId);
+
+    expect(testerExists).to.be.false;
+    expect(zesterExists).to.be.false;
   });
   it("3. Burn root and wilder domains on default registrar", async () => {
     // Goerli owner of
@@ -105,6 +133,7 @@ describe("Verify entire migration scenario", () => {
     );
     await tx.wait();
 
+    // Verify the burn
     const wilderExists = await defaultRegistrar.domainExists(addresses.wilderDomainId);
     expect(wilderExists).to.be.false;
 
@@ -113,11 +142,11 @@ describe("Verify entire migration scenario", () => {
   });
   it("4. Deploy new root registrar as beacon proxy to existing subdomain beacon", async () => {
     rootRegistrar = await hre.upgrades.deployBeaconProxy(
-      addresses.subregistrarBeacon,
+      addresses.subdomainBeacon,
       migrationRegistrarFactory,
       [
         hre.ethers.constants.AddressZero, // Parent registrar
-        hre.ethers.constants.HashZero, // root domain
+        rootDomainId,
         "Zer0 Namespace Service",
         "ZNS",
         hub.address
@@ -128,23 +157,34 @@ describe("Verify entire migration scenario", () => {
     // Must register the new Registrar on zNSHub in order to mint below.
     const tx = await hub.connect(signer).addRegistrar(hre.ethers.constants.HashZero, rootRegistrar.address);
     await tx.wait();
+
+    const authorizedRegistrar = await hub.authorizedRegistrars(rootRegistrar.address);
+    expect(authorizedRegistrar).to.be.true;
   });
   it("5. Mint wilder domain in new root registrar", async () => {
-    const tx = await rootRegistrar.connect(signer).mintDomain(
-      hre.ethers.constants.HashZero, // Parent domainId
-      "wilder",
-      signer.address,
-      "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
-      0,
-      false,
-      addresses.registrar
-    );
+    try {
+      const tx = await rootRegistrar.connect(signer).mintDomain(
+        hre.ethers.constants.HashZero, // Parent domainId
+        "wilder",
+        signer.address, // minter
+        "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
+        0,
+        false,
+        addresses.registrar,
+        {
+          gasLimit: 9000000
+        }
+      );
 
-    const receipt = await tx.wait();
-    const newWilderId = hre.ethers.BigNumber.from(receipt.events![0].args!["tokenId"]);
+      const receipt = await tx.wait();
+      const newWilderId = hre.ethers.BigNumber.from(receipt.events![0].args!["tokenId"]);
 
-    // Verify the address is the same to confirm no domain hierarchy is broken
-    expect(newWilderId.toString()).to.eq(addresses.wilderDomainId);
+      // Verify the address is the same to confirm no domain hierarchy is broken
+      expect(newWilderId.toString()).to.eq(addresses.wilderDomainId);
+    } catch (e) {
+      console.log(e)
+      throw Error;
+    }
   });
   it("6. Update the rootDomainId and parentRegistrar values on default registrar", async () => {
     const tx = await defaultRegistrar.connect(signer).setRootDomainIdAndParentRegistrar(
@@ -164,7 +204,7 @@ describe("Verify entire migration scenario", () => {
     const originalDefaultRegistrar = await hre.upgrades.upgradeProxy(addresses.registrar, registrarFactory) as Registrar;
     await originalDefaultRegistrar.deployed();
 
-    const originalSubdomainRegistrar = await hre.upgrades.upgradeBeacon(addresses.subregistrarBeacon, registrarFactory) as Registrar;
+    const originalSubdomainRegistrar = await hre.upgrades.upgradeBeacon(addresses.subdomainBeacon, registrarFactory) as Registrar;
     await originalSubdomainRegistrar.deployed();
 
     expect(originalDefaultRegistrar.functions).to.not.include(["burnDomains(uint256,uint256)"]);

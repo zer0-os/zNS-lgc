@@ -26,8 +26,6 @@ import { verifyContract } from "../../shared/helpers";
 
 const logger = getLogger("scripts::runMigration");
 
-// Different URL from tutorial?
-// https://github.com/safe-global/safe-core-sdk/blob/HEAD/guides/integrating-the-safe-core-sdk.md
 enum GnosisSafeUrls {
   goerli = "https://safe-transaction.goerli.gnosis.io",
   mainnet = "https://safe-transaction.gnosis.io"
@@ -52,7 +50,7 @@ const getEthAdapter = (signer: Signer) => {
 
 const getSafeServiceInstance = async (signer: Signer) => {
   const ethAdapter = getEthAdapter(signer);
-  const txServiceUrl = hre.network.name === "mainnet" ? GnosisSafeUrls.mainnet : GnosisSafeUrls.goerli
+  const txServiceUrl = hre.network.name === "mainnet" ? GnosisSafeUrls.mainnet : GnosisSafeUrls.goerli;
   const safeService = new SafeServiceClient({ txServiceUrl, ethAdapter });
   return safeService;
 
@@ -64,12 +62,14 @@ const getSafeSdkInstance = async (signer: Signer, safeAddress: string) => {
 }
 
 /**
+ * Attach to the Gnosis Safe SDK and create the transaction using the given 
+ * data before being proposed
  * 
- * @param safeAddress 
- * @param signer 
- * @param contract 
- * @param functionName 
- * @param params 
+ * @param safeAddress The address of the safe
+ * @param signer The transaction signer
+ * @param contract The contract executing the given function
+ * @param functionName The function to be executed
+ * @param params The parameters given to the function to be executed
  */
 const createAndProposeTransaction = async (
   safeAddress: string,
@@ -121,7 +121,7 @@ const proposeTransaction = async (
     value: "0",
     gasPrice: 1000000000, // 1 gwei
     safeTxGas: 60000,
-    // nonce: nonce
+    nonce: nonce
   }
 
   const safeTx = await safeSdk.createTransaction({ safeTransactionData });
@@ -156,7 +156,7 @@ export const runMigrationFromSafe = async (
   // Get required contract addresses
   const defaultRegistrarAddress = addresses.registrar;
   const zNSHubAddress = addresses.zNSHub;
-  const beaconAddress = addresses.subregistrarBeacon;
+  const beaconAddress = addresses.subdomainBeacon;
   const wilderDomainId = addresses.wilderDomainId;
   const safeAddress = addresses.safe.address;
 
@@ -174,18 +174,17 @@ export const runMigrationFromSafe = async (
   if (network !== "mainnet") {
     // To save on deployment fees when testing we can reuse the deployed migration registrar
     const migrationRegistrarAddress = "0x9B4e6264Ddf4bF41d42EbA23155808f463075AfE";
-    migrationRegistrar = migrationRegistrarFactory.attach(migrationRegistrarAddress)
+    migrationRegistrar = migrationRegistrarFactory.attach(migrationRegistrarAddress);
   } else {
     migrationRegistrar = await migrationRegistrarFactory.deploy();
     await migrationRegistrar.deployTransaction.wait(waitBlocks);
   }
 
-  await migrationRegistrar
-
   logger.log(`Migration Registrar deployed to ${migrationRegistrar.address}`);
 
   // Check before verifying so we don't unintentionally fail on hardhat due to no etherscan
-  if (network !== "hardhat" && network !== "goerli") {
+  // or on Goerli due to already having verified the contract from prior tests
+  if (network === "mainnet") {
     logger.log(`Verifying on Etherscan...`);
     try {
       await verifyContract(migrationRegistrar.address);
@@ -196,8 +195,6 @@ export const runMigrationFromSafe = async (
 
   // Get instance of Proxy Admin
   const proxyAdmin = await hre.upgrades.admin.getInstance();
-  // const beaconAddressThingy = await hre.upgrades.erc1967.getBeaconAddress()
-
   logger.log(`Proxy Admin is at ${proxyAdmin.address}`);
 
   logger.log("Comparing bytecode of Registrar and MigrationRegistrar for compatibility");
@@ -206,13 +203,20 @@ export const runMigrationFromSafe = async (
 
   logger.log("2. Upgrade existing proxies to have needed functionality");
 
-  logger.log(`2.a. Upgrade default registrar at ${defaultRegistrarAddress}?`);
+  logger.log(`2a. Upgrade default registrar at ${defaultRegistrarAddress}?`);
 
+  // Save these addresses for upgrading back to the original registrars at the end of this script
   const preMigrationRegistrarImpl = await hre.upgrades.erc1967.getImplementationAddress(defaultRegistrarAddress);
   const preMigrationBeaconRegistrarImpl = await hre.upgrades.beacon.getImplementationAddress(beaconAddress);
 
   confirmContinue();
 
+  /**
+   * ProxyAdmin.upgrade(proxyAddress, implementationAddress);
+   * 
+   * Proxy admin will upgrdae the proxy at `proxyAdress` to use
+   * the new implementation contract at `implementationAddress`
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -221,13 +225,19 @@ export const runMigrationFromSafe = async (
     [defaultRegistrarAddress, migrationRegistrar.address],
   );
 
-  logger.log(`2.b. Upgrade beacon registrar at ${beaconAddress}?`);
+  logger.log(`2b. Upgrade subdomain registrar at ${beaconAddress}?`);
 
   confirmContinue();
 
   const beaconFactory = await getUpgradeableBeaconFactory(hre, signer);
   const beacon = await beaconFactory.attach(beaconAddress);
 
+  /**
+   * Call Beacon.upgradeTo(implementationAddress);
+   * 
+   * Beacon will update the implementation image used for creating any
+   * beacon proxies to use the new contract at `implementationAddress`
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -236,16 +246,26 @@ export const runMigrationFromSafe = async (
     [migrationRegistrar.address],
   );
 
-  // logger.log(`Successfully proposed upgrade of beacon Registrars --> MigrationRegistrar to Gnosis Safe`);
-
   logger.log("3. Burn root and wilder domains on default registrar?");
   confirmContinue();
 
+  /**
+   * Attaching to the given address with the MigrationRegistrar factory 
+   * will assume that the above upgrade of the default registrar has been executed.
+   * If we execute out of order transactions then below will fail as `burnDomains` does not
+   * exist on that contract
+   */
   const upgradedDefaultRegistrar = migrationRegistrarFactory.attach(defaultRegistrarAddress);
 
   const wilderOwner = "0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C";
   const rootOwner = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
 
+  /**
+   * Call migrationRegistrar.burnDomains(domainIdA, domainIdB, ownerA, ownerB);
+   * 
+   * Will perform a transfer of both given token IDs from their respective owners to the
+   * zero address.
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -254,12 +274,12 @@ export const runMigrationFromSafe = async (
     [wilderDomainId, rootDomainId, wilderOwner, rootOwner],
   );
 
-  // logger.log(`Successfully proposed burning of wilder domain ID and root domain ID on default registrar`);
-
   logger.log("4a. Deploy new root registrar as proxy to existing subdomain registrar beacon?");
 
   confirmContinue();
 
+  // Attach at an already deployed address if we are just testing.
+  // Otherwise, call to deploy a new beacon proxy
   let rootRegistrar: MigrationRegistrar;
   if (network !== "mainnet") {
     const rootRegistrarAddress = "0x539c41ea6297C9Af7195EdD743495E281E31DC97";
@@ -279,7 +299,7 @@ export const runMigrationFromSafe = async (
     await rootRegistrar.deployTransaction.wait(waitBlocks);
   }
 
-  if (network !== "hardhat" && network !== "goerli") {
+  if (network === "mainnet") {
     logger.log(`Verifying on Etherscan...`);
     try {
       await verifyContract(rootRegistrar.address);
@@ -293,6 +313,12 @@ export const runMigrationFromSafe = async (
   logger.log("4b. Register the new Registrar on zNSHub?");
   confirmContinue();
 
+  /**
+   * Call znsHub.addRegistrar(rootDomainId, registrarAddress);
+   * 
+   * Register the new registrar at `registrarAddress` with 
+   * zNSHub to allow management of domains
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -305,6 +331,11 @@ export const runMigrationFromSafe = async (
 
   confirmContinue();
 
+  /**
+   * Call rootRegistrar.mintDomain(parentDomainId,label,minter,metadataUri,royaltyAmount,locked,subdomainContract)
+   * 
+   * Will mint new domain with as `label` under `parentDomain`
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -317,7 +348,7 @@ export const runMigrationFromSafe = async (
       "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
       0,
       false,
-      rootRegistrar.address
+      defaultRegistrarAddress
     ]
   );
 
@@ -331,7 +362,7 @@ export const runMigrationFromSafe = async (
     upgradedDefaultRegistrar,
     "setRootDomainIdAndParentRegistrar(uint256,address)",
     [
-      ethers.constants.HashZero,
+      rootDomainId,
       rootRegistrar.address
     ]
   );
@@ -340,6 +371,14 @@ export const runMigrationFromSafe = async (
   logger.log("7a. Upgrade default registrar back to original Registrar?");
   confirmContinue();
 
+  /**
+   * ProxyAdmin.upgrade(proxyAddress, implementationAddress);
+   * 
+   * Proxy admin will upgrade the proxy at `proxyAdress` to use
+   * the new implementation contract at `implementationAddress`
+   * 
+   * This will upgrade to the original registrar version
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,
@@ -351,6 +390,14 @@ export const runMigrationFromSafe = async (
   logger.log("7b. Upgrade beacon registrars to original Registrar?");
   confirmContinue();
 
+  /**
+   * Call Beacon.upgradeTo(implementationAddress);
+   * 
+   * Beacon will update the implementation image used for creating any
+   * beacon proxies to use the new contract at `implementationAddress`
+   * 
+   * This will upgrade to the original registrar version
+   */
   await createAndProposeTransaction(
     safeAddress,
     signer,

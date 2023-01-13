@@ -257,8 +257,19 @@ export const runMigrationFromSafe = async (
    */
   const upgradedDefaultRegistrar = migrationRegistrarFactory.attach(defaultRegistrarAddress);
 
-  const wilderOwner = "0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C";
-  const rootOwner = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
+  let wilderOwner: string;
+  let rootOwner: string;
+
+  if (network === "mainnet") {
+    // Management Account
+    wilderOwner = "0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C";
+    // Deplyer 2
+    rootOwner = "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471";
+  } else {
+    // Astro Test
+    wilderOwner = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53"
+    rootOwner = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53"
+  }
 
   /**
    * Call migrationRegistrar.burnDomains(domainIdA, domainIdB, ownerA, ownerB);

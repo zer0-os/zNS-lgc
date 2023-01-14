@@ -96,9 +96,9 @@ const config: HardhatUserConfig = {
       //     balance: "10000000000000000000000",
       //   },
       // ],
-      chainId: 5, // to make it think it's goerli
+      // chainId: 5, // to make hardhat think it's using goerli
       forking: {
-        url: `https://goerli.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+        url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },
       allowUnlimitedContractSize: true
     },

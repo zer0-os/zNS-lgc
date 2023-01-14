@@ -7,6 +7,9 @@ const addresses = {
     proxyAdmin: "0xf05362726F7aE801E6e395Ac562E9D38700F7f94", // is the owner the safe?
     subdomainBeacon: "0x4CD06F23e9Cc5658acCa6D5d681511f3d5616bc9",
     wilderDomainId: "11498710528894704621672125451994986004212771421624589370395108607834545240891",
+    wilderDomainOwner: "0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C",
+    rootDomainId: "0",
+    rootDomainOwner: "0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471",
     safe: {
       address: "0x1A1d3644fc9906B1EE3d35842789A83D33e99943",
       multiSendAddress: "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
@@ -22,6 +25,9 @@ const addresses = {
     proxyAdmin: "0xcDb3C5e9b4760f93437aBaD33dBEC9a2cE3704f6", // also owned by safe
     subdomainBeacon: "0x9e20B753d87c4B6632394566EcbE7453B5404871",
     wilderDomainId: "11498710528894704621672125451994986004212771421624589370395108607834545240891",
+    wilderDomainOwner: "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53",
+    rootDomainId: "0",
+    rootDomainOwner: "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53",
     safe: {
       address: "0x7336eF6E88A994182853fFb1fd0A779b16d02945",
       multiSendAddress: "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
@@ -34,9 +40,9 @@ const addresses = {
 
 // Use Rinkeby addresses for hardhat testing locally
 export const getAddressesForNetwork = (network: string) => {
-  if (network === "mainnet") {
+  if (network === "mainnet" || network === "hardhat") {
     return addresses.mainnet;
-  } else if (network === "goerli" || network === "hardhat") {
+  } else if (network === "goerli") {
     return addresses.goerli
   } else {
     throw Error(`Network '${network}' not supported.`);

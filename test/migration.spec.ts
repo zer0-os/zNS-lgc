@@ -12,6 +12,8 @@ import chai from "chai";
 
 import { getAddressesForNetwork } from "../scripts/rootMigration/actions/addresses";
 
+import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
+
 const { expect } = chai;
 
 // create a test that runs through the entire migration process
@@ -41,10 +43,8 @@ describe("Verify entire migration scenario", () => {
   let signer: SignerWithAddress;
 
   let addresses = getAddressesForNetwork(hre.network.name);
-  const astroAddress = "0x35888AD3f1C0b39244Bb54746B96Ee84A5d97a53"
-  const rootDomainId = "0"
 
-  // Effects from goerli
+  // Contracts we interact with in the migration
   let defaultRegistrar: MigrationRegistrar;
   let subregistrarBeacon: MigrationRegistrar;
   let rootRegistrar: MigrationRegistrar;
@@ -54,16 +54,20 @@ describe("Verify entire migration scenario", () => {
 
     // Registrar owner is the gnosis safe
     signer = await hre.ethers.getImpersonatedSigner(addresses.registrarOwner);
+    await setBalance(signer.address, hre.ethers.BigNumber.from("10000000000000000000000").toHexString())
 
     migrationRegistrarFactory = new MigrationRegistrar__factory(signer);
 
     registrarFactory = new Registrar__factory(signer);
-    // registrar = registrarFactory.attach(addresses.registrar);
 
     hubFactory = new ZNSHub__factory(signer);
     hub = hubFactory.attach(addresses.zNSHub);
   });
   it("2. Upgrades the wild and subdomain registrars", async () => {
+
+    // If forking mainnet, the proxy for the registrar does not have it's implementation register in the manifest.
+    await hre.upgrades.forceImport(addresses.registrar, registrarFactory)
+
     // 2.a. Upgrade default Registrar
     defaultRegistrar = await hre.upgrades.upgradeProxy(
       addresses.registrar,
@@ -86,21 +90,21 @@ describe("Verify entire migration scenario", () => {
 
     const initTx = await impl.connect(signer).initialize(
       hre.ethers.constants.AddressZero,
-      rootDomainId,
+      addresses.rootDomainId,
       "Zero Name Service",
       "ZNS",
       hub.address
     );
     await initTx.wait()
 
-    const registerTx = await hub.addRegistrar(rootDomainId, implAddress);
+    const registerTx = await hub.addRegistrar(addresses.rootDomainId, implAddress);
     await registerTx.wait();
 
-    const mintTx1 = await impl.connect(signer).mintDomain(rootDomainId, "tester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
+    const mintTx1 = await impl.connect(signer).mintDomain(addresses.rootDomainId, "tester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
     const receipt1 = await mintTx1.wait();
     const testerId = hre.ethers.BigNumber.from(receipt1.events![0].args!["tokenId"]);
 
-    const mintTx2 = await impl.connect(signer).mintDomain(rootDomainId, "zester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
+    const mintTx2 = await impl.connect(signer).mintDomain(addresses.rootDomainId, "zester", signer.address, "ipfs://Qm", 0, false, hre.ethers.constants.AddressZero);
     const receipt2 = await mintTx2.wait();
     const zesterId = hre.ethers.BigNumber.from(receipt2.events![0].args!["tokenId"]);
 
@@ -127,9 +131,9 @@ describe("Verify entire migration scenario", () => {
 
     const tx = await defaultRegistrar.connect(signer).burnDomains(
       addresses.wilderDomainId,
-      rootDomainId,
-      astroAddress,
-      astroAddress
+      addresses.rootDomainId,
+      addresses.wilderDomainOwner,
+      addresses.rootDomainOwner
     );
     await tx.wait();
 
@@ -146,7 +150,7 @@ describe("Verify entire migration scenario", () => {
       migrationRegistrarFactory,
       [
         hre.ethers.constants.AddressZero, // Parent registrar
-        rootDomainId,
+        addresses.rootDomainId,
         "Zer0 Namespace Service",
         "ZNS",
         hub.address
@@ -162,29 +166,24 @@ describe("Verify entire migration scenario", () => {
     expect(authorizedRegistrar).to.be.true;
   });
   it("5. Mint wilder domain in new root registrar", async () => {
-    try {
-      const tx = await rootRegistrar.connect(signer).mintDomain(
-        hre.ethers.constants.HashZero, // Parent domainId
-        "wilder",
-        signer.address, // minter
-        "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
-        0,
-        false,
-        addresses.registrar,
-        {
-          gasLimit: 9000000
-        }
-      );
+    const tx = await rootRegistrar.connect(signer).mintDomain(
+      hre.ethers.constants.HashZero, // Parent domainId
+      "wilder",
+      signer.address, // minter
+      "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/0",
+      0,
+      false,
+      addresses.registrar,
+      {
+        gasLimit: 9000000
+      }
+    );
 
-      const receipt = await tx.wait();
-      const newWilderId = hre.ethers.BigNumber.from(receipt.events![0].args!["tokenId"]);
+    const receipt = await tx.wait();
+    const newWilderId = hre.ethers.BigNumber.from(receipt.events![0].args!["tokenId"]);
 
-      // Verify the address is the same to confirm no domain hierarchy is broken
-      expect(newWilderId.toString()).to.eq(addresses.wilderDomainId);
-    } catch (e) {
-      console.log(e)
-      throw Error;
-    }
+    // Verify the address is the same to confirm no domain hierarchy is broken
+    expect(newWilderId.toString()).to.eq(addresses.wilderDomainId);
   });
   it("6. Update the rootDomainId and parentRegistrar values on default registrar", async () => {
     const tx = await defaultRegistrar.connect(signer).setRootDomainIdAndParentRegistrar(
@@ -196,7 +195,7 @@ describe("Verify entire migration scenario", () => {
     const rootDomainIdAfterUpdate = await defaultRegistrar.rootDomainId();
     const parentRegistrarAfterUpdate = await defaultRegistrar.parentRegistrar();
 
-    expect(rootDomainIdAfterUpdate.toString()).to.eq(rootDomainId);
+    expect(rootDomainIdAfterUpdate.toString()).to.eq(addresses.rootDomainId);
     expect(parentRegistrarAfterUpdate.toString()).to.eq(rootRegistrar.address);
   });
   it("7. Upgrade registrars back to original version, post-migration", async () => {

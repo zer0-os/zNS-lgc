@@ -65,10 +65,10 @@ describe("Verify entire migration scenario", () => {
   });
   it("2. Upgrades the wild and subdomain registrars", async () => {
 
-    // If forking mainnet, the proxy for the registrar does not have it's implementation register in the manifest.
+    // The proxy for the registrar does not have it's implementation registered in the manifest.
     await hre.upgrades.forceImport(addresses.registrar, registrarFactory)
 
-    // 2.a. Upgrade default Registrar
+    // 2a. Upgrade default Registrar
     defaultRegistrar = await hre.upgrades.upgradeProxy(
       addresses.registrar,
       migrationRegistrarFactory,
@@ -77,7 +77,7 @@ describe("Verify entire migration scenario", () => {
 
     expect(defaultRegistrar.functions.burnDomains).to.exist;
 
-    // 2.b. Upgrade subdomain Registrar
+    // 2b. Upgrade subdomain Registrar
     subregistrarBeacon = await hre.upgrades.upgradeBeacon(
       addresses.subdomainBeacon,
       migrationRegistrarFactory
@@ -118,17 +118,6 @@ describe("Verify entire migration scenario", () => {
     expect(zesterExists).to.be.false;
   });
   it("3. Burn root and wilder domains on default registrar", async () => {
-    // Goerli owner of
-    // rootDomain: astro
-    // wilderDomain: astro
-
-    // Mainnet owner of:
-    // rootDomain: 0x7829Afa127494Ca8b4ceEF4fb81B78fEE9d0e471
-    // wilderDomain: 0x6aD1b4d3C39939F978Ea5cBaEaAD725f9342089C
-
-    // A: transfer ownership of domains to gnosis safe                  [ ]
-    // B: Modify migration registrar code to also take owner addresses  [X]
-
     const tx = await defaultRegistrar.connect(signer).burnDomains(
       addresses.wilderDomainId,
       addresses.rootDomainId,

@@ -1,7 +1,7 @@
 import { ethers, network, run } from "hardhat";
 import { Registrar, Registrar__factory } from "../../typechain";
 import * as fs from "fs";
-import { DeploymentOutput, deploymentsFolder, getLogger } from "../../utilities";
+import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 
 const logger = getLogger("src::add-basic-controller");
 

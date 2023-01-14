@@ -10,7 +10,7 @@ import {
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../../utilities";
+} from "../utilities";
 
 import {
   hashBytecodeWithoutMetadata,

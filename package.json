@@ -7,7 +7,7 @@
     "contracts",
     "src",
     "typechain",
-    "utilities",
+    "src/utilities",
     "hardhat.config.ts"
   ],
   "scripts": {

@@ -2,7 +2,7 @@ import * as hre from "hardhat";
 import { ethers } from "hardhat";
 
 import { Registrar__factory } from "../../typechain";
-import { getLogger } from "../../utilities";
+import { getLogger } from "../utilities";
 import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
 import { confirmContinue } from "../shared/helpers";
 import { domainConfigs } from "./config";

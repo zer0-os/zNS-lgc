@@ -1,6 +1,6 @@
 import * as hre from "hardhat";
 import { Registrar__factory } from "../../typechain";
-import { getLogger } from "../../utilities";
+import { getLogger } from "../utilities";
 
 async function main() {
   const logger = getLogger("src::deploy-subregistrar-beacon");

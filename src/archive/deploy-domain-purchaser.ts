@@ -4,7 +4,7 @@ import {
   hashBytecodeWithoutMetadata,
   Manifest,
 } from "@openzeppelin/upgrades-core";
-import { getLogger } from "../../utilities";
+import { getLogger } from "../utilities";
 import { DomainPurchaser__factory } from "../../typechain";
 
 const logger = getLogger("src::deploy-domain-purchaser");

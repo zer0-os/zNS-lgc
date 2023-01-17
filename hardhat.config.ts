@@ -96,7 +96,9 @@ const config: HardhatUserConfig = {
       //     balance: "10000000000000000000000",
       //   },
       // ],
-      // chainId: 5, // to make hardhat think it's using goerli
+      // chainId: 5,
+      // For testing through the Gnosis Safe we need to change the chainId so HH thinks it's using Goerli
+      // but this will mean any deployments will be written to the Goerli manifest, even if not real. 
       forking: {
         url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },

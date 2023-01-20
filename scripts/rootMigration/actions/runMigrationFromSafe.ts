@@ -302,8 +302,8 @@ export const runMigrationFromSafe = async (
       [
         hre.ethers.constants.AddressZero, // Parent registrar
         rootDomainId,
-        "Zer0 Namespace Service",
-        "ZNS",
+        "Zero Name Service",
+        "zNS",
         zNSHub.address
       ]
     ) as MigrationRegistrar;

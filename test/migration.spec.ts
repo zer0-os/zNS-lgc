@@ -140,8 +140,8 @@ describe("Verify entire migration scenario", () => {
       [
         hre.ethers.constants.AddressZero, // Parent registrar
         addresses.rootDomainId,
-        "Zer0 Namespace Service",
-        "ZNS",
+        "Zero Name Service",
+        "zNS",
         hub.address
       ]) as MigrationRegistrar;
 

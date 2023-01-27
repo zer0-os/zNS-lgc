@@ -352,16 +352,8 @@ describe("zNAResolver", function () {
   });
 
   describe("Check for parameter validation", async function () {
-    it("Should allow to use valid zNA", async function () {
-      await expect(
-        zNAResolver
-          .connect(zNAOwner)
-          .associateWithResourceType(
-            fake_wilder_beasts,
-            RESOURCE_TYPE_DAO,
-            resourceID1
-          )
-      ).to.be.revertedWith("Invalid zNA");
+    it("Should allow to use valid zNA", function () {
+      expect(true).to.be.false;
     });
 
     it("Should allow to use valid resource type", async function () {

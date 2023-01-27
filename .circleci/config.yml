@@ -1,38 +1,23 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@4.7.0
-
-defaults: &defaults
-  working_directory: ~/repo
-  docker:
-    - image: circleci/node:14.17.5
+  node: circleci/node@5.1.0
 
 jobs:
   test:
-    <<: *defaults
+    docker:
+      - image: cimg/node:18.12
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
-      - run: yarn build
-      - persist_to_workspace:
-          root: ~/repo
-          paths: .
-  publish:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/repo
       - run:
-          name: Publish to NPM
-          command: yarn publish --access public --non-interactive
+        name: Run Tests
+        command: yarn test
 
 workflows:
   version: 2
-  build:
+  run_tests:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: master
+      - test
+

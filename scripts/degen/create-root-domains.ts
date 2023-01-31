@@ -1,7 +1,11 @@
 import * as hre from "hardhat";
 import { ethers } from "hardhat";
 
-import { Registrar, Registrar__factory, ZNSHub__factory } from "../../typechain";
+import {
+  Registrar,
+  Registrar__factory,
+  ZNSHub__factory,
+} from "../../typechain";
 import { getLogger } from "../../utilities";
 import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
 import { confirmContinue } from "../shared/helpers";
@@ -9,6 +13,9 @@ import { domainConfigs } from "./config";
 
 const logger = getLogger("scripts::create-degen-root-domains");
 
+/**
+ * Please make sure that create Degen root domains after root migration
+ */
 const main = async () => {
   const [deployer] = await hre.ethers.getSigners();
 
@@ -27,7 +34,6 @@ const main = async () => {
     const beaconAddress = addresses.zNS.subregistrarBeacon!;
 
     const config = domainConfigs[hre.network.name];
-    const parentId = ethers.constants.HashZero;
 
     for (const label of Object.keys(config)) {
       const domainConfig = config[label];
@@ -42,7 +48,7 @@ const main = async () => {
       console.table([
         {
           Label: "Parent registrar",
-          Info: domainConfig.parentRegistrar
+          Info: domainConfig.parentRegistrar,
         },
         {
           Label: "Domain Id",
@@ -72,36 +78,24 @@ const main = async () => {
 
       confirmContinue();
 
-      const parentRegistrar = domainConfig.parentRegistrar ?
-        domainConfig.parentRegistrar :
-        registrarAddress;
+      const parentRegistrar = domainConfig.parentRegistrar
+        ? domainConfig.parentRegistrar
+        : registrarAddress;
 
       logger.log("Deploying Registrar for new domain as Beacon!");
-      const registrar = await hre.upgrades.deployBeaconProxy(
+      const registrar = (await hre.upgrades.deployBeaconProxy(
         beaconAddress,
         new Registrar__factory(deployer),
         [
           parentRegistrar, // Parent registrar
-          parentId,
+          domainConfig.id, // Root domain id
           "Zero Name Service",
           "zNS",
-          zNSHub.address
+          zNSHub.address,
         ]
-      ) as Registrar;
+      )) as Registrar;
       await registrar.deployTransaction.wait(3);
       logger.log(`Registrar deployed at ${registrar.address}`);
-
-      // logger.log(`Registering subdomain as Beacon: ${domainConfig.label}`);
-      // const tx = await registrar.registerSubdomainContract(
-      //   parentId,
-      //   domainConfig.label,
-      //   domainConfig.minter,
-      //   domainConfig.metadataUri,
-      //   0,
-      //   false,
-      //   domainConfig.minter
-      // );
-      // await tx.wait();
 
       logger.log(`Successfully registered new domain: ${domainConfig.label}`);
     }

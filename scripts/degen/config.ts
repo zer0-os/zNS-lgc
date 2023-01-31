@@ -1,7 +1,9 @@
 interface RootDomainConfig {
   /**
-   * When burning root domains, burn out subdomain(0://degen) from parent registrar.
-   * When creating root domains, if undefined, deploy new Registrar contract and create root domains under new Registrar by calling `registerSubdomainContract`.
+   * When burning root domains, parent registrar is the registrar contract
+   * where the root domains(0://degen, 0://dgen) will be burning out.
+   * When creating root domains, parent registrar is the registrar contract
+   * where all the root domains(0://wilder, 0://degen, 0://dgen) exist.
    */
   parentRegistrar?: string | undefined;
   id: string;

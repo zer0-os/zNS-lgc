@@ -19,6 +19,7 @@
     "@zero-tech/zero-contracts": "0.0.7",
     "chai": "4.3.6",
     "cli-interact": "0.1.9",
+    "defender-relay-client": "^1.38.0",
     "dotenv": "8.2.0",
     "eslint": "7.21.0",
     "eslint-plugin-prettier": "3.3.1",

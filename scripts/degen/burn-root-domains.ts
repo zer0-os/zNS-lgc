@@ -84,6 +84,8 @@ const main = async () => {
     }
 
     logger.log("Congratulations! Burned domains successfully!");
+  } else {
+    throw Error("Bad network");
   }
 };
 

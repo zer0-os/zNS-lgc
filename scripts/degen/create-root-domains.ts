@@ -101,6 +101,8 @@ const main = async () => {
     }
 
     logger.log("Congratulations! You created domains successfully!");
+  } else {
+    throw Error("Bad network");
   }
 };
 

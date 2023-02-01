@@ -136,8 +136,8 @@ const proposeTransaction = async (
     to: to,
     data: data,
     value: "0",
-    gasPrice: 1000000000, // 1 gwei
-    safeTxGas: 60000,
+    gasPrice: 0, // optional
+    safeTxGas: 0,
     nonce: nonce
   }
 

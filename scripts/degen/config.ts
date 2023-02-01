@@ -1,3 +1,5 @@
+import { EthereumNetwork } from "../shared/config";
+
 interface RootDomainConfig {
   /**
    * When burning root domains, parent registrar is the registrar contract
@@ -13,7 +15,7 @@ interface RootDomainConfig {
 }
 
 type RootDomainConfigs = {
-  [network: string]: {
+  [network in EthereumNetwork]: {
     [domain: string]: RootDomainConfig;
   };
 };

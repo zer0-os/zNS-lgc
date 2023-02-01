@@ -1,14 +1,9 @@
 import * as hre from "hardhat";
-import { ethers } from "hardhat";
-import {
-  DefenderRelaySigner,
-  DefenderRelayProvider,
-} from "defender-relay-client/lib/ethers";
 
-import { Registrar__factory, ZNSHub__factory } from "../../typechain";
+import { Registrar__factory } from "../../typechain";
 import { getLogger } from "../../utilities";
 import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
-import { confirmContinue } from "../shared/helpers";
+import { confirmContinue, createAndProposeTransaction } from "../shared/helpers";
 import { domainConfigs } from "./config";
 
 const logger = getLogger("scripts::burn-degen-root-domains");
@@ -24,18 +19,8 @@ const main = async () => {
 
     const config = domainConfigs[hre.network.name];
 
-    // Create Defender Relayer Clients
-    const credentials = {
-      apiKey: process.env.RELAY_API_KEY!,
-      apiSecret: process.env.RELAY_SECRET_KEY!,
-    };
-    const provider = new DefenderRelayProvider(credentials);
-    const signer = new DefenderRelaySigner(credentials, provider, {
-      speed: "fast",
-    });
-    const signerAddress = await signer.getAddress();
-
-    logger.log(`Using Defender Relay Signer address ${signerAddress}`);
+    logger.log(`Using Signer address ${deployer.address}`);
+    logger.log(`Please make sure signer is one of the Gnosis Safe owner`);
 
     for (const label of Object.keys(config)) {
       const domainConfig = config[label];
@@ -50,14 +35,8 @@ const main = async () => {
       logger.log(
         `Checking if signer is the owner of Registrar ${registrarAddress} ...`
       );
-      const registrar = Registrar__factory.connect(registrarAddress, signer);
+      const registrar = Registrar__factory.connect(registrarAddress, deployer);
       const owner = await registrar.owner();
-      if (
-        owner.toLowerCase().localeCompare(signerAddress.toLowerCase()) !== 0
-      ) {
-        logger.error(`Signer is not owner address for ${label}`);
-        continue;
-      }
 
       const exists = await registrar.domainExists(domainConfig.id);
       if (!exists) {
@@ -72,6 +51,10 @@ const main = async () => {
           Info: registrarAddress,
         },
         {
+          Label: "Gnosis Safe(owner)",
+          Info: owner,
+        },
+        {
           Label: "Domain Id",
           Info: domainConfig.id,
         },
@@ -83,10 +66,21 @@ const main = async () => {
 
       confirmContinue();
 
-      const tx = await registrar.adminBurnToken(domainConfig.id);
-      await tx.wait();
+      /**
+       * await registrar.adminBurnToken(domainConfig.id)
+       * 
+       * Registrar will burn token by owner
+       */
+      await createAndProposeTransaction(
+        hre.network.name,
+        owner,
+        deployer,
+        registrar,
+        "adminBurnToken(uint256)",
+        [domainConfig.id],
+      );
 
-      logger.log(`Successfully burned domain: ${domainConfig.label}`);
+      logger.log(`Successfully proposed to burn domain: ${domainConfig.label}`);
     }
 
     logger.log("Congratulations! Burned domains successfully!");

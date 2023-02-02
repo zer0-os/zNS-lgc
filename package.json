@@ -48,7 +48,8 @@
     "ts-generator": "0.1.1",
     "ts-node": "9.1.1",
     "typechain": "7.0.0",
-    "typescript": "4.1.4"
+    "typescript": "4.1.4",
+    "web3": "^1.8.2"
   },
   "scripts": {
     "postinstall": "hardhat typechain",

@@ -124,7 +124,12 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       accounts: process.env.TESTNET_PRIVATE_KEY
-        ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+        ? [
+          `0x${process.env.TESTNET_PRIVATE_KEY_A}`,
+          `0x${process.env.TESTNET_PRIVATE_KEY_B}`,
+          `0x${process.env.TESTNET_PRIVATE_KEY_C}`,
+          `0x${process.env.TESTNET_PRIVATE_KEY_D}`,
+        ]
         : [],
       url: "https://goerli.infura.io/v3/fa959ead3761429bafa6995a4b25397e",
     },

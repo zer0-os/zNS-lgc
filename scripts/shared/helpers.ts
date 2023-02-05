@@ -45,10 +45,10 @@ export const calculateGasMargin = (
     .div(ethers.BigNumber.from(10000));
 };
 
-export const confirmContinue = () => {
+export const confirmContinue = (prompt = 'Proceed?'): void => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const input = require("cli-interact").getYesNo;
-  const val: boolean = input(`Proceed?`);
+  const val: boolean = input(prompt);
 
   if (!val) {
     exit();

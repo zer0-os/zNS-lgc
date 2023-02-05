@@ -95,7 +95,7 @@ const main = async () => {
         ]
       )) as Registrar;
       await registrar.deployTransaction.wait(3);
-      logger.log(`Registrar deployed at ${registrar.address}`);
+      logger.log(`Registrar(${domainConfig.label}) deployed at ${registrar.address}`);
 
       logger.log(`Successfully registered new domain: ${domainConfig.label}`);
     }

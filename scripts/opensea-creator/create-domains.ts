@@ -6,7 +6,7 @@ import {
   ZNSHub__factory,
 } from "../../typechain";
 import { getLogger } from "../../utilities";
-import { confirmContinue } from "../shared/helpers";
+import { confirmContinue, calculateGasMargin } from "../shared/helpers";
 import { DomainKind, mintSenario, TestAccounts } from "./config";
 
 const logger = getLogger("scripts::opensea-creator");
@@ -21,7 +21,7 @@ const main = async () => {
     logger.log(`Using deployer addresses ${deployer.address}`);
   }
 
-  if (hre.network.name === "goerli" && deployers.length >= 4) {
+  if (hre.network.name === "goerli" && deployers.length >= 5) {
     const signers = {
       [TestAccounts.AccountA]: deployers[1],
       [TestAccounts.AccountB]: deployers[2],
@@ -40,7 +40,7 @@ const main = async () => {
     for (const mintConfig of mintSenario) {
       const exists = await zNSHub.domainExists(mintConfig.id);
       if (exists) {
-        logger.error(`${mintConfig.label} domain already exists`);
+        logger.error(`${mintConfig.name} domain already exists`);
         continue;
       }
 
@@ -48,7 +48,7 @@ const main = async () => {
       console.table([
         {
           Label: "tx.origin",
-          Info: mintConfig["tx.origin"],
+          Info: signers[mintConfig["tx.origin"]].address,
         },
         {
           Label: "Domain name",
@@ -68,7 +68,7 @@ const main = async () => {
         },
         {
           Label: "Domain Kind",
-          Info: mintConfig.domainKind,
+          Info: mintConfig.domainKind == DomainKind.BeaconDomain ? "BeaconDomain" : "PureDomain",
         },
         {
           Label: "Royalty amount",
@@ -80,15 +80,31 @@ const main = async () => {
         },
         {
           Label: "Send to user",
-          Info: mintConfig.sendToUser
+          Info: signers[mintConfig.sendToUser].address
         },
       ]);
 
-      confirmContinue();
+      let registrarAddress = await zNSHub.subdomainRegistrars(mintConfig.parentId);
+      if (registrarAddress == ethers.constants.AddressZero) {
+        registrarAddress = await zNSHub.getRegistrarForDomain(mintConfig.parentId);
+      }
+      logger.info(`Registrar for domain ${mintConfig.name}: ${registrarAddress}`);
 
-      const registrarAddress = await zNSHub.getRegistrarForDomain(mintConfig.id);
       const registrar = Registrar__factory.connect(registrarAddress, signers[mintConfig["tx.origin"]]);
       if (mintConfig.domainKind === DomainKind.BeaconDomain) {
+        logger.info(`Deploying Beacon domain...`);
+        confirmContinue();
+
+        const estimatedGas = await registrar.estimateGas.registerSubdomainContract(
+          mintConfig.parentId,
+          mintConfig.label,
+          signers[mintConfig["tx.origin"]].address,
+          mintConfig.metadataUri,
+          0, 
+          false,
+          signers[mintConfig.sendToUser].address,
+        );
+        logger.info(`Estimated gas: ${estimatedGas.toString()}`);
         const tx = await registrar.registerSubdomainContract(
           mintConfig.parentId,
           mintConfig.label,
@@ -97,10 +113,17 @@ const main = async () => {
           0, 
           false,
           signers[mintConfig.sendToUser].address,
+          {
+            gasLimit: calculateGasMargin(estimatedGas)
+          }
         );
+        logger.info(`Waiting tx: ${tx.hash}`);
         await tx.wait(3);
       } else if (mintConfig.domainKind === DomainKind.PureDomain) {
-        const tx = await registrar.registerDomainAndSend(
+        logger.info(`Deploying Pure domain...`);
+        confirmContinue();
+
+        const estimatedGas = await registrar.estimateGas.registerDomainAndSend(
           mintConfig.parentId,
           mintConfig.label,
           signers[mintConfig["tx.origin"]].address,
@@ -109,10 +132,24 @@ const main = async () => {
           false,
           signers[mintConfig.sendToUser].address,
         );
+        logger.info(`Estimated gas: ${estimatedGas.toString()}`);
+        const tx = await registrar.registerDomainAndSend(
+          mintConfig.parentId,
+          mintConfig.label,
+          signers[mintConfig["tx.origin"]].address,
+          mintConfig.metadataUri,
+          0, 
+          false,
+          signers[mintConfig.sendToUser].address,
+          {
+            gasLimit: calculateGasMargin(estimatedGas)
+          }
+        );
+        logger.info(`Waiting tx: ${tx.hash}`);
         await tx.wait(3);
       }
 
-      logger.log(`Successfully registered new domain: ${mintConfig.label}`);
+      logger.log(`Successfully registered new domain: ${mintConfig.name}`);
     }
 
     logger.log("Congratulations! You created domains successfully!");

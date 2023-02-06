@@ -26,7 +26,7 @@ interface MintDomainConfig {
 export const mintSenario: MintDomainConfig[] = [
   {
     "tx.origin": TestAccounts.AccountA,
-    id: "0x196c0a1e30004b9998c97b363e44f1f4e97497e59d52ad151208e9393d70bb3b", // wilder
+    id: "0x196c0a1e30004b9998c97b363e44f1f4e97497e59d52ad151208e9393d70bb3b",
     parentId: ethers.constants.HashZero,
     label: "wilder",
     name: "wilder",
@@ -36,52 +36,52 @@ export const mintSenario: MintDomainConfig[] = [
   },
   {
     "tx.origin": TestAccounts.AccountB,
-    id: "0x79e5bdb3f024a898df02a5472e6fc5373e6a3c5f65317f58223a579d518378df", // wilder.kicks
+    id: "0x2c8c7428bc02f30bce3c83a7e781e6e622a3ff37ba4161179bd63b9554799cc8",
     parentId: "0x196c0a1e30004b9998c97b363e44f1f4e97497e59d52ad151208e9393d70bb3b", // wilder
-    label: "kicks",
-    name: "wilder.kicks",
-    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/5",
+    label: "concept",
+    name: "wilder.concept",
+    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/110",
     sendToUser: TestAccounts.AccountB,
     domainKind: DomainKind.BeaconDomain,
   },
   {
     "tx.origin": TestAccounts.AccountC,
-    id: "0x9ef46671e570343a0149dcff31e10f195790e504de5b6a6b8a5578da5cc2a54c", // wilder.kicks.airwild
-    parentId: "0x79e5bdb3f024a898df02a5472e6fc5373e6a3c5f65317f58223a579d518378df", // wilder.kicks
-    label: "airwild",
-    name: "wilder.kicks.airwild",
-    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/6",
+    id: "0x577547c6712ef7f054d8d593d46fa708f6cd8c455c707d779a08870d09f52ef5",
+    parentId: "0x2c8c7428bc02f30bce3c83a7e781e6e622a3ff37ba4161179bd63b9554799cc8", // wilder.concept
+    label: "environment",
+    name: "wilder.concept.environment",
+    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/111",
     sendToUser: TestAccounts.AccountC,
     domainKind: DomainKind.BeaconDomain,
   },
   {
     "tx.origin": TestAccounts.AccountD,
-    id: "0x1badd5424f77b34024ce6ca99fa03c10e5e1f46298f841de30d6fcecb6b846ad", // wilder.kicks.sesion0
-    parentId: "0x9ef46671e570343a0149dcff31e10f195790e504de5b6a6b8a5578da5cc2a54c", // wilder.kicks
-    label: "season0",
-    name: "wilder.kicks.airwild.season0",
-    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/7",
+    id: "0x938ec331d6a5759665924e8536b43f2a563d3d230cc609d926bcc680de33d7fd",
+    parentId: "0x577547c6712ef7f054d8d593d46fa708f6cd8c455c707d779a08870d09f52ef5", // wilder.concept.environment
+    label: "metaroad",
+    name: "wilder.concept.environment.metaroad",
+    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/114",
     sendToUser: TestAccounts.AccountD,
     domainKind: DomainKind.PureDomain,
   },
   {
     "tx.origin": TestAccounts.AccountD,
-    id: "0x99f58bd76da4ca166dac9a7adbae7a8d10656a28a38d8fe029e103b881831e66", // wilder.kicks.season1
-    parentId: "0x9ef46671e570343a0149dcff31e10f195790e504de5b6a6b8a5578da5cc2a54c", // wilder
-    label: "season1",
-    name: "wilder.kicks.airwild.season1",
-    metadataUri: "ipfs://QmdUzKo3CgnpgPtvbX6waGk31zQQwoM3SuYjaXk7F1b5FU",
+    id: "0x5cbdddde02450ebaff467053c64e5821efc3aacbe9bdf6d3033c3f22ccdcbd7b",
+    parentId: "0x577547c6712ef7f054d8d593d46fa708f6cd8c455c707d779a08870d09f52ef5", // wilder.concept.environment
+    label: "wildstreets",
+    name: "wilder.concept.environment.wildstreets",
+    metadataUri: "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/115",
     sendToUser: TestAccounts.AccountD,
     domainKind: DomainKind.PureDomain,
   },
   {
     "tx.origin": TestAccounts.AccountD,
-    id: "0x653a99cbe1e215988c0aae2685cf952f62d2ab7432c10ddb383a7847577d70d2", // wilder.kicks.season2
-    parentId: "0x9ef46671e570343a0149dcff31e10f195790e504de5b6a6b8a5578da5cc2a54c", // wilder
-    label: "season2",
-    name: "wilder.kicks.airwild.season2",
+    id: "0xd36b0c70f4b8c0c7693035df5d0f34921c33708a930cb410c72d05b5502f1bb4",
+    parentId: "0x577547c6712ef7f054d8d593d46fa708f6cd8c455c707d779a08870d09f52ef5", // wilder.concept.environment
+    label: "wildcity",
+    name: "wilder.concept.environment.wildcity",
     metadataUri: 
-    "ipfs://Qmbre1QprMHmGsBfpjv4k9gxV9rqqxwxj58CQJW6VEsWRq",
+    "ipfs://QmSQTLzzsPS67ay4SFKMv9Dq57iSQ7pLWQVUvS3XB5MowK/116",
     sendToUser: TestAccounts.AccountD,
     domainKind: DomainKind.PureDomain,
   }

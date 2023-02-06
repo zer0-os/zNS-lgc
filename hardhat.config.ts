@@ -125,6 +125,7 @@ const config: HardhatUserConfig = {
     goerli: {
       accounts: process.env.TESTNET_PRIVATE_KEY
         ? [
+          `0x${process.env.TESTNET_PRIVATE_KEY_DEPLOYER}`,
           `0x${process.env.TESTNET_PRIVATE_KEY_A}`,
           `0x${process.env.TESTNET_PRIVATE_KEY_B}`,
           `0x${process.env.TESTNET_PRIVATE_KEY_C}`,

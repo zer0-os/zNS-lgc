@@ -31,12 +31,13 @@ export const verifyContract = async (
   }
 };
 
-// add 10%
+// add 20%
 export const calculateGasMargin = (
-  value: ethers.BigNumber
+  value: ethers.BigNumber,
+  addition = 2000
 ): ethers.BigNumber => {
   return value
-    .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
+    .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(addition)))
     .div(ethers.BigNumber.from(10000));
 };
 

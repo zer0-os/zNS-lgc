@@ -20,10 +20,10 @@ const main = async () => {
     await beacon.deployed();
     console.log(`Beacon deployed at ${beacon.address}`);
 
-    const zNSHub = await hre.upgrades.deployProxy(new ZNSHub__factory(deployer), [
-      ethers.constants.AddressZero,
-      beacon.address,
-    ]);
+    const zNSHub = await hre.upgrades.deployProxy(
+      new ZNSHub__factory(deployer),
+      [ethers.constants.AddressZero, beacon.address]
+    );
     await zNSHub.deployTransaction.wait(3);
     console.log(`zNSHub deployed at ${zNSHub.address}`);
 

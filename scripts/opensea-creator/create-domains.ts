@@ -2,6 +2,8 @@ import * as hre from "hardhat";
 import { ethers } from "hardhat";
 
 import {
+  MockController,
+  MockController__factory,
   Registrar__factory,
   ZNSHub__factory,
 } from "../../typechain";
@@ -27,15 +29,20 @@ const main = async () => {
       [TestAccounts.AccountB]: deployers[2],
       [TestAccounts.AccountC]: deployers[3],
       [TestAccounts.AccountD]: deployers[4],
-    }
+    };
 
     const zNSHubAddress = process.env.ZNSHub_ADDRESS!;
     if (!zNSHubAddress) {
-      logger.error('Not found zNSHub address');
+      logger.error("Not found zNSHub address");
       return;
     }
-
     const zNSHub = ZNSHub__factory.connect(zNSHubAddress, deployers[0]);
+
+    const controllerAddress = process.env.CONTROLLER_ADDRESS!;
+    if (!controllerAddress) {
+      logger.error("Not found Controller address");
+      return;
+    }
 
     for (const mintConfig of mintSenario) {
       const exists = await zNSHub.domainExists(mintConfig.id);
@@ -49,6 +56,10 @@ const main = async () => {
         {
           Label: "tx.origin",
           Info: signers[mintConfig["tx.origin"]].address,
+        },
+        {
+          Label: "Domain label",
+          Info: mintConfig.label,
         },
         {
           Label: "Domain name",
@@ -68,7 +79,10 @@ const main = async () => {
         },
         {
           Label: "Domain Kind",
-          Info: mintConfig.domainKind == DomainKind.BeaconDomain ? "BeaconDomain" : "PureDomain",
+          Info:
+            mintConfig.domainKind == DomainKind.BeaconDomain
+              ? "BeaconDomain"
+              : "PureDomain",
         },
         {
           Label: "Royalty amount",
@@ -80,43 +94,85 @@ const main = async () => {
         },
         {
           Label: "Send to user",
-          Info: signers[mintConfig.sendToUser].address
+          Info: signers[mintConfig.sendToUser].address,
+        },
+        {
+          Label: "From Controller",
+          Info: mintConfig.fromController,
         },
       ]);
 
-      let registrarAddress = await zNSHub.subdomainRegistrars(mintConfig.parentId);
+      let registrarAddress = await zNSHub.subdomainRegistrars(
+        mintConfig.parentId
+      );
       if (registrarAddress == ethers.constants.AddressZero) {
-        registrarAddress = await zNSHub.getRegistrarForDomain(mintConfig.parentId);
+        registrarAddress = await zNSHub.getRegistrarForDomain(
+          mintConfig.parentId
+        );
       }
-      logger.info(`Registrar for domain ${mintConfig.name}: ${registrarAddress}`);
+      logger.info(
+        `Registrar for domain ${mintConfig.name}: ${registrarAddress}`
+      );
 
-      const registrar = Registrar__factory.connect(registrarAddress, signers[mintConfig["tx.origin"]]);
+      const registrar = Registrar__factory.connect(
+        registrarAddress,
+        signers[mintConfig["tx.origin"]]
+      );
+
+      let controller: MockController;
+      if (mintConfig.fromController) {
+        logger.info(`Registering registrar to controller: ${registrar.address}`);
+        controller = MockController__factory.connect(
+          controllerAddress,
+          deployers[0]
+        );
+        await controller.setRegistrar(registrar.address);
+        controller = MockController__factory.connect(
+          controllerAddress,
+          signers[mintConfig["tx.origin"]]
+        );
+      }
+
       if (mintConfig.domainKind === DomainKind.BeaconDomain) {
         logger.info(`Deploying Beacon domain...`);
         confirmContinue();
 
-        const estimatedGas = await registrar.estimateGas.registerSubdomainContract(
-          mintConfig.parentId,
-          mintConfig.label,
-          signers[mintConfig["tx.origin"]].address,
-          mintConfig.metadataUri,
-          0, 
-          false,
-          signers[mintConfig.sendToUser].address,
-        );
+        const estimatedGas =
+          await registrar.estimateGas.registerSubdomainContract(
+            mintConfig.parentId,
+            mintConfig.label,
+            signers[mintConfig["tx.origin"]].address,
+            mintConfig.metadataUri,
+            0,
+            false,
+            signers[mintConfig.sendToUser].address
+          );
         logger.info(`Estimated gas: ${estimatedGas.toString()}`);
-        const tx = await registrar.registerSubdomainContract(
-          mintConfig.parentId,
-          mintConfig.label,
-          signers[mintConfig["tx.origin"]].address,
-          mintConfig.metadataUri,
-          0, 
-          false,
-          signers[mintConfig.sendToUser].address,
-          {
-            gasLimit: calculateGasMargin(estimatedGas)
-          }
-        );
+        const tx = mintConfig.fromController
+          ? await controller!.registerSubdomainContract(
+              mintConfig.parentId,
+              mintConfig.label,
+              signers[mintConfig["tx.origin"]].address,
+              mintConfig.metadataUri,
+              0,
+              false,
+              signers[mintConfig.sendToUser].address,
+              {
+                gasLimit: calculateGasMargin(estimatedGas, 10000),
+              }
+            )
+          : await registrar.registerSubdomainContract(
+              mintConfig.parentId,
+              mintConfig.label,
+              signers[mintConfig["tx.origin"]].address,
+              mintConfig.metadataUri,
+              0,
+              false,
+              signers[mintConfig.sendToUser].address,
+              {
+                gasLimit: calculateGasMargin(estimatedGas, 10000),
+              }
+            );
         logger.info(`Waiting tx: ${tx.hash}`);
         await tx.wait(3);
       } else if (mintConfig.domainKind === DomainKind.PureDomain) {
@@ -128,23 +184,36 @@ const main = async () => {
           mintConfig.label,
           signers[mintConfig["tx.origin"]].address,
           mintConfig.metadataUri,
-          0, 
+          0,
           false,
-          signers[mintConfig.sendToUser].address,
+          signers[mintConfig.sendToUser].address
         );
         logger.info(`Estimated gas: ${estimatedGas.toString()}`);
-        const tx = await registrar.registerDomainAndSend(
-          mintConfig.parentId,
-          mintConfig.label,
-          signers[mintConfig["tx.origin"]].address,
-          mintConfig.metadataUri,
-          0, 
-          false,
-          signers[mintConfig.sendToUser].address,
-          {
-            gasLimit: calculateGasMargin(estimatedGas)
-          }
-        );
+        const tx = mintConfig.fromController
+          ? await controller!.registerDomainAndSend(
+              mintConfig.parentId,
+              mintConfig.label,
+              signers[mintConfig["tx.origin"]].address,
+              mintConfig.metadataUri,
+              0,
+              false,
+              signers[mintConfig.sendToUser].address,
+              {
+                gasLimit: calculateGasMargin(estimatedGas, 10000),
+              }
+            )
+          : await registrar.registerDomainAndSend(
+              mintConfig.parentId,
+              mintConfig.label,
+              signers[mintConfig["tx.origin"]].address,
+              mintConfig.metadataUri,
+              0,
+              false,
+              signers[mintConfig.sendToUser].address,
+              {
+                gasLimit: calculateGasMargin(estimatedGas, 10000),
+              }
+            );
         logger.info(`Waiting tx: ${tx.hash}`);
         await tx.wait(3);
       }

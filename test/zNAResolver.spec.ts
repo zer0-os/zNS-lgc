@@ -75,7 +75,27 @@ describe("zNAResolver", function () {
     const ZNSHubFactory = new ZNSHub__factory(deployer);
     zNSHub = await ZNSHubFactory.deploy();
 
-    const RegistrarFactory = new Registrar__factory(deployer);
+    const CreateProxyLibFactory = await ethers.getContractFactory(
+      "CreateProxyLib",
+      deployer
+    );
+    const createProxyLib = await CreateProxyLibFactory.deploy();
+
+    const OperatorFiltererLibFactory = await ethers.getContractFactory(
+      "OperatorFiltererLib",
+      deployer
+    );
+    const operatorFiltererLib = await OperatorFiltererLibFactory.deploy();
+
+    const RegistrarFactory = new Registrar__factory(
+      {
+        "contracts/libraries/CreateProxyLib.sol:CreateProxyLib":
+          createProxyLib.address,
+        "contracts/libraries/OperatorFiltererLib.sol:OperatorFiltererLib":
+          operatorFiltererLib.address,
+      },
+      deployer
+    );
     registrar = await RegistrarFactory.deploy();
     await registrar.initialize(
       ethers.constants.AddressZero,

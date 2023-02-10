@@ -1,9 +1,5 @@
 import { Interface } from "@ethersproject/abi";
-import {
-  ContractTransaction,
-  ethers,
-  providers,
-} from "ethers";
+import { ContractTransaction, ethers, providers } from "ethers";
 
 export const getSubnodeHash = (
   parentHash: string,
@@ -66,7 +62,6 @@ export async function getEvents(
   const topic = abi.getEventTopic(event);
   const logs = filterLogsWithTopics(receipt.logs, topic, contract);
   const events = logs.map((e) => abi.parseLog(e));
-
   return events;
 }
 

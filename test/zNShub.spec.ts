@@ -13,61 +13,11 @@ const { expect } = chai;
 
 describe("zNS Hub", () => {
   let accounts: SignerWithAddress[];
-  let registryFactory: Registrar__factory;
   let registry: Registrar;
   let hub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
-  const rootDomainId = BigNumber.from(0);
-
-  // const createSubdomainContract = async (
-  //   contract: Registrar,
-  //   minter: SignerWithAddress,
-  //   parentId: BigNumberish,
-  //   label: string
-  // ) => {
-  //   const tx = await contract.registerSubdomainContract(
-  //     parentId,
-  //     label,
-  //     minter.address,
-  //     "metadata",
-  //     0,
-  //     true,
-  //     minter.address
-  //   );
-  //   const event = await getEvent(
-  //     tx,
-  //     "EENewSubdomainRegistrar",
-  //     hub.address,
-  //     hub.interface
-  //   );
-  //   return Registrar__factory.connect(
-  //     event.args["childRegistrar"],
-  //     contract.signer
-  //   );
-  // };
-
-  // const deployRegistry = async (creator: SignerWithAddress) => {
-  //   registryFactory = new Registrar__factory(creator);
-  //   const hubFactory = await new ZNSHub__factory(creator);
-  //   hub = await hubFactory.deploy();
-
-  //   const beacon = await upgrades.deployBeacon(registryFactory);
-  //   registry = await registryFactory.deploy();
-
-  //   await hub.initialize(registry.address, beacon.address);
-
-  //   await registry.initialize(
-  //     ethers.constants.AddressZero,
-  //     ethers.constants.Zero,
-  //     "Zer0 Name Service",
-  //     "ZNS",
-  //     hub.address
-  //   );
-
-  //   await hub.addRegistrar(rootDomainId, registry.address);
-  // };
 
   before(async () => {
     accounts = await ethers.getSigners();

@@ -1,24 +1,17 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers } from "hardhat";
-import {
-  Registrar,
-  ZNSHub__factory,
-  Registrar__factory,
-  ZNSHub,
-  OperatorFilterRegistry,
-} from "../typechain";
+import { Registrar, ZNSHub, OperatorFilterRegistry } from "../typechain";
 import chai from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { OperatorFilterRegistry__factory } from "../typechain/factories/OperatorFilterRegistry__factory";
+import { deployZNS } from "./helpers/deploy";
 
 const { expect } = chai;
 
 describe("Registrar", () => {
-  let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hubFactory: ZNSHub__factory;
   let hub: ZNSHub;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -27,29 +20,7 @@ describe("Registrar", () => {
   const rootDomainHash = ethers.constants.HashZero;
   const rootDomainId = BigNumber.from(0);
 
-  const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
-    hubFactory = new ZNSHub__factory(creator);
-    hub = await hubFactory.deploy();
-    await hub.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.AddressZero
-    );
-
-    registry = await registryFactory.deploy();
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
-
-    await hub.addRegistrar(rootDomainId, registry.address);
-  };
-
   before(async () => {
-    console.log("before");
     [creator] = await ethers.getSigners();
     user1 = await ethers.getImpersonatedSigner(
       "0xa74b2de2D65809C613010B3C8Dc653379a63C55b"
@@ -76,7 +47,9 @@ describe("Registrar", () => {
 
   describe("root domain", () => {
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
     });
 
     it("has a root domain on creation", async () => {
@@ -101,7 +74,9 @@ describe("Registrar", () => {
 
   describe("transferring domains", () => {
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
     });
 
     // Redundant ERC721 test which is tested by OpenZeppelin
@@ -132,7 +107,9 @@ describe("Registrar", () => {
 
   describe("controllers", () => {
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
     });
 
     let addControllerTx: ContractTransaction;
@@ -170,7 +147,9 @@ describe("Registrar", () => {
 
   describe("registering domains", () => {
     beforeEach("deploys", async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
     });
 
     it("prevents non controllers from registering domains", async () => {
@@ -451,7 +430,9 @@ describe("Registrar", () => {
     let currentExpectedMetadataUri: string;
 
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
     });
 
     before(async () => {
@@ -508,7 +489,9 @@ describe("Registrar", () => {
     let testDomainId: string;
 
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
@@ -605,7 +588,9 @@ describe("Registrar", () => {
     let currentExpectedRoyaltyAmount = 0;
 
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
       await registry.addController(creator.address);
 
       const domainName = "myDomain";
@@ -667,7 +652,9 @@ describe("Registrar", () => {
       "0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6";
 
     beforeEach(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
       filterRegistry = OperatorFilterRegistry__factory.connect(
         "0x000000000000AAeB6D7670E522A718067333cd4E",
         creator

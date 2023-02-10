@@ -1,23 +1,16 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers } from "hardhat";
-import {
-  Registrar,
-  ZNSHub,
-  ZNSHub__factory,
-  Registrar__factory,
-  UpgradeableBeacon__factory,
-} from "../typechain";
+import { Registrar, ZNSHub, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
+import { deployZNS } from "./helpers/deploy";
 
 const { expect } = chai;
 
 describe("Subdomain Registrar Functionality", () => {
   let accounts: SignerWithAddress[];
-  let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hubFactory: ZNSHub__factory;
   let hub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
@@ -50,28 +43,6 @@ describe("Subdomain Registrar Functionality", () => {
     );
   };
 
-  const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
-    hubFactory = new ZNSHub__factory(creator);
-    hub = await hubFactory.deploy();
-    registry = await registryFactory.deploy();
-
-    const beaconFactory = new UpgradeableBeacon__factory(creator);
-    const beacon = await beaconFactory.deploy(registry.address);
-
-    await hub.initialize(registry.address, beacon.address);
-
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
-
-    await hub.addRegistrar(rootDomainId, registry.address);
-  };
-
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[creatorAccountIndex];
@@ -79,7 +50,9 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("Subdomain contract creation", () => {
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
       await registry.addController(creator.address);
     });
 
@@ -151,7 +124,9 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("ownerOf", () => {
     before(async () => {
-      await deployRegistry(creator);
+      const { registrar, zNSHub } = await deployZNS(creator);
+      registry = registrar;
+      hub = zNSHub;
       await registry.addController(creator.address);
     });
 

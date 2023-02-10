@@ -13,7 +13,7 @@ import {
   ZNSHub,
   ZNSHub__factory,
 } from "../typechain";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
 
 chai.use(smock.smock.matchers);
 const { expect } = chai;

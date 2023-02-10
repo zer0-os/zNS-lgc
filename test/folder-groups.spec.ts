@@ -3,55 +3,27 @@ import { ethers } from "hardhat";
 import chai from "chai";
 import { BigNumber } from "ethers";
 
-import {
-  Registrar,
-  ZNSHub,
-  ZNSHub__factory,
-  Registrar__factory,
-  UpgradeableBeacon__factory,
-} from "../typechain";
+import { Registrar, ZNSHub } from "../typechain";
 
 import { domainNameToId } from "./helpers";
+import { deployZNS } from "./helpers/deploy";
 
 const { expect } = chai;
 
 describe("Folder groups functionality", () => {
   let accounts: SignerWithAddress[];
-  let registryFactory: Registrar__factory;
   let registry: Registrar;
-  let hubFactory: ZNSHub__factory;
   let hub: ZNSHub;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
-  const rootDomainId = BigNumber.from(0);
-
-  const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
-    hubFactory = new ZNSHub__factory(creator);
-    hub = await hubFactory.deploy();
-    registry = await registryFactory.deploy();
-
-    const beaconFactory = new UpgradeableBeacon__factory(creator);
-    const beacon = await beaconFactory.deploy(registry.address);
-
-    await hub.initialize(registry.address, beacon.address);
-
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
-
-    await hub.addRegistrar(rootDomainId, registry.address);
-  };
 
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[0];
     controller = accounts[1];
-    await deployRegistry(creator);
+    const { registrar, zNSHub } = await deployZNS(creator);
+    registry = registrar;
+    hub = zNSHub;
     await registry.addController(controller.address);
   });
 

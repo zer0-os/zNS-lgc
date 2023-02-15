@@ -1,12 +1,12 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { Registrar, ZNSHub, OperatorFilterRegistry } from "../typechain";
 import chai from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { calculateDomainHash, hashDomainName } from "./helpers";
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { OperatorFilterRegistry__factory } from "../typechain/factories/OperatorFilterRegistry__factory";
-import { deployZNS } from "./helpers/deploy";
+import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
@@ -47,7 +47,7 @@ describe("Registrar", () => {
 
   describe("root domain", () => {
     before(async () => {
-      ({ registrar, zNSHub } = await deployZNS(creator));
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     });
 
     it("has a root domain on creation", async () => {
@@ -72,9 +72,7 @@ describe("Registrar", () => {
 
   describe("transferring domains", () => {
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     });
 
     // Redundant ERC721 test which is tested by OpenZeppelin
@@ -105,9 +103,7 @@ describe("Registrar", () => {
 
   describe("controllers", () => {
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     });
 
     let addControllerTx: ContractTransaction;
@@ -145,9 +141,7 @@ describe("Registrar", () => {
 
   describe("registering domains", () => {
     beforeEach("deploys", async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     });
 
     it("prevents non controllers from registering domains", async () => {
@@ -428,9 +422,7 @@ describe("Registrar", () => {
     let currentExpectedMetadataUri: string;
 
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     });
 
     before(async () => {
@@ -487,9 +479,7 @@ describe("Registrar", () => {
     let testDomainId: string;
 
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
       await registrar.addController(creator.address);
 
       const domainName = "myDomain";
@@ -586,9 +576,7 @@ describe("Registrar", () => {
     let currentExpectedRoyaltyAmount = 0;
 
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
       await registrar.addController(creator.address);
 
       const domainName = "myDomain";
@@ -654,9 +642,7 @@ describe("Registrar", () => {
       "0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6";
 
     beforeEach(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
       filterRegistry = OperatorFilterRegistry__factory.connect(
         "0x000000000000AAeB6D7670E522A718067333cd4E",
         creator
@@ -679,13 +665,10 @@ describe("Registrar", () => {
       const isRegistered = await filterRegistry.isRegistered(registrar.address);
       expect(isRegistered).to.be.false;
 
-      await registrar
-        .connect(creator)
-        ["safeTransferFrom(address,address,uint256)"](
-          creator.address,
-          user1.address,
-          rootDomainId
-        );
+      await registrar.connect(creator)[
+        // eslint-disable-next-line no-unexpected-multiline
+        "safeTransferFrom(address,address,uint256)"
+      ](creator.address, user1.address, rootDomainId);
       const domainOwner = await registrar.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
     });
@@ -787,13 +770,10 @@ describe("Registrar", () => {
         .approve(blurAddress, rootDomainId);
       await expect(approval).to.not.be.reverted;
 
-      const transfer = registrar
-        .connect(blurSigner)
-        ["safeTransferFrom(address,address,uint256)"](
-          creator.address,
-          user1.address,
-          rootDomainId
-        );
+      const transfer = registrar.connect(blurSigner)[
+        // eslint-disable-next-line no-unexpected-multiline
+        "safeTransferFrom(address,address,uint256)"
+      ](creator.address, user1.address, rootDomainId);
       await expect(transfer).to.not.be.reverted;
     });
 

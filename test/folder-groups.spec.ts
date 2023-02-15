@@ -1,11 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import chai from "chai";
 
 import { Registrar, ZNSHub } from "../typechain";
 
 import { domainNameToId } from "./helpers";
-import { deployZNS } from "./helpers/deploy";
+import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
@@ -20,7 +20,7 @@ describe("Folder groups functionality", () => {
     accounts = await ethers.getSigners();
     creator = accounts[0];
     controller = accounts[1];
-    ({ registrar, zNSHub } = await deployZNS(creator));
+    ({ registrar, zNSHub } = await deployZNS(network.name, creator));
     await registrar.addController(controller.address);
   });
 

@@ -1,15 +1,16 @@
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import * as fs from "fs";
+import logdown from "logdown";
 import {
   OperatorFilterRegistry__factory,
   Registrar,
   Registrar__factory,
-  UpgradeableBeacon__factory,
   ZNSHub,
   ZNSHub__factory,
 } from "../../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Contract } from "ethers";
 
 const isOperatorFilterRegistryDeployed = async (): Promise<boolean> => {
   // Check if contract was deployed
@@ -90,34 +91,63 @@ const deployOperatorFilterRegistry = async (
 };
 
 export const deployZNS = async (
-  deployer: SignerWithAddress
+  network: string,
+  deployer: SignerWithAddress,
+  logger: logdown.Logger | undefined = undefined
 ): Promise<{
   registrar: Registrar;
   zNSHub: ZNSHub;
+  proxyAdmin: Contract;
+  upgradeableBeacon: Contract;
 }> => {
-  await deployOperatorFilterRegistry(deployer);
+  if (network === "hardhat" || network === "localhost") {
+    await deployOperatorFilterRegistry(deployer);
+  }
 
-  const ZNSHubFactory = new ZNSHub__factory(deployer);
-  const zNSHub = (await ZNSHubFactory.deploy()) as ZNSHub;
-  const RegistrarFactory = new Registrar__factory(deployer);
-  const registrar = (await RegistrarFactory.deploy()) as Registrar;
-  const UpgradeableBeaconFactory = new UpgradeableBeacon__factory(deployer);
-  const upgradeableBeacon = await UpgradeableBeaconFactory.deploy(
-    registrar.address
+  const upgradeableBeacon = await upgrades.deployBeacon(
+    new Registrar__factory(deployer)
   );
+  await upgradeableBeacon.deployed();
+  logger && logger.log(`UpgradeableBeacon deployed at ${upgradeableBeacon.address}`);
 
-  await zNSHub.initialize(registrar.address, upgradeableBeacon.address);
-  await registrar.initialize(
+  const zNSHub = (await upgrades.deployProxy(new ZNSHub__factory(deployer), [
     ethers.constants.AddressZero,
-    ethers.constants.HashZero,
-    "Zer0 Name Service",
-    "ZNS",
-    zNSHub.address
+    upgradeableBeacon.address,
+  ])) as ZNSHub;
+  await zNSHub.deployTransaction.wait(
+    network === "hardhat" || network === "localhost" ? 0 : 3
   );
-  await zNSHub.addRegistrar(ethers.constants.HashZero, registrar.address);
+  logger && logger.log(`zNSHub deployed at ${zNSHub.address}`);
+
+  const registrar = (await upgrades.deployProxy(
+    new Registrar__factory(deployer),
+    [
+      ethers.constants.AddressZero,
+      ethers.constants.HashZero,
+      "Zer0 Name Service",
+      "zNS",
+      zNSHub.address,
+    ]
+  )) as Registrar;
+  await registrar.deployTransaction.wait(
+    network === "hardhat" || network === "localhost" ? 0 : 3
+  );
+  logger && logger.log(`Registrar deployed at ${registrar.address}`);
+
+  await (zNSHub as ZNSHub)
+    .connect(deployer)
+    .setDefaultRegistrar(registrar.address);
+  await (zNSHub as ZNSHub)
+    .connect(deployer)
+    .addRegistrar(ethers.constants.HashZero, registrar.address);
+
+  const proxyAdmin = await upgrades.admin.getInstance();
+  logger && logger.log(`ProxyAdmin deployed at ${proxyAdmin.address}`);
 
   return {
     registrar,
     zNSHub,
+    proxyAdmin,
+    upgradeableBeacon,
   };
 };

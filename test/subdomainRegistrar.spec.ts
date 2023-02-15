@@ -1,10 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { Registrar, ZNSHub, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
-import { deployZNS } from "./helpers/deploy";
+import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
@@ -50,7 +50,7 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("Subdomain contract creation", () => {
     before(async () => {
-      ({ registrar, zNSHub } = await deployZNS(creator));
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
       await registrar.addController(creator.address);
     });
 
@@ -122,9 +122,7 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("ownerOf", () => {
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registrar = registrar;
-      zNSHub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
       await registrar.addController(creator.address);
     });
 

@@ -2,7 +2,7 @@ import { smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import {
   Registrar,
   ResourceType__factory,
@@ -19,7 +19,7 @@ import {
 import { ResourceType } from "../typechain/ResourceType";
 import { MockResourceRegistry } from "../typechain/MockResourceRegistry";
 import { MockResourceRegistry__factory } from "../typechain/factories/MockResourceRegistry__factory";
-import { deployZNS } from "./helpers/deploy";
+import { deployZNS } from "../scripts/shared/deploy";
 
 chai.use(smock.matchers);
 
@@ -71,7 +71,7 @@ describe("zNAResolver", function () {
       userA,
     ] = await ethers.getSigners();
 
-    ({ registrar, zNSHub } = await deployZNS(deployer));
+    ({ registrar, zNSHub } = await deployZNS(network.name, deployer));
     await registrar.addController(deployer.address);
 
     // Deploy ResourceType Library

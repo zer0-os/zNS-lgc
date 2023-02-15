@@ -1,67 +1,36 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import chai from "chai";
-import { BigNumber } from "ethers";
 
-import {
-  Registrar,
-  ZNSHub,
-  ZNSHub__factory,
-  Registrar__factory,
-  UpgradeableBeacon__factory,
-} from "../typechain";
+import { Registrar, ZNSHub } from "../typechain";
 
 import { domainNameToId } from "./helpers";
+import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
 describe("Folder groups functionality", () => {
   let accounts: SignerWithAddress[];
-  let registryFactory: Registrar__factory;
-  let registry: Registrar;
-  let hubFactory: ZNSHub__factory;
-  let hub: ZNSHub;
+  let registrar: Registrar;
+  let zNSHub: ZNSHub;
   let creator: SignerWithAddress;
   let controller: SignerWithAddress;
-  const rootDomainId = BigNumber.from(0);
-
-  const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
-    hubFactory = new ZNSHub__factory(creator);
-    hub = await hubFactory.deploy();
-    registry = await registryFactory.deploy();
-
-    const beaconFactory = new UpgradeableBeacon__factory(creator);
-    const beacon = await beaconFactory.deploy(registry.address);
-
-    await hub.initialize(registry.address, beacon.address);
-
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
-
-    await hub.addRegistrar(rootDomainId, registry.address);
-  };
 
   before(async () => {
     accounts = await ethers.getSigners();
     creator = accounts[0];
     controller = accounts[1];
-    await deployRegistry(creator);
-    await registry.addController(controller.address);
+    ({ registrar, zNSHub } = await deployZNS(network.name, creator));
+    await registrar.addController(controller.address);
   });
 
   it("runs", async () => {
     // Should be 0
-    const numDomainGroups = await registry.numDomainGroups();
+    const numDomainGroups = await registrar.numDomainGroups();
     expect(numDomainGroups).to.eq(0);
   });
   it("create domain groups", async () => {
-    const asController = registry.connect(controller);
+    const asController = registrar.connect(controller);
 
     // Test folders
     const uri1 = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
@@ -69,11 +38,11 @@ describe("Folder groups functionality", () => {
     await asController.createDomainGroup(uri1);
     await asController.createDomainGroup(uri2);
 
-    const numDomainGroups = await registry.numDomainGroups();
+    const numDomainGroups = await registrar.numDomainGroups();
     expect(numDomainGroups).to.eq(2);
   });
   it("updates an existing domain group", async () => {
-    const asController: Registrar = registry.connect(controller);
+    const asController: Registrar = registrar.connect(controller);
 
     // Test groups
     const uri = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
@@ -93,10 +62,10 @@ describe("Folder groups functionality", () => {
   });
 
   it("registers domains in a domain group", async () => {
-    const asController = registry.connect(controller);
+    const asController = registrar.connect(controller);
     const controllerAddress = await controller.getAddress();
 
-    const isController = await registry.isController(controller.address);
+    const isController = await registrar.isController(controller.address);
     expect(isController).to.be.true;
 
     const params = {
@@ -129,11 +98,11 @@ describe("Folder groups functionality", () => {
   it("has the proper token uri", async () => {
     const domainId = domainNameToId("1");
     // current token uri
-    const tokenUri = await registry.tokenURI(domainId);
+    const tokenUri = await registrar.tokenURI(domainId);
     // token record
-    const record = await registry.records(domainId);
+    const record = await registrar.records(domainId);
     // group that the token is in
-    const domainGroup = await registry.domainGroups(record.domainGroup);
+    const domainGroup = await registrar.domainGroups(record.domainGroup);
 
     const uri = `${domainGroup}${record.domainGroupFileIndex}`;
     expect(tokenUri).to.eq(uri);
@@ -142,13 +111,13 @@ describe("Folder groups functionality", () => {
   it("Updates a uri and confirm that a domain in that group is updated as well", async () => {
     // Id of 0://1
     const domainId = domainNameToId("1");
-    const record = await registry.records(domainId);
+    const record = await registrar.records(domainId);
 
     const updatedUri = "ipfs://QmafuzfZ2doheWYL9tDLm2t39vZvtjfnPy1QyHX4HVawqN/";
-    const asController: Registrar = registry.connect(controller);
+    const asController: Registrar = registrar.connect(controller);
     await asController.updateDomainGroup(1, updatedUri);
 
-    const tokenUri = await registry.tokenURI(domainId);
+    const tokenUri = await registrar.tokenURI(domainId);
     expect(tokenUri).to.eq(`${updatedUri}${record.domainGroupFileIndex}`);
   });
 });

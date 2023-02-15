@@ -2,15 +2,13 @@ import { smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import {
   Registrar,
-  Registrar__factory,
   ResourceType__factory,
   ZNAResolver,
   ZNAResolver__factory,
   ZNSHub,
-  ZNSHub__factory,
 } from "../typechain";
 import {
   calculateDomainHash,
@@ -21,6 +19,7 @@ import {
 import { ResourceType } from "../typechain/ResourceType";
 import { MockResourceRegistry } from "../typechain/MockResourceRegistry";
 import { MockResourceRegistry__factory } from "../typechain/factories/MockResourceRegistry__factory";
+import { deployZNS } from "../scripts/shared/deploy";
 
 chai.use(smock.matchers);
 
@@ -72,22 +71,8 @@ describe("zNAResolver", function () {
       userA,
     ] = await ethers.getSigners();
 
-    const ZNSHubFactory = new ZNSHub__factory(deployer);
-    zNSHub = await ZNSHubFactory.deploy();
-
-    const RegistrarFactory = new Registrar__factory(deployer);
-    registrar = await RegistrarFactory.deploy();
-    await registrar.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      zNSHub.address
-    );
-    await zNSHub.initialize(registrar.address, ethers.constants.AddressZero);
-
+    ({ registrar, zNSHub } = await deployZNS(network.name, deployer));
     await registrar.addController(deployer.address);
-    await zNSHub.addRegistrar(rootDomainId, registrar.address);
 
     // Deploy ResourceType Library
     const ResourceTypeLibFactory = new ResourceType__factory(deployer);

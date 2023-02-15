@@ -97,7 +97,7 @@ const config: HardhatUserConfig = {
       //   },
       // ],
       forking: {
-        url: `https://goerli.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+        url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
       },
       allowUnlimitedContractSize: true
     },

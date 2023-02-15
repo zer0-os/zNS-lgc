@@ -1,24 +1,17 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
-import {
-  Registrar,
-  ZNSHub,
-  ZNSHub__factory,
-  Registrar__factory,
-  UpgradeableBeacon__factory,
-} from "../typechain";
+import { ethers, network } from "hardhat";
+import { Registrar, ZNSHub, Registrar__factory } from "../typechain";
 import chai from "chai";
 import { BigNumber, BigNumberish } from "ethers";
 import { domainNameToId, getEvent } from "./helpers";
+import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
 describe("Subdomain Registrar Functionality", () => {
   let accounts: SignerWithAddress[];
-  let registryFactory: Registrar__factory;
-  let registry: Registrar;
-  let hubFactory: ZNSHub__factory;
-  let hub: ZNSHub;
+  let registrar: Registrar;
+  let zNSHub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   const rootDomainId = BigNumber.from(0);
@@ -41,35 +34,13 @@ describe("Subdomain Registrar Functionality", () => {
     const event = await getEvent(
       tx,
       "EENewSubdomainRegistrar",
-      hub.address,
-      hub.interface
+      zNSHub.address,
+      zNSHub.interface
     );
     return Registrar__factory.connect(
       event.args["childRegistrar"],
       contract.signer
     );
-  };
-
-  const deployRegistry = async (creator: SignerWithAddress) => {
-    registryFactory = new Registrar__factory(creator);
-    hubFactory = new ZNSHub__factory(creator);
-    hub = await hubFactory.deploy();
-    registry = await registryFactory.deploy();
-
-    const beaconFactory = new UpgradeableBeacon__factory(creator);
-    const beacon = await beaconFactory.deploy(registry.address);
-
-    await hub.initialize(registry.address, beacon.address);
-
-    await registry.initialize(
-      ethers.constants.AddressZero,
-      ethers.constants.Zero,
-      "Zer0 Name Service",
-      "ZNS",
-      hub.address
-    );
-
-    await hub.addRegistrar(rootDomainId, registry.address);
   };
 
   before(async () => {
@@ -79,8 +50,8 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("Subdomain contract creation", () => {
     before(async () => {
-      await deployRegistry(creator);
-      await registry.addController(creator.address);
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
+      await registrar.addController(creator.address);
     });
 
     let subdomainRegistrar: Registrar;
@@ -88,7 +59,7 @@ describe("Subdomain Registrar Functionality", () => {
     const domainId = domainNameToId(domainName);
 
     it("can create subdomain contracts", async () => {
-      const tx = await registry.registerSubdomainContract(
+      const tx = await registrar.registerSubdomainContract(
         rootDomainId,
         domainName,
         creator.address,
@@ -98,12 +69,12 @@ describe("Subdomain Registrar Functionality", () => {
         creator.address
       );
 
-      expect(tx).to.emit(hub, "EENewSubdomainRegistrar");
+      expect(tx).to.emit(zNSHub, "EENewSubdomainRegistrar");
       const event = await getEvent(
         tx,
         "EENewSubdomainRegistrar",
-        hub.address,
-        hub.interface
+        zNSHub.address,
+        zNSHub.interface
       );
       subdomainRegistrar = Registrar__factory.connect(
         event.args["childRegistrar"],
@@ -112,14 +83,14 @@ describe("Subdomain Registrar Functionality", () => {
     });
 
     it("subdomain registrar returns proper owner", async () => {
-      const ownerOnRoot = await registry.ownerOf(domainId);
-      const ownerOnSub = await registry.ownerOf(domainId);
+      const ownerOnRoot = await registrar.ownerOf(domainId);
+      const ownerOnSub = await registrar.ownerOf(domainId);
 
       expect(ownerOnRoot).to.eq(ownerOnSub);
     });
 
     it("prevents subdomains from being minted on root", async () => {
-      const tx = registry.registerDomain(
+      const tx = registrar.registerDomain(
         domainId,
         "bar",
         creator.address,
@@ -151,19 +122,19 @@ describe("Subdomain Registrar Functionality", () => {
 
   describe("ownerOf", () => {
     before(async () => {
-      await deployRegistry(creator);
-      await registry.addController(creator.address);
+      ({ registrar, zNSHub } = await deployZNS(network.name, creator));
+      await registrar.addController(creator.address);
     });
 
     it("ownerOf returns owner of root domain in subdomain contract", async () => {
       const childRegistrar = await createSubdomainContract(
-        registry,
+        registrar,
         creator,
         0,
         "foo"
       );
 
-      expect(await childRegistrar.ownerOf(0)).to.eq(await registry.ownerOf(0));
+      expect(await childRegistrar.ownerOf(0)).to.eq(await registrar.ownerOf(0));
     });
   });
 });

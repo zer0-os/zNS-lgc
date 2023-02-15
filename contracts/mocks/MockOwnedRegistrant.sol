@@ -68,7 +68,7 @@ abstract contract Ownable2Step is Ownable {
  * @notice Ownable contract that registers itself with the OperatorFilterRegistry and administers its own entries,
  *         to facilitate a subscription whose ownership can be transferred.
  */
-contract OwnedRegistrant is Ownable2Step {
+contract MockOwnedRegistrant is Ownable2Step {
   address constant registry = 0x000000000000AAeB6D7670E522A718067333cd4E;
 
   constructor(address _owner) {

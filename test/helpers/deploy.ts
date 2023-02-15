@@ -1,6 +1,7 @@
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "hardhat";
 import {
+  MockOwnedRegistrant__factory,
   OperatorFilterRegistry__factory,
   OwnedRegistrant__factory,
   Registrar,
@@ -39,7 +40,7 @@ const deployOperatorFilterRegistry = async (deployer: SignerWithAddress): Promis
   await helpers.setCode(OPERATOR_FILTER_REGISTRY_ADDRESS, codeOperator);
 
   // Deployer OwnedRegistrant and get bytecode from it
-  const OwnedRegistrantFactory = new OwnedRegistrant__factory(deployer);
+  const OwnedRegistrantFactory = new MockOwnedRegistrant__factory(deployer);
   const ownedRegistrantInst = await OwnedRegistrantFactory.deploy(deployer.address);
   const codeOwned = await ethers.provider.send("eth_getCode", [ownedRegistrantInst.address]);
   

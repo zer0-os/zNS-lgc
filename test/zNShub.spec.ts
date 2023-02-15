@@ -4,7 +4,6 @@ import {
   Registrar,
   Registrar__factory,
   ZNSHub,
-  ZNSHub__factory,
 } from "../typechain";
 import chai from "chai";
 import { domainNameToId, getEvent } from "./helpers";
@@ -13,7 +12,7 @@ import { deployZNS } from "../scripts/shared/deploy";
 
 const { expect } = chai;
 
-describe.only("zNS Hub", () => {
+describe("zNS Hub", () => {
   let accounts: SignerWithAddress[];
   let registrar: Registrar;
   let zNSHub: ZNSHub;

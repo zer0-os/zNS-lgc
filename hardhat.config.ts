@@ -89,18 +89,18 @@ const config: HardhatUserConfig = {
     timeout: 50000,
   },
   networks: {
-    // hardhat: {
-    //   // accounts: [
-    //   //   {
-    //   //     privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
-    //   //     balance: "10000000000000000000000",
-    //   //   },
-    //   // ],
-    //   // forking: {
-    //   //   url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
-    //   // },
-    //   allowUnlimitedContractSize: true
-    // },
+    hardhat: {
+      // accounts: [
+      //   {
+      //     privateKey: `0x${process.env.TESTNET_PRIVATE_KEY}`,
+      //     balance: "10000000000000000000000",
+      //   },
+      // ],
+      forking: {
+        url: `https://mainnet.infura.io/v3/0e6434f252a949719227b5d68caa2657`,
+      },
+      allowUnlimitedContractSize: true
+    },
     mainnet: {
       accounts: process.env.MAINNET_PRIVATE_KEY
         ? [`0x${process.env.MAINNET_PRIVATE_KEY}`]

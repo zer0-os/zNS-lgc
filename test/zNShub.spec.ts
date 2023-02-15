@@ -4,17 +4,15 @@ import {
   Registrar,
   ZNSHub,
   ZNSHub__factory,
-  Registrar__factory,
 } from "../typechain";
 import chai from "chai";
-import { BigNumber } from "ethers";
 
 const { expect } = chai;
 
 describe("zNS Hub", () => {
   let accounts: SignerWithAddress[];
-  let registry: Registrar;
-  let hub: ZNSHub;
+  let registrar: Registrar;
+  let zNSHub: ZNSHub;
   const creatorAccountIndex = 0;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -28,53 +26,53 @@ describe("zNS Hub", () => {
   describe("ownership", () => {
     before(async () => {
       const hubFactory = new ZNSHub__factory(creator);
-      hub = await hubFactory.deploy();
+      zNSHub = await hubFactory.deploy();
     });
 
     it("can transfer ownership", () => {
-      //await hub["transferOwnership"](user1.address);
-      //expect(await hub.registrarBeacon()).to.eq(user1.address);
+      //await zNSHub["transferOwnership"](user1.address);
+      //expect(await zNSHub.registrarBeacon()).to.eq(user1.address);
     });
   });
 
   // describe("Controllers", () => {
   //   before(async () => {
   //     //await deployRegistry(creator);
-  //     await registry.addController(creator.address);
+  //     await registrar.addController(creator.address);
   //   });
 
   //   describe("only allows owner to add controllers", async () => {
-  //     const tx = hub.connect(user1).addController(user1.address);
+  //     const tx = zNSHub.connect(user1).addController(user1.address);
   //     await expect(tx).to.be.revertedWith("Ownable: caller is not the owner");
   //   });
 
   //   describe("only allows owner to remove controllers", async () => {
-  //     const tx = hub.connect(user1).removeController(user1.address);
+  //     const tx = zNSHub.connect(user1).removeController(user1.address);
   //     await expect(tx).to.be.revertedWith("Ownable: caller is not the owner");
   //   });
 
   //   describe("can add controller", async () => {
-  //     await hub.addController(creator.address);
-  //     expect(await hub.isController(creator.address)).to.to.true;
+  //     await zNSHub.addController(creator.address);
+  //     expect(await zNSHub.isController(creator.address)).to.to.true;
   //   });
 
   //   describe("can remove controller", async () => {
-  //     await hub.removeController(creator.address);
-  //     expect(await hub.isController(creator.address)).to.to.false;
+  //     await zNSHub.removeController(creator.address);
+  //     expect(await zNSHub.isController(creator.address)).to.to.false;
   //   });
   // });
 
   // describe("Registrars", () => {
   //   before(async () => {
   //     //await deployRegistry(creator);
-  //     await registry.addController(creator.address);
+  //     await registrar.addController(creator.address);
   //   });
   // });
 
   // describe("Subdomain contract creation", () => {
   //   before(async () => {
   //     await deployRegistry(creator);
-  //     await registry.addController(creator.address);
+  //     await registrar.addController(creator.address);
   //   });
 
   //   let subdomainRegistrar: Registrar;
@@ -82,7 +80,7 @@ describe("zNS Hub", () => {
   //   let domainId = domainNameToId(domainName);
 
   //   it("can create subdomain contracts", async () => {
-  //     const tx = await registry.registerSubdomainContract(
+  //     const tx = await registrar.registerSubdomainContract(
   //       rootDomainId,
   //       domainName,
   //       creator.address,
@@ -92,12 +90,12 @@ describe("zNS Hub", () => {
   //       creator.address
   //     );
 
-  //     expect(tx).to.emit(hub, "EENewSubdomainRegistrar");
+  //     expect(tx).to.emit(zNSHub, "EENewSubdomainRegistrar");
   //     const event = await getEvent(
   //       tx,
   //       "EENewSubdomainRegistrar",
-  //       hub.address,
-  //       hub.interface
+  //       zNSHub.address,
+  //       zNSHub.interface
   //     );
   //     subdomainRegistrar = Registrar__factory.connect(
   //       event.args["childRegistrar"],
@@ -106,14 +104,14 @@ describe("zNS Hub", () => {
   //   });
 
   //   it("subdomain registrar returns proper owner", async () => {
-  //     const ownerOnRoot = await registry.ownerOf(domainId);
-  //     const ownerOnSub = await registry.ownerOf(domainId);
+  //     const ownerOnRoot = await registrar.ownerOf(domainId);
+  //     const ownerOnSub = await registrar.ownerOf(domainId);
 
   //     expect(ownerOnRoot).to.eq(ownerOnSub);
   //   });
 
   //   it("prevents subdomains from being minted on root", async () => {
-  //     const tx = registry.registerDomain(
+  //     const tx = registrar.registerDomain(
   //       domainId,
   //       "bar",
   //       creator.address,
@@ -147,18 +145,18 @@ describe("zNS Hub", () => {
   //   let domainId = domainNameToId(domainName);
   //   before(async () => {
   //     await deployRegistry(creator);
-  //     await registry.addController(creator.address);
+  //     await registrar.addController(creator.address);
   //   });
 
   //   it("ownerOf returns owner of root domain in subdomain contract", async () => {
   //     const childRegistrar = await createSubdomainContract(
-  //       registry,
+  //       registrar,
   //       creator,
   //       0,
   //       "foo"
   //     );
 
-  //     expect(await childRegistrar.ownerOf(0)).to.eq(await registry.ownerOf(0));
+  //     expect(await childRegistrar.ownerOf(0)).to.eq(await registrar.ownerOf(0));
   //   });
   // });
 });

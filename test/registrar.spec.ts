@@ -11,8 +11,8 @@ import { deployZNS } from "./helpers/deploy";
 const { expect } = chai;
 
 describe("Registrar", () => {
-  let registry: Registrar;
-  let hub: ZNSHub;
+  let registrar: Registrar;
+  let zNSHub: ZNSHub;
   let creator: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
@@ -47,18 +47,16 @@ describe("Registrar", () => {
 
   describe("root domain", () => {
     before(async () => {
-      const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      ({ registrar, zNSHub } = await deployZNS(creator));
     });
 
     it("has a root domain on creation", async () => {
-      const doesRootExist = await registry.domainExists(rootDomainId);
+      const doesRootExist = await registrar.domainExists(rootDomainId);
       expect(doesRootExist).to.be.true;
     });
 
     it("creates the root domain belonging to the creator", async () => {
-      const domainOwner = await registry.ownerOf(rootDomainId);
+      const domainOwner = await registrar.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(
         creator.address,
         "The owner is not the creator."
@@ -66,7 +64,7 @@ describe("Registrar", () => {
     });
 
     it("tracks the root domain controller as null", async () => {
-      expect(await registry.domainController(rootDomainId)).to.eq(
+      expect(await registrar.domainController(rootDomainId)).to.eq(
         ethers.constants.AddressZero
       );
     });
@@ -75,13 +73,13 @@ describe("Registrar", () => {
   describe("transferring domains", () => {
     before(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      registrar = registrar;
+      zNSHub = zNSHub;
     });
 
     // Redundant ERC721 test which is tested by OpenZeppelin
     it("prevents a user who does not own a domain from transferring it", async () => {
-      const registryAsUser1 = registry.connect(user1);
+      const registryAsUser1 = registrar.connect(user1);
 
       const tx = registryAsUser1["safeTransferFrom(address,address,uint256)"](
         creator.address,
@@ -95,12 +93,12 @@ describe("Registrar", () => {
     });
 
     it("allows for a domain to be transferred with 'safeTransferFrom'", async () => {
-      await registry["safeTransferFrom(address,address,uint256)"](
+      await registrar["safeTransferFrom(address,address,uint256)"](
         creator.address,
         user1.address,
         rootDomainId
       );
-      const domainOwner = await registry.ownerOf(rootDomainId);
+      const domainOwner = await registrar.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
     });
   });
@@ -108,53 +106,53 @@ describe("Registrar", () => {
   describe("controllers", () => {
     before(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      registrar = registrar;
+      zNSHub = zNSHub;
     });
 
     let addControllerTx: ContractTransaction;
     let removeControllerTx: ContractTransaction;
 
     it("adds controllers to the controller list", async () => {
-      addControllerTx = await registry.addController(user1.address);
-      expect(await registry.controllers(user1.address)).to.be.true;
+      addControllerTx = await registrar.addController(user1.address);
+      expect(await registrar.controllers(user1.address)).to.be.true;
     });
 
     it("emits a ControllerAdded event when a controller is added", async () => {
       expect(addControllerTx)
-        .to.emit(registry, "ControllerAdded")
+        .to.emit(registrar, "ControllerAdded")
         .withArgs(user1.address);
     });
 
     it("removes controllers from the controller list", async () => {
-      removeControllerTx = await registry.removeController(user1.address);
-      expect(await registry.controllers(user1.address)).to.be.false;
+      removeControllerTx = await registrar.removeController(user1.address);
+      expect(await registrar.controllers(user1.address)).to.be.false;
     });
 
     it("emits a ControllerRemoved event when a controller is removed", async () => {
       expect(removeControllerTx)
-        .to.emit(registry, "ControllerRemoved")
+        .to.emit(registrar, "ControllerRemoved")
         .withArgs(user1.address);
     });
 
     it("prevents non-owners from adding controllers", async () => {
-      const registryAsUser1 = registry.connect(user1);
+      const registryAsUser1 = registrar.connect(user1);
       await expect(
         registryAsUser1.addController(user1.address)
-      ).to.be.revertedWithCustomError(registry, "NotAuthorized");
+      ).to.be.revertedWithCustomError(registrar, "NotAuthorized");
     });
   });
 
   describe("registering domains", () => {
     beforeEach("deploys", async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      registrar = registrar;
+      zNSHub = zNSHub;
     });
 
     it("prevents non controllers from registering domains", async () => {
       await expect(
-        registry.registerDomain(
+        registrar.registerDomain(
           rootDomainId,
           "myDomain",
           user2.address,
@@ -166,7 +164,7 @@ describe("Registrar", () => {
     });
 
     it("returns false if a domain doesn't exist", async () => {
-      await registry.addController(user1.address);
+      await registrar.addController(user1.address);
 
       const domainName = "myDomain";
       const domainNameHash = hashDomainName(domainName);
@@ -176,13 +174,13 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      const doesDomainExist = await registry.domainExists(expectedDomainHash);
+      const doesDomainExist = await registrar.domainExists(expectedDomainHash);
       expect(doesDomainExist).to.be.false;
     });
 
     it("allows controllers to register domains", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
       const domainNameHash = hashDomainName(domainName);
@@ -201,13 +199,13 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      const doesDomainExist = await registry.domainExists(expectedDomainHash);
+      const doesDomainExist = await registrar.domainExists(expectedDomainHash);
       expect(doesDomainExist).to.be.true;
     });
 
     it("emits a DomainCreated event when a domain is registered", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -220,12 +218,12 @@ describe("Registrar", () => {
         false
       );
 
-      expect(tx).to.emit(hub, "EEDomainCreatedV3");
+      expect(tx).to.emit(zNSHub, "EEDomainCreatedV3");
     });
 
     it("emits a DomainCreated event when a domain is registered with the expected params", async () => {
-      await registry.connect(creator).addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.connect(creator).addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -245,7 +243,7 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(hub, "EEDomainCreatedV3")
+        .to.emit(zNSHub, "EEDomainCreatedV3")
         .withArgs(
           registryAsUser1.address,
           expectedDomainHash,
@@ -262,8 +260,8 @@ describe("Registrar", () => {
     });
 
     it("emits a Transfer event when a domain is registered (ERC721)", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -283,7 +281,7 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(registry, "Transfer")
+        .to.emit(registrar, "Transfer")
         .withArgs(
           ethers.constants.AddressZero,
           user2.address,
@@ -292,8 +290,8 @@ describe("Registrar", () => {
     });
 
     it("properly tracks who the creator of a domain was", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -318,8 +316,8 @@ describe("Registrar", () => {
     });
 
     it("properly tracks the controller that created a domain", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -344,8 +342,8 @@ describe("Registrar", () => {
     });
 
     it("prevents a domain from being registered if it already exists", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const domainName = "myDomain";
 
@@ -371,8 +369,8 @@ describe("Registrar", () => {
     });
 
     it("prevents a domain from being registered if it's parent doesn't exist", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const parentName = "myRoot";
       const parentHash = hashDomainName(parentName);
@@ -388,12 +386,12 @@ describe("Registrar", () => {
           0,
           false
         )
-      ).to.be.revertedWithCustomError(registry, "NoParentDomain");
+      ).to.be.revertedWithCustomError(registrar, "NoParentDomain");
     });
 
     it("allows a child domain to be registered on an existing domain", async () => {
-      await registry.addController(user1.address);
-      const registryAsUser1 = registry.connect(user1);
+      await registrar.addController(user1.address);
+      const registryAsUser1 = registrar.connect(user1);
 
       const parentName = "myRoot";
       await registryAsUser1.registerDomain(
@@ -420,7 +418,7 @@ describe("Registrar", () => {
 
       const domainNameHash = hashDomainName(domainName);
       const expectedDomainHash = calculateDomainHash(rootHash, domainNameHash);
-      expect(await registry.domainExists(expectedDomainHash)).to.be.true;
+      expect(await registrar.domainExists(expectedDomainHash)).to.be.true;
     });
   });
 
@@ -431,15 +429,15 @@ describe("Registrar", () => {
 
     before(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      registrar = registrar;
+      zNSHub = zNSHub;
     });
 
     before(async () => {
-      await registry.addController(creator.address);
+      await registrar.addController(creator.address);
 
       const domainName = "myDomain";
-      await registry.registerDomain(
+      await registrar.registerDomain(
         rootDomainId,
         domainName,
         user1.address,
@@ -454,7 +452,7 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      registryAsUser1 = registry.connect(user1);
+      registryAsUser1 = registrar.connect(user1);
       testDomainId = expectedDomainHash;
     });
 
@@ -464,8 +462,8 @@ describe("Registrar", () => {
       await expect(
         registryAsUser1.setDomainMetadataUri(testDomainId, newMetadataUri)
       )
-        .to.emit(hub, "EEMetadataChanged")
-        .withArgs(registry.address, testDomainId, newMetadataUri);
+        .to.emit(zNSHub, "EEMetadataChanged")
+        .withArgs(registrar.address, testDomainId, newMetadataUri);
     });
 
     it("updates state when metadata is changed", async () => {
@@ -480,7 +478,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainMetadataUri(testDomainId, newMetadataUri)
-      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
+      ).to.be.revertedWithCustomError(registrar, "NotDomainOwner");
     });
   });
 
@@ -490,12 +488,12 @@ describe("Registrar", () => {
 
     before(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
-      await registry.addController(creator.address);
+      registrar = registrar;
+      zNSHub = zNSHub;
+      await registrar.addController(creator.address);
 
       const domainName = "myDomain";
-      await registry.registerDomain(
+      await registrar.registerDomain(
         rootDomainId,
         domainName,
         user1.address,
@@ -510,14 +508,14 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      registryAsUser1 = registry.connect(user1);
+      registryAsUser1 = registrar.connect(user1);
       testDomainId = expectedDomainHash;
     });
 
     it("prevents unlocking when metadata is not locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, false)
-      ).to.be.revertedWithCustomError(registry, "NotLockedMetadata");
+      ).to.be.revertedWithCustomError(registrar, "NotLockedMetadata");
     });
 
     it("prevents a non-owner from locking metadata", async () => {
@@ -525,15 +523,15 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, true)
-      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
+      ).to.be.revertedWithCustomError(registrar, "NotDomainOwner");
     });
 
     it("emits a MetadataLocked event when metadata is locked", async () => {
       const tx = await registryAsUser1.lockDomainMetadata(testDomainId, true);
 
       expect(tx)
-        .to.emit(hub, "EEMetadataLockChanged")
-        .withArgs(registry.address, testDomainId, user1.address, true);
+        .to.emit(zNSHub, "EEMetadataLockChanged")
+        .withArgs(registrar.address, testDomainId, user1.address, true);
     });
 
     it("updates state when the metadata is locked", async () => {
@@ -550,7 +548,7 @@ describe("Registrar", () => {
     it("prevents locking metadata if it is already locked", async () => {
       await expect(
         registryAsUser1.lockDomainMetadata(testDomainId, true)
-      ).to.be.revertedWithCustomError(registry, "LockedMetadata");
+      ).to.be.revertedWithCustomError(registrar, "LockedMetadata");
     });
 
     it("prevents users other than the locker from unlocking metadata", async () => {
@@ -558,7 +556,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.lockDomainMetadata(testDomainId, false)
-      ).to.be.revertedWithCustomError(registry, "NotMetadataLocker");
+      ).to.be.revertedWithCustomError(registrar, "NotMetadataLocker");
     });
 
     it("prevents metadata from being set if it is locked", async () => {
@@ -567,13 +565,13 @@ describe("Registrar", () => {
           testDomainId,
           "https://www.chuckecheese.com/"
         )
-      ).to.be.revertedWithCustomError(registry, "LockedMetadata");
+      ).to.be.revertedWithCustomError(registrar, "LockedMetadata");
     });
 
     it("emits a MetadataUnlocked event when metadata is unlocked", async () => {
       await expect(registryAsUser1.lockDomainMetadata(testDomainId, false))
-        .to.emit(hub, "EEMetadataLockChanged")
-        .withArgs(registry.address, testDomainId, user1.address, false);
+        .to.emit(zNSHub, "EEMetadataLockChanged")
+        .withArgs(registrar.address, testDomainId, user1.address, false);
     });
 
     it("updates state of when metadata is unlocked", async () => {
@@ -589,12 +587,12 @@ describe("Registrar", () => {
 
     before(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
-      await registry.addController(creator.address);
+      registrar = registrar;
+      zNSHub = zNSHub;
+      await registrar.addController(creator.address);
 
       const domainName = "myDomain";
-      await registry.registerDomain(
+      await registrar.registerDomain(
         rootDomainId,
         domainName,
         user1.address,
@@ -609,7 +607,7 @@ describe("Registrar", () => {
         domainNameHash
       );
 
-      registryAsUser1 = registry.connect(user1);
+      registryAsUser1 = registrar.connect(user1);
       testDomainId = expectedDomainHash;
     });
 
@@ -623,8 +621,12 @@ describe("Registrar", () => {
       );
 
       expect(tx)
-        .to.emit(hub, "EERoyaltiesAmountChanged")
-        .withArgs(registry.address, testDomainId, currentExpectedRoyaltyAmount);
+        .to.emit(zNSHub, "EERoyaltiesAmountChanged")
+        .withArgs(
+          registrar.address,
+          testDomainId,
+          currentExpectedRoyaltyAmount
+        );
     });
 
     it("updates state when a domain's royalty amount changes", async () => {
@@ -638,7 +640,7 @@ describe("Registrar", () => {
 
       await expect(
         registryAsUser2.setDomainRoyaltyAmount(testDomainId, 0)
-      ).to.be.revertedWithCustomError(registry, "NotDomainOwner");
+      ).to.be.revertedWithCustomError(registrar, "NotDomainOwner");
     });
   });
 
@@ -653,8 +655,8 @@ describe("Registrar", () => {
 
     beforeEach(async () => {
       const { registrar, zNSHub } = await deployZNS(creator);
-      registry = registrar;
-      hub = zNSHub;
+      registrar = registrar;
+      zNSHub = zNSHub;
       filterRegistry = OperatorFilterRegistry__factory.connect(
         "0x000000000000AAeB6D7670E522A718067333cd4E",
         creator
@@ -667,36 +669,36 @@ describe("Registrar", () => {
     });
 
     it("Already has the Registrar address in the filter", async () => {
-      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      const isRegistered = await filterRegistry.isRegistered(registrar.address);
       expect(isRegistered).to.be.true;
     });
 
-    it("Is Able to transfer domains even if Registrar was not registered into filter registry", async () => {
-      await filterRegistry.connect(creator).unregister(registry.address);
+    it("Is Able to transfer domains even if Registrar was not registered into filter registrar", async () => {
+      await filterRegistry.connect(creator).unregister(registrar.address);
       // make sure successfully unregistered
-      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      const isRegistered = await filterRegistry.isRegistered(registrar.address);
       expect(isRegistered).to.be.false;
 
-      await registry
+      await registrar
         .connect(creator)
         ["safeTransferFrom(address,address,uint256)"](
           creator.address,
           user1.address,
           rootDomainId
         );
-      const domainOwner = await registry.ownerOf(rootDomainId);
+      const domainOwner = await registrar.ownerOf(rootDomainId);
       expect(domainOwner).to.be.eq(user1.address);
     });
 
     it("Unable to call to register with an existing registrant", async () => {
       await expect(
-        filterRegistry.connect(creator).register(registry.address)
+        filterRegistry.connect(creator).register(registrar.address)
       ).to.be.revertedWithCustomError(filterRegistry, "AlreadyRegistered");
     });
 
     it("Has filtered operators", async () => {
       const operators = await filterRegistry.filteredOperators(
-        registry.address
+        registrar.address
       );
       expect(operators.length).to.be.gt(0);
     });
@@ -704,17 +706,17 @@ describe("Registrar", () => {
     it("Access to OpenSea list is shown by Blur already being filtered", async () => {
       // Reference: https://etherscan.io/address/0x00000000000111AbE46ff893f3B2fdF1F759a8A8#code
       const isOperatorFiltered = await filterRegistry.isOperatorFiltered(
-        registry.address,
+        registrar.address,
         blurAddress
       );
       expect(isOperatorFiltered).to.be.true;
     });
 
     it("Can't approve when on the filtered list", async () => {
-      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      const isRegistered = await filterRegistry.isRegistered(registrar.address);
       expect(isRegistered).to.be.true;
 
-      const tx = registry.connect(creator).approve(blurAddress, rootDomainId);
+      const tx = registrar.connect(creator).approve(blurAddress, rootDomainId);
       await expect(tx).to.be.revertedWithCustomError(
         filterRegistry,
         "AddressFiltered"
@@ -722,28 +724,34 @@ describe("Registrar", () => {
     });
 
     it("Can approve when not on filtered list", async () => {
-      const tx = registry.connect(creator).approve(user1.address, rootDomainId);
+      const tx = registrar
+        .connect(creator)
+        .approve(user1.address, rootDomainId);
       await expect(tx).to.not.be.reverted;
     });
 
     it("Filtered addresses can't transfer domains", async () => {
       // Unregister registrant to approve blur for root domain
-      await filterRegistry.connect(creator).unregister(registry.address);
-      await expect(registry.connect(creator).approve(blurAddress, rootDomainId))
-        .to.be.not.reverted;
+      await filterRegistry.connect(creator).unregister(registrar.address);
+      await expect(
+        registrar.connect(creator).approve(blurAddress, rootDomainId)
+      ).to.be.not.reverted;
 
       // Register and subscribe again
       await filterRegistry
         .connect(creator)
-        .registerAndSubscribe(registry.address, subscriptionOrRegistrantToCopy);
+        .registerAndSubscribe(
+          registrar.address,
+          subscriptionOrRegistrantToCopy
+        );
       // Ensure if blur was already filtered
       const isBlurFiltered = await filterRegistry.isOperatorFiltered(
-        registry.address,
+        registrar.address,
         blurAddress
       );
       expect(isBlurFiltered).to.be.true;
 
-      const registryLR = await registry.connect(blurSigner);
+      const registryLR = await registrar.connect(blurSigner);
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
           creator.address,
@@ -755,12 +763,12 @@ describe("Registrar", () => {
 
     it("Unfiltered addresses can transfer domains", async () => {
       const isUserFiltered = await filterRegistry.isOperatorFiltered(
-        registry.address,
+        registrar.address,
         creator.address
       );
       expect(isUserFiltered).to.be.false;
 
-      const registryLR = registry.connect(creator);
+      const registryLR = registrar.connect(creator);
 
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
@@ -772,14 +780,14 @@ describe("Registrar", () => {
     });
 
     it("Blur can transfer if the Registrar is unregistered from OpenSea's filter list.", async () => {
-      await filterRegistry.unregister(registry.address);
+      await filterRegistry.unregister(registrar.address);
 
-      const approval = registry
+      const approval = registrar
         .connect(creator)
         .approve(blurAddress, rootDomainId);
       await expect(approval).to.not.be.reverted;
 
-      const transfer = registry
+      const transfer = registrar
         .connect(blurSigner)
         ["safeTransferFrom(address,address,uint256)"](
           creator.address,
@@ -791,17 +799,18 @@ describe("Registrar", () => {
 
     it("Blur can transfer even if the Registrar is registered to OpenSea's filter list.", async () => {
       // Unregister registrant to approve blur for root domain
-      await filterRegistry.connect(creator).unregister(registry.address);
-      await expect(registry.connect(creator).approve(blurAddress, rootDomainId))
-        .to.be.not.reverted;
+      await filterRegistry.connect(creator).unregister(registrar.address);
+      await expect(
+        registrar.connect(creator).approve(blurAddress, rootDomainId)
+      ).to.be.not.reverted;
 
       // Register and subscribe again
-      await filterRegistry.connect(creator).register(registry.address);
+      await filterRegistry.connect(creator).register(registrar.address);
       // Registrar is registered with the filter list
-      const isRegistered = await filterRegistry.isRegistered(registry.address);
+      const isRegistered = await filterRegistry.isRegistered(registrar.address);
       expect(isRegistered).to.be.true;
 
-      const registryLR = registry.connect(blurSigner);
+      const registryLR = registrar.connect(blurSigner);
       await expect(
         registryLR["safeTransferFrom(address,address,uint256)"](
           creator.address,

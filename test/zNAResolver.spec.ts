@@ -71,11 +71,7 @@ describe("zNAResolver", function () {
       userA,
     ] = await ethers.getSigners();
 
-    const { registrar: registrar0, zNSHub: zNSHub0 } = await deployZNS(
-      deployer
-    );
-    registrar = registrar0;
-    zNSHub = zNSHub0;
+    ({ registrar, zNSHub } = await deployZNS(deployer));
     await registrar.addController(deployer.address);
 
     // Deploy ResourceType Library

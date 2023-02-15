@@ -21,7 +21,7 @@ const { expect } = chai;
 describe("DomainPurchaser", () => {
   let accounts: SignerWithAddress[];
   let registrar: smock.FakeContract<Registrar>;
-  let hub: smock.FakeContract<ZNSHub>;
+  let zNSHub: smock.FakeContract<ZNSHub>;
   let erc20Token: smock.FakeContract<IERC20Upgradeable>;
   let purchaser: DomainPurchaser;
 
@@ -43,7 +43,7 @@ describe("DomainPurchaser", () => {
 
   describe("purchase network domain", () => {
     before(async () => {
-      hub = await smock.smock.fake(ZNSHub__factory);
+      zNSHub = await smock.smock.fake(ZNSHub__factory);
       registrar = await smock.smock.fake(Registrar__factory);
       erc20Token = await smock.smock.fake(ERC20Upgradeable__factory);
 
@@ -51,7 +51,7 @@ describe("DomainPurchaser", () => {
       purchaser = await factory.deploy();
       await purchaser.initialize(
         erc20Token.address,
-        hub.address,
+        zNSHub.address,
         creator.address,
         pricingData,
         0
@@ -59,7 +59,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("allows a user to purchase a network", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.returns(true);
@@ -84,7 +84,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("fails if the user doesn't have enough funds", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -98,7 +98,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("charges the user the right amount for short length network", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -116,7 +116,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("charges the user the right amount for medium length network", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -134,7 +134,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("charges the user the right amount for long length network", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -152,7 +152,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("does not allow a user to register a network whose name is over 32 characters", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -170,7 +170,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("does not allow a user to register a network with an empty name", async () => {
-      hub.getRegistrarForDomain.returns(registrar.address);
+      zNSHub.getRegistrarForDomain.returns(registrar.address);
       registrar.registerSubdomainContract.returns(1);
 
       erc20Token.transferFrom.reset();
@@ -186,7 +186,7 @@ describe("DomainPurchaser", () => {
 
   describe("utility", () => {
     before(async () => {
-      hub = await smock.smock.fake(ZNSHub__factory);
+      zNSHub = await smock.smock.fake(ZNSHub__factory);
       registrar = await smock.smock.fake(Registrar__factory);
       erc20Token = await smock.smock.fake(ERC20Upgradeable__factory);
 
@@ -194,7 +194,7 @@ describe("DomainPurchaser", () => {
       purchaser = await factory.deploy();
       await purchaser.initialize(
         erc20Token.address,
-        hub.address,
+        zNSHub.address,
         creator.address,
         pricingData,
         0
@@ -217,7 +217,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("allows an authorized user to set domain minting status", async () => {
-      hub.ownerOf.whenCalledWith(BigNumber.from(1)).returns(user1.address);
+      zNSHub.ownerOf.whenCalledWith(BigNumber.from(1)).returns(user1.address);
       await purchaser.connect(user1).setDomainMintingStatus(1, true, true);
       const record = await purchaser.purchaseData(1);
       expect(record.subdomainMintingEnabled).to.be.true;
@@ -225,7 +225,7 @@ describe("DomainPurchaser", () => {
     });
 
     it("allows an authorized user to set domain minting pricing", async () => {
-      hub.ownerOf.whenCalledWith(2).returns(user1.address);
+      zNSHub.ownerOf.whenCalledWith(2).returns(user1.address);
       await purchaser.connect(user1).setDomainPricing(
         2,
         {

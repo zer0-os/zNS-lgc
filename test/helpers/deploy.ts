@@ -1,9 +1,8 @@
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "hardhat";
+import * as fs from 'fs';
 import {
-  MockOwnedRegistrant__factory,
   OperatorFilterRegistry__factory,
-  OwnedRegistrant__factory,
   Registrar,
   Registrar__factory,
   UpgradeableBeacon__factory,
@@ -30,23 +29,17 @@ const deployOperatorFilterRegistry = async (deployer: SignerWithAddress): Promis
     return;
   }
 
-  // Deploy OperatorFilterRegistry and get bytecode from it
-  const OperatorFilterRegistryFactory = new OperatorFilterRegistry__factory(deployer);
-  const operatorFilterRegistryInst = await OperatorFilterRegistryFactory.deploy();
-  const codeOperator = await ethers.provider.send("eth_getCode", [operatorFilterRegistryInst.address]);
-
+  // Get deployed bytecode from artifacts
   const OPERATOR_FILTER_REGISTRY_ADDRESS = "0x000000000000AAeB6D7670E522A718067333cd4E";
+  const operatorFilterRegistryJson = fs.readFileSync(`./artifacts/operator-filter-registry/src/OperatorFilterRegistry.sol/OperatorFilterRegistry.json`);
   // Set bytecode at 0x000000000000AAeB6D7670E522A718067333cd4E
-  await helpers.setCode(OPERATOR_FILTER_REGISTRY_ADDRESS, codeOperator);
+  await helpers.setCode(OPERATOR_FILTER_REGISTRY_ADDRESS, JSON.parse(operatorFilterRegistryJson.toString()).deployedBytecode);
 
-  // Deployer OwnedRegistrant and get bytecode from it
-  const OwnedRegistrantFactory = new MockOwnedRegistrant__factory(deployer);
-  const ownedRegistrantInst = await OwnedRegistrantFactory.deploy(deployer.address);
-  const codeOwned = await ethers.provider.send("eth_getCode", [ownedRegistrantInst.address]);
-  
+  // Get deployed bytecode from artifacts
   const OWNED_REGISTRANT_ADDRESS = "0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6"
+  const ownedRegistrantJson = fs.readFileSync(`./artifacts/contracts/mocks/MockOwnedRegistrant.sol/MockOwnedRegistrant.json`);  
   // Set bytecode at 0x3cc6CddA760b79bAfa08dF41ECFA224f810dCeB6
-  await helpers.setCode(OWNED_REGISTRANT_ADDRESS, codeOwned);
+  await helpers.setCode(OWNED_REGISTRANT_ADDRESS, JSON.parse(ownedRegistrantJson.toString()).deployedBytecode);
 
   // Since `hardhat_setCode` does not set or copy storage, it requires to 
   // set storage at 0x0 to set owner of `OwnedRegistrant` contract.

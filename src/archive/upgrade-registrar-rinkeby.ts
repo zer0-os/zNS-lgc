@@ -3,7 +3,7 @@ import { getLogger } from "../utilities";
 
 // import * as hre from "hardhat";
 
-const logger = getLogger("scripts::upgrade");
+const logger = getLogger("src::upgrade");
 
 async function main() {
   //await run("compile");

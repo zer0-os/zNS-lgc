@@ -6,14 +6,14 @@ import {
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../../utilities";
+} from "../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-registrar");
+const logger = getLogger("src::deploy-registrar");
 const goerliZNSHubAddress = "0x35921570D157D6E9DA51e67B47d43bAF5da1e108";
 
 async function main() {

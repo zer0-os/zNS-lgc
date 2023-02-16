@@ -7,7 +7,7 @@ import {
 import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 
-const logger = getLogger("scripts::add-staking-controller");
+const logger = getLogger("src::add-staking-controller");
 
 async function main() {
   await run("compile");

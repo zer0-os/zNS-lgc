@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { getLogger } from "../utilities";
 
-const logger = getLogger("scripts::upload-nft");
+const logger = getLogger("src::upload-nft");
 
 const ipfsBaseUri = "https://ipfs.io/ipfs/";
 

@@ -1,9 +1,9 @@
 import { ethers, upgrades, network, run } from "hardhat";
 import {
-  AuthBasicController__factory,
+  StakingController__factory,
   Registrar,
   Registrar__factory,
-} from "../../typechain";
+} from "../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
@@ -17,7 +17,10 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-auth-controller");
+const logger = getLogger("src::deploy-staking-controller");
+
+// change for target staking token
+const tokenAddress = "0x43b8219aC1883373C0428688eE1a76e19E6B6D9d";
 
 async function main() {
   await run("compile");
@@ -55,24 +58,24 @@ async function main() {
     deploymentData.registrar.address
   );
 
-  const controllerFactory = new AuthBasicController__factory(deploymentAccount);
+  const controllerFactory = new StakingController__factory(deploymentAccount);
   const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
 
   logger.log(`Implementation version is ${bytecodeHash}`);
 
   const instance = await upgrades.deployProxy(
     controllerFactory,
-    [registrar.address],
+    [registrar.address, tokenAddress],
     {
       initializer: "initialize",
     }
   );
   await instance.deployed();
 
-  logger.log(`Deployed AuthBasicController to '${instance.address}'`);
+  logger.log(`Deployed Staking Controller to '${instance.address}'`);
 
   const deploymentRecord: DeployedContract = {
-    name: "AuthBasicController",
+    name: "StakingController",
     address: instance.address,
     version: bytecodeHash,
     date: new Date().toISOString(),
@@ -86,7 +89,7 @@ async function main() {
     deploymentRecord.implementation = implementationContract.address;
   }
 
-  deploymentData.authController = deploymentRecord;
+  deploymentData.stakingController = deploymentRecord;
 
   const jsonToWrite = JSON.stringify(deploymentData, undefined, 2);
 
@@ -97,7 +100,10 @@ async function main() {
 
   if (implementationContract) {
     logger.log(`Waiting for 5 confirmations`);
-    await instance.deployTransaction.wait(5);
+    // infinite loops on homestead / hardhat network
+    if (network.name !== "hardhat" && network.name !== "homestead") {
+      await instance.deployTransaction.wait(5);
+    }
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

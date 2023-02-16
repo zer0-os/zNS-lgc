@@ -3,10 +3,10 @@ import * as hre from "hardhat";
 import {
   Registrar__factory,
 } from "../typechain";
-import { getLogger } from "../utilities";
+import { getLogger } from "./utilities";
 import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
 
-const logger = getLogger("scripts::test-filter");
+const logger = getLogger("src::test-filter");
 
 const main = async () => {
   const [deployer] = await hre.ethers.getSigners();

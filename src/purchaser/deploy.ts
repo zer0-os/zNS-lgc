@@ -1,7 +1,7 @@
 import * as hre from "hardhat";
 import { ethers } from "hardhat";
 import { DomainPurchaser__factory } from "../../typechain";
-import { impersonateAccount } from "../../utilities";
+import { impersonateAccount } from "../utilities";
 import { getZNSAddressesByNetworkName } from "../addresses";
 
 const main = async () => {

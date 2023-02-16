@@ -10,14 +10,14 @@ import {
   DeploymentOutput,
   deploymentsFolder,
   getLogger,
-} from "../../utilities";
+} from "../utilities";
 
 import {
   hashBytecodeWithoutMetadata,
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-basic-controller");
+const logger = getLogger("src::deploy-auth-controller");
 
 async function main() {
   await run("compile");
@@ -43,8 +43,6 @@ async function main() {
     deploymentData = {};
   }
 
-  console.log(deploymentData.registrar)
-
   if (!deploymentData.registrar) {
     logger.error(
       `Registrar must be deployed before controller can be deployed!`
@@ -55,10 +53,6 @@ async function main() {
   const registrarFactory = new Registrar__factory(deploymentAccount);
   const registrar: Registrar = await registrarFactory.attach(
     deploymentData.registrar.address
-  );
-
-  logger.log(
-    `Deploying with registrar address : ${deploymentData.registrar.address}`
   );
 
   const controllerFactory = new AuthBasicController__factory(deploymentAccount);
@@ -75,10 +69,10 @@ async function main() {
   );
   await instance.deployed();
 
-  logger.log(`Deployed BasicController to '${instance.address}'`);
+  logger.log(`Deployed AuthBasicController to '${instance.address}'`);
 
   const deploymentRecord: DeployedContract = {
-    name: "BasicController",
+    name: "AuthBasicController",
     address: instance.address,
     version: bytecodeHash,
     date: new Date().toISOString(),
@@ -92,7 +86,7 @@ async function main() {
     deploymentRecord.implementation = implementationContract.address;
   }
 
-  deploymentData.basicController = deploymentRecord;
+  deploymentData.authController = deploymentRecord;
 
   const jsonToWrite = JSON.stringify(deploymentData, undefined, 2);
 
@@ -102,10 +96,8 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
-    // infinite loops on homestead / hardhat network
-    if (network.name !== "hardhat" && network.name !== "homestead") {
-      await instance.deployTransaction.wait(5);
-    }
+    logger.log(`Waiting for 5 confirmations`);
+    await instance.deployTransaction.wait(5);
 
     logger.log(`Attempting to verify implementation contract with etherscan`);
     try {

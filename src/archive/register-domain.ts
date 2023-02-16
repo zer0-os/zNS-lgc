@@ -10,7 +10,7 @@ import * as fs from "fs";
 import { DeploymentOutput, deploymentsFolder, getLogger } from "../utilities";
 import { getEvent } from "../test/helpers";
 
-const logger = getLogger("scripts::register-domain");
+const logger = getLogger("src::register-domain");
 
 const parentId = ethers.constants.HashZero;
 const domainName = "wilder";

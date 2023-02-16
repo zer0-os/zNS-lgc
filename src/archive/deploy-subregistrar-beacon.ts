@@ -1,9 +1,9 @@
 import * as hre from "hardhat";
 import { Registrar__factory } from "../../typechain";
-import { getLogger } from "../../utilities";
+import { getLogger } from "../utilities";
 
 async function main() {
-  const logger = getLogger("scripts::deploy-subregistrar-beacon");
+  const logger = getLogger("src::deploy-subregistrar-beacon");
 
   const accounts = await hre.ethers.getSigners();
   const deploymentAccount = accounts[0];

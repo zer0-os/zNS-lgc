@@ -1,5 +1,6 @@
 node_modules
 bin
+dist
 
 #Hardhat files
 cache
@@ -13,3 +14,6 @@ typechain/
 .openzeppelin/.session
 coverage/
 coverage.json
+
+# IDEs
+.idea

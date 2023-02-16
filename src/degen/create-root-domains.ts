@@ -2,12 +2,12 @@ import * as hre from "hardhat";
 import { ethers } from "hardhat";
 
 import { Registrar__factory } from "../../typechain";
-import { getLogger } from "../../utilities";
+import { getLogger } from "../utilities";
 import { zer0ProtocolAddresses } from "@zero-tech/zero-contracts";
 import { confirmContinue } from "../shared/helpers";
 import { domainConfigs } from "./config";
 
-const logger = getLogger("scripts::create-degen-root-domain");
+const logger = getLogger("src::create-degen-root-domain");
 
 const main = async () => {
   const [deployer] = await hre.ethers.getSigners();

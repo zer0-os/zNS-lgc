@@ -1,9 +1,9 @@
 import { ethers, upgrades, network, run } from "hardhat";
 import {
-  StakingController__factory,
+  AuthBasicController__factory,
   Registrar,
   Registrar__factory,
-} from "../typechain";
+} from "../../typechain";
 import * as fs from "fs";
 import {
   DeployedContract,
@@ -17,10 +17,7 @@ import {
   Manifest,
 } from "@openzeppelin/upgrades-core";
 
-const logger = getLogger("scripts::deploy-staking-controller");
-
-// change for target staking token
-const tokenAddress = "0x43b8219aC1883373C0428688eE1a76e19E6B6D9d";
+const logger = getLogger("src::deploy-basic-controller");
 
 async function main() {
   await run("compile");
@@ -46,6 +43,8 @@ async function main() {
     deploymentData = {};
   }
 
+  console.log(deploymentData.registrar)
+
   if (!deploymentData.registrar) {
     logger.error(
       `Registrar must be deployed before controller can be deployed!`
@@ -58,24 +57,28 @@ async function main() {
     deploymentData.registrar.address
   );
 
-  const controllerFactory = new StakingController__factory(deploymentAccount);
+  logger.log(
+    `Deploying with registrar address : ${deploymentData.registrar.address}`
+  );
+
+  const controllerFactory = new AuthBasicController__factory(deploymentAccount);
   const bytecodeHash = hashBytecodeWithoutMetadata(controllerFactory.bytecode);
 
   logger.log(`Implementation version is ${bytecodeHash}`);
 
   const instance = await upgrades.deployProxy(
     controllerFactory,
-    [registrar.address, tokenAddress],
+    [registrar.address],
     {
       initializer: "initialize",
     }
   );
   await instance.deployed();
 
-  logger.log(`Deployed Staking Controller to '${instance.address}'`);
+  logger.log(`Deployed BasicController to '${instance.address}'`);
 
   const deploymentRecord: DeployedContract = {
-    name: "StakingController",
+    name: "BasicController",
     address: instance.address,
     version: bytecodeHash,
     date: new Date().toISOString(),
@@ -89,7 +92,7 @@ async function main() {
     deploymentRecord.implementation = implementationContract.address;
   }
 
-  deploymentData.stakingController = deploymentRecord;
+  deploymentData.basicController = deploymentRecord;
 
   const jsonToWrite = JSON.stringify(deploymentData, undefined, 2);
 
@@ -99,7 +102,6 @@ async function main() {
   fs.writeFileSync(filepath, jsonToWrite);
 
   if (implementationContract) {
-    logger.log(`Waiting for 5 confirmations`);
     // infinite loops on homestead / hardhat network
     if (network.name !== "hardhat" && network.name !== "homestead") {
       await instance.deployTransaction.wait(5);

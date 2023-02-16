@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 
-//const logger = getLogger("scripts::deploy-registrar");
+//const logger = getLogger("src::deploy-registrar");
 
 async function main() {
   const accounts = await ethers.getSigners();
